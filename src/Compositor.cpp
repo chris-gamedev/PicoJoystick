@@ -1,0 +1,88 @@
+#include "Compositor.h"
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////  Compositor  ///////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+void Compositor_::registerAnimation(Animation_ *pAnim, CanvasType::TCanvasType canvas)
+{
+    using CanvasType ::TCanvasType;
+
+    switch (canvas)
+    {
+    case TCanvasType::FG:
+        mvFG.push_back(pAnim);
+        std::sort(mvFG.begin(), mvFG.end(), [](Animation_ *a, Animation_ *b)
+                  { return *a < *b; });
+        break;
+    case TCanvasType::BG:
+        mvBG.push_back(pAnim);
+        std::sort(mvBG.begin(), mvBG.end(), [](Animation_ *a, Animation_ *b)
+                  { return *a < *b; });
+        break;
+    case TCanvasType::TOP:
+        mvTop.push_back(pAnim);
+        std::sort(mvTop.begin(), mvTop.end(), [](Animation_ *a, Animation_ *b)
+                  { return *a < *b; });
+        break;
+    case TCanvasType::BOTTOM:
+        mvBottom.push_back(pAnim);
+        std::sort(mvBottom.begin(), mvBottom.end(), [](Animation_ *a, Animation_ *b)
+                  { return *a < *b; });
+        break;
+    }
+}
+
+void Compositor_::killAnimation(Animation_ *pAnim)
+{
+}
+
+void Compositor_::purgeAll()
+{
+    mvFG.clear();
+    mvBG.clear();
+    mvTop.clear();
+    mvBottom.clear();
+}
+
+void Compositor_::update()
+{
+    if (mclock + mclockdelay >= millis())
+        return;
+    mclock += mclockdelay;
+
+    updateVectors(&mvFG);
+    updateVectors(&mvBG);
+    updateVectors(&mvTop);
+    updateVectors(&mvBottom);
+}
+
+void Compositor_::updateVectors(std::vector<Animation_ *> *v)
+{
+    for (std::vector<Animation_ *>::iterator &&it = v->begin(); it != v->end();)
+    {
+        (*it)->update();
+        if ((*it)->mlife == 0)
+            it = v->erase(it);
+        else
+            ++it;
+    }
+}
+
+void Compositor_::draw()
+{
+    // TODO Sort out these canvases!
+    mpDisplay->clearDisplay();
+
+    for (auto &it : mvBG)
+        it->draw(mpDisplay);
+    for (auto &it : mvTop)
+        it->draw(mpDisplay);
+    for (auto &it : mvBottom)
+        it->draw(mpDisplay);
+    for (auto &it : mvFG)
+        it->draw(mpDisplay);
+
+    mpDisplay->display();
+}
+
+
+

@@ -1,0 +1,278 @@
+---------------------------------------------------------------------------------- 
+------------------------------Physical Requirements------------------------------- 
+---------------------------------------------------------------------------------- 
+
+Joystick software Requirements:
+
+Physical:
+    12 playable buttons
+    8 way digital stick
+    Latching power control 
+    grayscale display - menus
+    usb access through case
+        act as charger and / or power supply
+        act as usb joystick
+        sync data with pico
+    removable bottom cover (threaded inserts)
+    raspberry pi pico w/ appropriate permanent pcb
+        16 digital IO pins - buttons & joystick
+        4 spi pins for display
+    battery bank inside case, can be charged from outside
+    Input device pcb    
+        intuitive wiring:
+            polarized
+            unique pin counts for types of interfaces
+    
+    Phase II:
+        spinner? Analog Input? Trackball?
+        can charge battery and power pico at the same time & auto switching
+        internal permanent battery
+        Sound ?
+            
+        
+---------------------------------------------------------------------------------- 
+------------------------------Software Requirements------------------------------- 
+---------------------------------------------------------------------------------- 
+
+
+Software / Configuration:
+    Joystick 
+        orientation ?
+    Buttons
+        Configurable Button mapping
+            overview graphic showing when a button is pressed, its #, and macros
+        Auto fire
+            delay between presses
+            duration of presses
+        Macros
+            Sequence of N joystick / button actions
+                delay between actions
+                duration of actions
+                assignment to button
+            Save Individual Macros to file
+            Assign Macros to buttons
+            Edit Macros
+    Display
+        Turn On / Off
+        battery indicator
+            when on during config mode, display menus
+            when on during gameplay, display:
+                screensaver
+                button map w/ presses
+                fun animations
+        Menu Mapping
+            themes?
+        Graphic driver
+            Animations
+                2 bit? 4 bit?
+                rotating palette implementation?
+            frame buffer
+        
+    Pico
+        Persistent file system for all configurations
+        hard-coded default config file & reset config
+        4 pin hardware spi if available
+        retain 2 gpio pins for rotary encoder?
+        retain analog pins for analog stick? trackball? how is a trackball encoded?
+        debouncing as necessary
+        Bluetooth connectivity:
+            hid device
+            runs on second core?
+            sound?
+        USB Connectivity:
+            data 
+            charging
+            USB HID device if chosen
+        
+        
+---------------------------------------------------------------------------------- 
+---------------------------------Menu Map----------------------------------------- 
+---------------------------------------------------------------------------------- 
+        
+MENU MAP:
+    Buttons
+        Mapping
+            Remap Wizard
+            Swap buttons
+            Show current mapping
+            Designate pause button
+        Auto-Fire
+            Auto-Fire Wizard
+            Manual Config
+        Macros
+            Assign Macro
+            Edit Macro
+            New Macro Wizard
+            Manual Config
+            
+    Joystick
+        orientation
+        Invert X axis (L/R)
+        Invert Y axis (UP / Down)`
+    Display
+        On / Off during play
+        Theme
+            Show Joypad
+            Show Theme / buddy / animation
+        Brightness - ?
+        Battery Indicator
+            Show / Hide
+    System
+        Bluetooth
+            ON / OFF
+            Pair
+            Unpair
+            Device Name
+        USB Mode
+            Switch to USB when available
+            Power Only
+            Power / Charging ?
+                are there any options here?
+        Save Configuration
+        Reset all to Default        
+    
+    
+---------------------------------------------------------------------------------- 
+-----------------------------Design Outline--------------------------------------- 
+---------------------------------------------------------------------------------- 
+    
+    
+Classes:
+    Bluetooth / USB Joystick 
+        Polls Buttons / joystick
+            Interrupt?            
+        Maps physical buttons to button values 
+        Maps physical buttons to macros
+        Sends button values to appropriate stream
+        Sends input to menu manager if in menu mode
+        Allows registration of pause button / key combination
+            useful if controller is running out of battery
+            useful if controller is switched to menu mode
+            Is the "Menu" buutton Pause?  Does Pause always mean Menu?
+                Yes, probably.  and the first option is 'return to game'
+        
+    Macro Manager
+        Maintains a clock
+        Repeats user-defined, serial combinations of button / joystick presses
+        Allows user to enter / edit / save macros
+        Manages Timing, including pauses between button / joy presses
+        Only Allows one Macro to run at a time
+        if Macro does not include joystick, joystick is allowed concurently?
+            Possibly overrides joystick during a joystick sequence then returns it for button-only portions?
+            Are other buttons allowed during button macros?
+            Possibly a behavior defined during config?
+                seize buttons
+                seize joystick
+                seize both
+                seize button group?
+        Handles Turbo buttons
+    
+            
+    Menu Manager
+        Manages tree of prompts & relevant callback functions for action entries
+        Calls Display to write prompts
+        Manipulates properties of Joystick
+            Allows remapping of button / joystick / analog values
+            Callback function?
+        Manipulates file system
+            Callback?
+        Manipulates Macros
+            Callback?
+        Manipulates properties of Animator (animations on / off / style)
+        Remembers Last menu position - optional?
+    
+    Display
+        Initiates SPI connection to OLED
+        Maintains internal display buffer(s)
+        Handles Rendering to OLED
+            Does each class that produces displayable stuff have their own buffer?
+                NO.  Keep it encapsulated
+            How do they get their data here?
+        Handles turning On / Off display
+        
+        
+    Animator
+        Maintains a Clock
+        Maintains image assets
+        Maintains list of any currently animated sprites
+        Moves sprites and Iterates through sprite frames based upon registered elapsed time per frame / 
+        
+        
+        
+    
+---------------------------------------------------------------------------------- 
+-----------------------------Joystick macro implementation------------------------ 
+---------------------------------------------------------------------------------- 
+
+
+
+
+---------------------------------------------------------------------------------- 
+-----------------------------Compositor Implementation---------------------------- 
+---------------------------------------------------------------------------------- 
+class canvasTools
+    global X
+    global Y
+
+Animation Abstract Class:
+    canvas - ?  Is this handled by the compisitor?
+    X
+    Y
+    Width
+    Height
+    color?
+    
+    counter - 
+    
+    deltaX
+    deltaY
+    DrawOrder ? -- how will this be handled
+    Resource to draw*
+    update()
+    
+
+    
+Compositor class
+    clock
+    List (vector?) animations.
+        FG - 128x128
+        BG - 128x128
+        topPane - 128 x 64
+        bottomPane - 128 x 64
+    
+    
+    RegisterAnimationTo( canvas?, delay frames, duration in frames , Draw Depth)
+        
+    
+    update()
+        Animation list[n].update()
+        
+    draw()
+        for (a in bgCanvasList) // 128 x 128
+        for (a in menuCanvasList) 128 x 64
+        for (a in description canvas list) 128 x 64
+        for (a in fgCanvasList) 128 x 128
+        
+        
+    
+ANIMATION TYPES
+    animText
+        scroll up / down
+        swipe left / right
+    Static
+        No xy delta, no update
+    sprite
+    
+    remember the cursor!
+    
+        
+        
+DISPLAY OPTIMIZATION NOTES:
+    -Compositor has 'updated' flag / message from 
+    calls and only sends to display when necessary
+
+    -unnecessary canvases?  Can some routines carry their
+    own bitmaps?
+    
+    
+

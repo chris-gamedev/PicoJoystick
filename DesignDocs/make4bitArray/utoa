@@ -1,0 +1,6 @@
+#!/bin/bash
+
+for var in "$@"
+do
+	iconv -f utf-8 -t ascii -c -o "$var".a.txt  "$var"
+done
