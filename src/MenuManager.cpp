@@ -1,10 +1,17 @@
 #include "MenuManager.h"
 
+extern bool boolDoFunThings ;
+extern AppletSwitcher_ AppSwitcher;
+
 ////////////////////////////////////////////////////    CALLBACKS    ///////////////////////////////////////////////////////
 // placeholder callback pointers
 void myCallback() { Serial.println("inside myCallback"); }
-void drawKeyPresses_callback() { AppSwitcher.switchApp(AppletNames::SHOW_BUTTON_PRESSES); }
-void remapButtons_callback() { AppSwitcher.switchApp(AppletNames::REMAP_BUTTONS); }
+void buttonsRemap_callback() { AppSwitcher.switchApp(AppletNames::REMAP_BUTTONS); }
+void buttonsAssignTurbo_callback() { AppSwitcher.switchApp(AppletNames::ASSIGN_TURBO); }
+void themeJoypad_callback() {AppSwitcher.setDefaultApp(AppletNames::SHOW_BUTTON_PRESSES);}
+void themeBlank_callback() {AppSwitcher.setDefaultApp(AppletNames::BLANK);}
+// temp to turn on/off the fun things.
+void themeDoFunThings_callback() { boolDoFunThings = !boolDoFunThings; }
 ////////////////////////////////////////////////////    CALLBACKS    ///////////////////////////////////////////////////////
 
 uint32_t Menu_::mLastTime = 0;
@@ -102,13 +109,13 @@ void MenuManager_::buildMenu()
         Menu_* pButtons = pRoot->mChildren[0];
         pButtons->addChild(new SubMenu_("Mapping", pButtons));
             Menu_* pMapping = pButtons->mChildren[0];
-            pMapping->addChild(new Leaf_("Remap", remapButtons_callback, pMapping));
+            pMapping->addChild(new Leaf_("Remap", buttonsRemap_callback, pMapping));
             pMapping->addChild(new Leaf_("Swap", myCallback, pMapping));
             pMapping->addChild(new Leaf_("Show", myCallback, pMapping));
             pMapping->addChild(new Leaf_("Set Pause", myCallback, pMapping));
         pButtons->addChild(new SubMenu_("Auto-Fire", pButtons));
             Menu_* pAutoFire = pButtons->mChildren[1];
-            pAutoFire->addChild(new Leaf_("Manual", myCallback, pAutoFire));
+            pAutoFire->addChild(new Leaf_("Manual", buttonsAssignTurbo_callback, pAutoFire));
             pAutoFire->addChild(new Leaf_("Wizard", myCallback, pAutoFire));
         pButtons->addChild(new SubMenu_("Macros", mMenuRoot.mChildren[0]));
             Menu_* pMacros = pButtons->mChildren[2];
@@ -126,8 +133,11 @@ void MenuManager_::buildMenu()
         pDisplay->addChild(new Leaf_("On - Off", myCallback, pDisplay));
         pDisplay->addChild(new SubMenu_("Theme", pDisplay));
             Menu_* pTheme = pDisplay->mChildren[1];
-            pTheme->addChild(new Leaf_("Joypad", drawKeyPresses_callback, pTheme));
+            pTheme->addChild(new Leaf_("Joypad", themeJoypad_callback, pTheme));
             pTheme->addChild(new Leaf_("Theme", myCallback, pTheme));
+            pTheme->addChild(new Leaf_("Blank", themeBlank_callback, pTheme));
+
+            pTheme->addChild(new Leaf_("Fun Stuff ?", themeDoFunThings_callback, pTheme));  // temp to toggle fun stuff
         pDisplay->addChild(new SubMenu_("Brightness", pDisplay));
             Menu_* pBrightness = pDisplay->mChildren[2];
             pBrightness->addChild(new Leaf_("??", myCallback, pBrightness));

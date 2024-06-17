@@ -8,15 +8,18 @@
 #include "Pacman.h"
 
 Compositor_ Compositor(&JoyDisplay);
-MenuManager_ MenuManager(&Compositor);
 
 // Applets
+MenuManager_ MenuManager(&Compositor);
 DrawKeyPressesApp_ DrawKeyPresses(&Compositor);
 RemapButtonsApp_ RemapButtons(&Compositor, &DrawKeyPresses);
+AssignTurboApp_ AssignTurbo(&Compositor, &DrawKeyPresses);
 AppletSwitcher_ AppSwitcher(&Compositor);
 
 // temp. add this state to the joystick
 bool joyON = true;
+// temp. for menu entry.
+bool boolDoFunThings = true;
 
 // find a good home for these?
 uint32_t timeMenuHotkeyDelay = 1000;
@@ -38,7 +41,6 @@ Animation_ *funInUse[6] = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr}
 
 uint32_t funDelay = 10;
 uint32_t funLastTime = 0;
-
 
 void doFunThings();
 
@@ -63,6 +65,7 @@ void setup()
     AppSwitcher.addApp(AppletNames::MENU, &MenuManager);
     AppSwitcher.addApp(AppletNames::SHOW_BUTTON_PRESSES, &DrawKeyPresses);
     AppSwitcher.addApp(AppletNames::REMAP_BUTTONS, &RemapButtons);
+    AppSwitcher.addApp(AppletNames::ASSIGN_TURBO, &AssignTurbo);
     AppSwitcher.start();
 
     // temp testing fun things
@@ -80,10 +83,10 @@ void loop()
     if (menuHotkeyPressed())
         AppSwitcher.switchApp(AppletNames::MENU);
     AppSwitcher.update();
-    doFunThings();
+    if (boolDoFunThings)
+        doFunThings();
     Compositor.update();
     Compositor.draw();
-
 
     if (MyJoystickBT.buttonJustPressed(0))
         Serial.println("------------- discrete press-0--------------");

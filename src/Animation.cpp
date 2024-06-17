@@ -74,14 +74,27 @@ void AnimStatic4_::draw(JoyDisplay_ *pcanvas)
 //////////////////////////////////////////////   Text   /////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void AnimText1_::update() // override this shit for text
+void AnimTextStatic1Line_::update() // override this shit for text
 {
+    if (mlife > 0)
+        mlife--;
 }
 
-void AnimText1_::draw(JoyDisplay_ *pcanvas)
+void AnimTextStatic1Line_::draw(JoyDisplay_ *pcanvas)
 {
+    if (mDrawBox) {
+        pcanvas->fillRoundRect(mX, mY - 1, mW, mH + 2, 10, MENU_BOX_COLOR_BG);
+        pcanvas->drawRoundRect(mX, mY - 1, mW, mH + 2, 10, MENU_BOX_COLOR_FG);
+    }
+
+    pcanvas->setFont(MENU_FONT_FACE);
+    pcanvas->setTextWrap(false);
+    pcanvas->setTextColor(mColor);
+    pcanvas->setCursor((mW / 2) - ((float)mText.length() / 2 * TEXT_WIDTH), mY + TEXT_HEIGHT - 2);
+    pcanvas->print(mText);
 }
 
+//--------------------------------------------------------------------------------------------------//
 void AnimTextPrompt_::update() // override this shit for text
 {
     Animation_::update();
@@ -92,8 +105,10 @@ void AnimTextPrompt_::update() // override this shit for text
 void AnimTextPrompt_::draw(JoyDisplay_ *pcanvas)
 {
 
-    for (auto &it : mvStrings)
-        Serial.println(it);
+    for (auto &it : mvStrings){
+        Serial.print(it);
+        Serial.printf(", Length: %d\n", it.length());
+    }
 
     if (mDrawBox) {
         pcanvas->fillRoundRect(mX, mY, mW, mH, 10, MENU_BOX_COLOR_BG);
@@ -119,9 +134,63 @@ void AnimTextPrompt_::draw(JoyDisplay_ *pcanvas)
     for (int i = 0; i < count; i++, y += TEXT_HEIGHT)
     {
         j = (mposition + i) % promptCount;
-        x = (mW / 2) - (((float)mvStrings[j].length() * TEXT_WIDTH) / 2) - TEXT_WIDTH ;
-        pcanvas->setCursor(mX + x, y);
+        x = (mW / 2) - ((float)mvStrings[j].length() / 2 * TEXT_WIDTH);
+        pcanvas->setCursor(x + mX + mTextOffsetX, y + mTextOffsetY);
         pcanvas->println(mvStrings[j]);
     }
 }
 
+//------------------------------   Text Selection Prompt   ----------------------------------------//
+//------------------------------   Text Selection Prompt   ----------------------------------------//
+void AnimInputDialogList_::start(String title, uint8_t * selection, std::initializer_list<String> prompts)
+{
+    mConfirm = false;
+    mCancel = false;
+    mpReturnPointer = selection;
+    mposition = 0;
+    mlife = -1;
+    mTitle = title;
+    mvStrings = prompts;
+
+}
+
+void AnimInputDialogList_::update()
+{
+    uint8_t range = mvStrings.size();
+
+        if (MyJoystickBT.buttonJustPressed(0)) // cancel
+    {
+        mCancel = true;
+        mlife = 0;
+        return;
+    }
+    if (MyJoystickBT.buttonJustPressed(4)) // accept
+    {
+        mConfirm = true;
+        mlife = 0;
+        *mpReturnPointer = mposition;
+        return;
+    }
+    if (MyJoystickBT.joyJustPressed(JOY_DOWN)) // decrement
+    {
+        mposition = (mposition + range - 1) % range;
+        return;
+    }
+
+    if (MyJoystickBT.joyJustPressed(JOY_UP)) // increment
+    {
+        mposition = (mposition + 1) % range;
+        return;
+    }
+}
+
+void AnimInputDialogList_::draw(JoyDisplay_ *pcanvas)
+{
+
+    AnimTextPrompt_::draw(pcanvas);
+    
+    int x = 64 - (((float)mTitle.length() / 2) * TEXT_WIDTH);
+    pcanvas->setCursor(mX + x, mY + TEXT_HEIGHT + 4);
+    Serial.printf("Title is %s", mTitle);
+    pcanvas->print(mTitle);
+}

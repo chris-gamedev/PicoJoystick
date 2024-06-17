@@ -103,9 +103,13 @@ void RemapButtonsApp_::initApp()
     this->mlife = -1;
     mpCompositor->registerAnimation(this, CanvasType::BOTTOM);
     mAppLastTime = millis();
+    
     mTextSpriteStatic.setLife(50);
     mTextSpriteStatic.setDrawBox(true);
     mpCompositor->registerAnimation(&mTextSpriteStatic, CanvasType::TOP);
+    
+    mTextSpriteBanner.mlife = -1;
+    mpCompositor->registerAnimation(&mTextSpriteBanner, CanvasType::BG);
     mAppDrawPrompt = true;
     startFromScratch();
 }
@@ -178,6 +182,7 @@ void RemapButtonsApp_::cleanupApp()
 {
     mpappDrawKeysApp->cleanupApp();
     mlife = 0;
+    mTextSpriteBanner.mlife = 0;
 }
 
 void RemapButtonsApp_::update()
@@ -204,17 +209,24 @@ void AssignTurboApp_::initApp()
     this->mlife = -1;
     mpCompositor->registerAnimation(this, CanvasType::TOP);
     mAppLastTime = millis();
+    
     mTextSpriteStatic.setLife(50);
     mTextSpriteStatic.setDrawBox(true);
     mpCompositor->registerAnimation(&mTextSpriteStatic, CanvasType::TOP);
+    
+    mTextSpriteBanner.mlife = -1;
+    mpCompositor->registerAnimation(&mTextSpriteBanner, CanvasType::BG);
     startFromScratch();
 }
 
 void AssignTurboApp_::startFromScratch()
 {
-    mFoundTheButton = false;
-    mSetTheValue = false;
     mEditButton = -1;
+    mFoundTheButton = false;
+    mFoundTheButton = false;
+    mSetButtonMode = false;
+    mSetButtonDelay = false;
+    mSetButtonLatching = false;
 }
 
 bool AssignTurboApp_::exitApp()
@@ -222,6 +234,7 @@ bool AssignTurboApp_::exitApp()
 
     if (MyJoystickBT.joyJustPressed(JOY_LEFT))
     {
+        startFromScratch();
         mAppLastTime = millis();
         return false;
     }
@@ -242,7 +255,9 @@ AppletStatus::TAppletStatus AssignTurboApp_::updateApp()
     mpappDrawKeysApp->updateApp();
 
     if (exitApp())
+    {
         return AppletStatus::RETURN;
+    }
 
     if (!mFoundTheButton)
     {
@@ -252,31 +267,64 @@ AppletStatus::TAppletStatus AssignTurboApp_::updateApp()
             return AppletStatus::ALIVE;
 
         mFoundTheButton = true;
-        // mNewButtonValue = MyJoystickBT.getButtonValue(mEditButton);
         Serial.println("Found a held button!!  " + String(mEditButton));
-
-        // mAnimInputDialog.start("New Value", &mNewButtonValue, 1, 32);
-        mpCompositor->registerAnimation(&mAnimInputDialog, CanvasType::TOP);
+        mAnimInputDialogOptions.start("Turbo:", &mSelection, {"On", "Off"});
+        mpCompositor->registerAnimation(&mAnimInputDialogOptions, CanvasType::TOP);
         return AppletStatus::ALIVE;
     }
-    else if (mFoundTheButton && !mSetTheValue)
+    else if (!mSetButtonMode)
     {
+        Serial.printf("Setting mode,  ");
+        if (!mAnimInputDialogOptions.finished())
+            return AppletStatus::ALIVE;
 
-    //     if (mAnimInputDialog.finished())
-    //     {
-    //         mSetTheValue = true;
-    //         MyJoystickBT.setButtonValue(mEditButton, mNewButtonValue);
-    //         startFromScratch();
-    //     }
+        mSetButtonMode = true;
+        switch (mSelection)
+        {
+        case 1:
+            MyJoystickBT.setToDefaultMacro(mEditButton);
+            startFromScratch();
+            break;
+        case 0:
+            MyJoystickBT.setToTurboMacro(mEditButton);
+            mTurboDelayValue = MyJoystickBT.getTurboMacroDelay(mEditButton);
+            mAnimInputDialogDelay.start("Delay (m/s)", &mTurboDelayValue, 10, 4000);
+            mpCompositor->registerAnimation(&mAnimInputDialogDelay, CanvasType::TOP);
+            break;
+        }
+        return AppletStatus::ALIVE;
     }
+    else if (!mSetButtonDelay)
+    {
+        Serial.printf("Setting Delay,  ");
+        if (!mAnimInputDialogDelay.finished())
+            return AppletStatus::ALIVE;
 
-    return AppletStatus::TAppletStatus::ALIVE;
+        mSetButtonDelay = true;
+        MyJoystickBT.setTurboMacroDelay(mEditButton, mTurboDelayValue);
+        mAnimInputDialogOptions.start("Latching", &mSelection, {"Off", "On"});
+        mpCompositor->registerAnimation(&mAnimInputDialogOptions, CanvasType::TOP);
+        return AppletStatus::ALIVE;
+    }
+    else if (!mSetButtonLatching)
+    {
+        if (!mAnimInputDialogOptions.finished())
+            return AppletStatus::ALIVE;
+
+        Serial.printf("Setting Latching,  (bool)mSelection is %d", (bool) mSelection);
+        MyJoystickBT.setTurboMacroLatching(mEditButton, (bool)mSelection);
+        startFromScratch();
+    }
+    return AppletStatus::ALIVE;
 }
+
+
 
 void AssignTurboApp_::cleanupApp()
 {
     mpappDrawKeysApp->cleanupApp();
     mlife = 0;
+    mTextSpriteBanner.mlife = 0;
 }
 
 void AssignTurboApp_::update()

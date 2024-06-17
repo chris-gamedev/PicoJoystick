@@ -8,6 +8,7 @@ namespace AppletNames
         SHOW_BUTTON_PRESSES,
         MENU,
         REMAP_BUTTONS,
+        ASSIGN_TURBO,
         BLANK // always last.  used as size of array.
     };
 }
@@ -90,10 +91,11 @@ public:
         // WHEN ADDING:  REMEMBER TO EXPAND THE ARRAY IN THE DAMN HEADER!!!
 
         mApplets[AppletNames::BLANK] = &mBlankApplet;
-        // mCurrentApp = AppletNames::REMAP_BUTTONS;
+        mCurrentApp = AppletNames::ASSIGN_TURBO;
     }
     void inline addApp(AppletNames::TAppletNames name, Applet_ *app) { mApplets[name] = app; }
-    void inline switchApp(AppletNames::TAppletNames app)
+    void inline setDefaultApp(AppletNames::TAppletNames app) {mDefaultApp = app;}
+    void inline switchApp(AppletNames::TAppletNames app) 
     {
         mApplets[mCurrentApp]->cleanupApp();
         mLastApp = mCurrentApp;
@@ -119,9 +121,9 @@ public:
         }
     }
 
-Applet_ *mApplets[4];
+Applet_ *mApplets[5];
 AppletNames::TAppletNames mDefaultApp = AppletNames::SHOW_BUTTON_PRESSES;
-AppletNames::TAppletNames mCurrentApp = AppletNames::SHOW_BUTTON_PRESSES;
+AppletNames::TAppletNames mCurrentApp = AppletNames::ASSIGN_TURBO;
 AppletNames::TAppletNames mLastApp = mDefaultApp;
 Compositor_ *mpCompositor;
 Applet_ mBlankApplet;

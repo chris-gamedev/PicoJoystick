@@ -204,8 +204,12 @@ public:
     this->data.buttons &= MAKE_BUTTON_VALUE_BITMASK_32(mPauseButtonValue);
     this->send_now();
   }
-  inline Command_* getAssignedMacro(uint8_t button) { return maAssignedMacros[button];}
-  inline void setToDefaultMacro(uint8_t button) { maAssignedMacros[button] = &mTurboDirectCommand;} 
+  // Macro Stuff
+  inline void setToDefaultMacro(uint8_t button) { maAssignedMacros[button] = &mDefaultDirectCommand;} 
+  inline void setToTurboMacro(uint8_t button) { maAssignedMacros[button] = &maTurboMacros[button];}
+  inline void setTurboMacroDelay(uint8_t button, uint16_t delay) {maTurboMacros[button].mDelay = delay;}
+  inline void setTurboMacroLatching(uint8_t button, bool latch) { maTurboMacros[button].mIsLatchingButton = latch;}
+  inline uint16_t getTurboMacroDelay(uint8_t button) {return maTurboMacros[button].mDelay;}
   
   void inline setButtonValue(uint8_t b, uint8_t v)
   {
@@ -219,7 +223,7 @@ public:
   TurboButtonCommand_ mLatchedCommand;
   std::forward_list<Command_ *, std::allocator<Command_ *>> mlActiveMacros;
   Command_ *maAssignedMacros[12] = {&mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand};
-  TurboButtonCommand_ maTurboButtons[12];
+  TurboButtonCommand_ maTurboMacros[12];
   uint8_t mButtons[12];
   uint8_t maButtonValues[12];
   uint8_t maJoyValues[8];

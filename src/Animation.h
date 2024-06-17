@@ -2,10 +2,9 @@
 #define ANIMATION_H
 #include <Arduino.h>
 #include <stdlib.h>
+#include <initializer_list>
 #include "Display.h"
 #include "MyJoystick.h"
-
-
 
 class Behavior_
 {
@@ -183,17 +182,20 @@ public:
 //////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////    Text    ///////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////
-class AnimText1_ : public Animation_
+class AnimTextStatic1Line_ : public Animation_
 {
 public:
+    AnimTextStatic1Line_(int16_t x, int16_t y, uint8_t w = 128, uint8_t h = TEXT_HEIGHT + 2, uint8_t order = 10, int16_t life = -1)
+        : Animation_(x, y, w, h, order, life, -1, 0, 0) {}
 
-    AnimText1_(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t order, int16_t life)
-        : Animation_(x, y, w, h, order, life, 0, 0, 0) {}
-
-    void inline setBitmap(const unsigned char *bmp) { mbitmap = bmp; }
+    // void inline setBitmap(const unsigned char *bmp) { mbitmap = bmp; }
+    void inline setText(String t) { mText = t;}
+    void inline setDrawBox(bool drawBox) { mDrawBox = drawBox;}
     void update();
-
     void draw(JoyDisplay_ *pcanvas);
+
+    bool mDrawBox = false;
+    String mText;
 };
 
 /// @brief 8 bit Static Sprite.  No Moving, No Animation. Registered with compositor
@@ -201,7 +203,6 @@ public:
 class AnimTextPrompt_ : public Animation_
 {
 public:
-
     AnimTextPrompt_(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t order, int16_t life = -1, int16_t delay = -1, int deltax = 0, int deltay = 0)
         : Animation_(x, y, w, h, order, life, delay, deltax, deltay) {}
 
@@ -218,19 +219,49 @@ public:
         mposition = pos;
     }
     void inline setPosition(uint8_t pos) { mposition = pos; }
-    void inline setDrawBox(bool draw) { mDrawBox = draw;}
+    void inline setDrawBox(bool draw) { mDrawBox = draw; }
     void update();
     void draw(JoyDisplay_ *pcanvas);
-    void setLife(int16_t life, int16_t delay = 0) {mlife = life; mdelay = delay;}
-
+    void setLife(int16_t life, int16_t delay = 0)
+    {
+        mlife = life;
+        mdelay = delay;
+    }
 
     std::vector<String> mvStrings;
     uint8_t mposition = 0;
     bool mDrawBox = false;
+    uint8_t mTextOffsetX = 0;
+    uint8_t mTextOffsetY = 0;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////      Input Dialog          /////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+class AnimInputDialogList_ : public AnimTextPrompt_
+{
+public:
+    AnimInputDialogList_(String prompt, uint8_t *inputVar, int16_t x = 0, int16_t y = 64 - (TEXT_HEIGHT * 2) - 5, uint8_t w = 128, uint8_t h = TEXT_HEIGHT * 4 + 10, uint8_t order = 10, int16_t life = -1, int16_t delay = -1, int16_t deltax = 0, int16_t deltay = 0)
+        : AnimTextPrompt_(x, y, w, h, order, life, delay, deltax, deltay)
+    {
+        mTextOffsetX = 0;
+        mTextOffsetY = TEXT_HEIGHT + 4;
+        start("", nullptr, {});
+    }
+
+    void start(String title, uint8_t *selection,  std::initializer_list<String> prompts);
+    void update();
+    void draw(JoyDisplay_ *pcanvas);
+    bool finished() { return mConfirm || mCancel;}
+
+    String mTitle;
+    uint8_t *mpReturnPointer;
+    bool mConfirm;
+    bool mCancel;
+};
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////      Input Dialog Template         ///////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 template <typename I>
@@ -247,17 +278,19 @@ public:
      */
     AnimInputDialogInt_(String prompt, I *inputVar, I lower, I upper, int16_t x = 0, int16_t y = 64 - TEXT_HEIGHT - 5, uint8_t w = 128, uint8_t h = TEXT_HEIGHT * 2 + 10, uint8_t order = 10, int16_t life = -1, int16_t delay = -1, int16_t deltax = 0, int16_t deltay = 0)
         : Animation_(x, y, w, h, order, life, delay, deltax, deltay)
-        {
-            start(prompt, inputVar, lower, upper);
-        }
+    {
+        start(prompt, inputVar, lower, upper);
+    }
     void update();
-    void start(String prompt, I *inputVar, I lower, I upper) {
+    void start(String prompt, I *inputVar, I lower, I upper)
+    {
         mlife = -1;
         mCancel = false;
         mConfirm = false;
         mPrompt = prompt;
         mpReturnPointer = inputVar;
-        mNewValue = *inputVar;
+        mNewValue = (*inputVar < lower) ? lower : *inputVar;
+        mNewValue = (*inputVar > upper) ? upper : *inputVar;
         mLowerBound = lower;
         mUpperBound = upper;
         mRange = upper - lower + 1;
@@ -265,7 +298,8 @@ public:
     }
     void draw(JoyDisplay_ *pcanvas);
     void setPrompt(String p) { mPrompt = p; }
-    void setReturnPointer(I *pReturn) { 
+    void setReturnPointer(I *pReturn)
+    {
         if (pReturn != nullptr)
         {
             mpReturnPointer = pReturn;
@@ -287,7 +321,6 @@ public:
     bool mCancel = false;
     uint32_t mLastTime;
 };
-
 
 template <typename I>
 void AnimInputDialogInt_<I>::update()
@@ -340,7 +373,7 @@ void AnimInputDialogInt_<I>::draw(JoyDisplay_ *pcanvas)
     pcanvas->setFont(MENU_FONT_FACE);
     pcanvas->setTextColor(0xF);
     pcanvas->setTextWrap(false);
-    
+
     pcanvas->setCursor(mX + 64 - (TEXT_WIDTH * mPrompt.length() / 2), mY + TEXT_HEIGHT * 1.5);
     pcanvas->print(mPrompt);
 
@@ -350,6 +383,5 @@ void AnimInputDialogInt_<I>::draw(JoyDisplay_ *pcanvas)
     pcanvas->setCursor(mX + 64 - (TEXT_WIDTH * mPrompt2.length() / 2), mY + TEXT_HEIGHT * 2.5 + 2);
     pcanvas->print(mPrompt2);
 }
-
 
 #endif
