@@ -171,13 +171,9 @@ class TurboButtonCommand_ : public Command_
 {
 public:
   void executeCommand(uint8_t b, uint8_t value, uint16_t *pStateMap, uint32_t *pValueMap, uint8_t *pJoyState);
-};
-
-class LatchedButtonCommand_ : public Command_
-{
-public:
-  void executeCommand(uint8_t b, uint8_t value, uint16_t *pStateMap, uint32_t *pValueMap, uint8_t *pJoyState);
+  void inline setIsLatchingButton(bool latching) { mIsLatchingButton = latching; }
   bool mLatchedOn = false;
+  bool mIsLatchingButton;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -202,13 +198,15 @@ public:
   bool inline joyHeld(uint8_t jstate) { return mJoyState == jstate && mLastJoyState == jstate; }
   bool inline joyJustReleased(uint8_t jstate) { return mJoyState != jstate && mLastJoyState == jstate; }
   bool inline joyisFree(uint8_t jstate) { return mJoyState != jstate && mLastJoyState != jstate; }
-  void inline setPauseButton(uint8_t bValue){mPauseButtonValue = bValue;}
+  void inline setPauseButton(uint8_t bValue) { mPauseButtonValue = bValue; }
   void inline sendPauseButtonPress()
   {
     this->data.buttons &= MAKE_BUTTON_VALUE_BITMASK_32(mPauseButtonValue);
     this->send_now();
   }
-
+  inline Command_* getAssignedMacro(uint8_t button) { return maAssignedMacros[button];}
+  inline void setToDefaultMacro(uint8_t button) { maAssignedMacros[button] = &mTurboDirectCommand;} 
+  
   void inline setButtonValue(uint8_t b, uint8_t v)
   {
     if ((b >= 0) && (b < 12) && (v > 0) && (v < 33))
@@ -218,9 +216,10 @@ public:
 
   DirectButtonCommand_ mDefaultDirectCommand;
   TurboButtonCommand_ mTurboDirectCommand;
-  LatchedButtonCommand_ mLatchedCommand;
+  TurboButtonCommand_ mLatchedCommand;
   std::forward_list<Command_ *, std::allocator<Command_ *>> mlActiveMacros;
   Command_ *maAssignedMacros[12] = {&mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand};
+  TurboButtonCommand_ maTurboButtons[12];
   uint8_t mButtons[12];
   uint8_t maButtonValues[12];
   uint8_t maJoyValues[8];

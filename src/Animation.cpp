@@ -91,22 +91,25 @@ void AnimTextPrompt_::update() // override this shit for text
 
 void AnimTextPrompt_::draw(JoyDisplay_ *pcanvas)
 {
-    // Serial.println("inside Display Prompts. Cursor is " +String(currentPrompt));
-    // Serial.println("prompts are: ");
 
     for (auto &it : mvStrings)
         Serial.println(it);
 
+    if (mDrawBox) {
+        pcanvas->fillRoundRect(mX, mY, mW, mH, 10, MENU_BOX_COLOR_BG);
+        pcanvas->drawRoundRect(mX +1 , mY +1 , mW -2 , mH -2 , 10, MENU_BOX_COLOR_FG);
+        pcanvas->drawRoundRect(mX +2 , mY +2 , mW -4 , mH -4 , 10, MENU_BOX_COLOR_FG);
+    }
     
     
     pcanvas->setFont(MENU_FONT_FACE);
     pcanvas->setTextColor(mColor);
     int promptCount = mvStrings.size();
     int x = this->mX;
-    int y = this->mY;
+    int y = this->mY +TEXT_HEIGHT + 4;
     int j = mposition;
     pcanvas->setTextColor(mColor);
-    // do some number ajusting
+    // only display 3 prompts at a time, and adjust screen center
     int count = (promptCount > 3) ? 3 : promptCount;
     if (count == 2)
         y += TEXT_HEIGHT / 2;
@@ -116,75 +119,9 @@ void AnimTextPrompt_::draw(JoyDisplay_ *pcanvas)
     for (int i = 0; i < count; i++, y += TEXT_HEIGHT)
     {
         j = (mposition + i) % promptCount;
-        x = (mW / 2) - (((float)mvStrings[j].length() * TEXT_WIDTH) / 2) - TEXT_WIDTH / 2;
-        pcanvas->setCursor(mX + x, y + MENU_TRIM_WIDTH);
-
+        x = (mW / 2) - (((float)mvStrings[j].length() * TEXT_WIDTH) / 2) - TEXT_WIDTH ;
+        pcanvas->setCursor(mX + x, y);
         pcanvas->println(mvStrings[j]);
     }
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////      Input Dialog          /////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-// template <typename I>
-// void AnimInputDialogInt_<I>::update()
-// {
-//     if (MyJoystickBT.buttonJustPressed(0)) // cancel
-//     {
-//         mCancel = true;
-//         mlife = 0;
-//         return;
-//     }
-//     if (MyJoystickBT.buttonJustPressed(4)) // accept
-//     {
-//         mConfirm = true;
-//         mlife = 0;
-//         *mpReturnPointer = mNewValue;
-//         return;
-//     }
-//     if (MyJoystickBT.joyJustPressed(JOY_DOWN)) // decrement
-//     {
-//         mNewValue = ((mNewValue + mRange - mLowerBound - 1) % mRange) + mLowerBound;
-//         mLastTime = millis();
-//         return;
-//     }
-//     if (MyJoystickBT.joyHeld(JOY_DOWN))
-//     {
-//         if (mLastTime + 350 < millis())
-//             mNewValue = ((mNewValue + mRange - mLowerBound - 1) % mRange) + mLowerBound;
-//         return;
-//     }
-//     if (MyJoystickBT.joyJustPressed(JOY_UP)) // increment
-//     {
-//         mNewValue = (mNewValue - mLowerBound + 1) % mRange + mLowerBound;
-//         mLastTime = millis();
-//         return;
-//     }
-//     if (MyJoystickBT.joyHeld(JOY_UP))
-//     {
-//         if (mLastTime + 350 < millis())
-//             mNewValue = (mNewValue - mLowerBound + 1) % mRange + mLowerBound;
-//         return;
-//     }
-// }
-// template <typename I>
-// void AnimInputDialogInt_<I>::draw(JoyDisplay_ *pcanvas)
-// {
-
-//     pcanvas->fillRoundRect(mX, mY, mW, mH, 10, MENU_BOX_COLOR_BG);
-//     pcanvas->drawRoundRect(mX, mY, mW, mH, 10, MENU_BOX_COLOR_FG);
-
-//     pcanvas->setFont(MENU_FONT_FACE);
-//     pcanvas->setTextColor(0xF);
-//     pcanvas->setTextWrap(false);
-    
-//     pcanvas->setCursor(mX + 64 - (TEXT_WIDTH * mPrompt.length() / 2), mY + TEXT_HEIGHT);
-//     pcanvas->print(mPrompt);
-
-//     mPrompt2 = String(mNewValue);
-//     while (mPrompt2.length() < mZeroPad)
-//         mPrompt2 = "0" + mPrompt2;
-//     pcanvas->setCursor(mX + 64 - (TEXT_WIDTH * mPrompt2.length() / 2), mY + TEXT_HEIGHT * 2 + 2);
-//     pcanvas->print(mPrompt2);
-// }

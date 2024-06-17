@@ -14,15 +14,15 @@ AnimTextPrompt_ *Menu_::mLowerText = nullptr;
 MenuManager_::MenuManager_(Compositor_ *comp)
     : mMenuRoot(SubMenu_("Home", nullptr)), Applet_(comp)
     , Animation_(0, 64 - (TEXT_HEIGHT * 2), 128, TEXT_HEIGHT * 4, 2)
-    , mUpperTextSpriteStatic(0, 64 - TEXT_HEIGHT, 128, TEXT_HEIGHT * 3, 5)
+    , mUpperTextSpriteStatic(0, 64 - (2 * TEXT_HEIGHT), 128, TEXT_HEIGHT * 4, 5)
     , mLowerTextSpriteStatic(0, 0, 128, 128, 1)
     , mpCompositor(comp)
-
 {
     this->buildMenu();
     Menu_::mLastTime = 0;
     Menu_::mUpperText = &mUpperTextSpriteStatic;
     Menu_::mLowerText = &mLowerTextSpriteStatic;
+    mUpperTextSpriteStatic.setDrawBox(true);
 }
 
 void MenuManager_::initApp()

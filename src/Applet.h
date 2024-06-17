@@ -17,6 +17,7 @@ namespace AppletStatus
     enum TAppletStatus
     {
         ALIVE,
+        RETURN,
         ENDED
     };
 }
@@ -59,7 +60,6 @@ public:
             return foundButton;
         }
         sLastStateMap = statemap;
-
         // we finally have 2 consecutive, identical, non 0 states!
         if (!sStartedTheCount)
         {
@@ -91,11 +91,12 @@ public:
 
         mApplets[AppletNames::BLANK] = &mBlankApplet;
         // mCurrentApp = AppletNames::REMAP_BUTTONS;
-    };
+    }
     void inline addApp(AppletNames::TAppletNames name, Applet_ *app) { mApplets[name] = app; }
     void inline switchApp(AppletNames::TAppletNames app)
     {
         mApplets[mCurrentApp]->cleanupApp();
+        mLastApp = mCurrentApp;
         mCurrentApp = app;
         mApplets[mCurrentApp]->initApp();
     }
@@ -103,18 +104,27 @@ public:
     void inline start() { mApplets[mCurrentApp]->initApp(); }
     void inline update()
     {
+        AppletStatus::TAppletStatus returnCode;
         if (mCurrentApp == AppletNames::BLANK)
             return;
-
-        if (mApplets[mCurrentApp]->updateApp() == AppletStatus::ENDED)
+        returnCode = mApplets[mCurrentApp]->updateApp();
+        switch (returnCode)
+        {
+        case AppletStatus::ENDED:
             switchApp(mDefaultApp);
+            break;
+        case AppletStatus::RETURN:
+            switchApp(mLastApp);
+            break;
+        }
     }
 
-    Applet_ *mApplets[4];
-    AppletNames::TAppletNames mDefaultApp = AppletNames::SHOW_BUTTON_PRESSES;
-    AppletNames::TAppletNames mCurrentApp = AppletNames::SHOW_BUTTON_PRESSES;
-    Compositor_ *mpCompositor;
-    Applet_ mBlankApplet;
+Applet_ *mApplets[4];
+AppletNames::TAppletNames mDefaultApp = AppletNames::SHOW_BUTTON_PRESSES;
+AppletNames::TAppletNames mCurrentApp = AppletNames::SHOW_BUTTON_PRESSES;
+AppletNames::TAppletNames mLastApp = mDefaultApp;
+Compositor_ *mpCompositor;
+Applet_ mBlankApplet;
 };
 
 extern AppletSwitcher_ AppSwitcher;

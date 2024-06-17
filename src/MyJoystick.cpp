@@ -30,42 +30,27 @@ void DirectButtonCommand_::executeCommand(uint8_t b, uint8_t value, uint16_t *pS
 
 //---------------------------------------------------------------------------------------
 
+
 void TurboButtonCommand_::executeCommand(uint8_t b, uint8_t value, uint16_t *pStateMap, uint32_t *pValueMap, uint8_t *pJoyState)
 {
-
-  if (!digitalRead(ButtonPins[b]))
+  bool state = !digitalRead(ButtonPins[b]);
+  if (state)
   {
     *pStateMap |= MAKE_BUTTON_BITMASK_16(b);
-    mActive = true;
-    if (mLastTime + mDelay < millis())
+    if (MyJoystickBT.buttonJustPressed(b))
     {
-      mLastTime = millis();
-      Command_::addButtonToValues(b, value, mButtonsMask, pValueMap, pJoyState);
-    }
-  }
-  else
-    mActive = false;
-}
-
-//---------------------------------------------------------------------------------------
-
-void LatchedButtonCommand_::executeCommand(uint8_t b, uint8_t value, uint16_t *pStateMap, uint32_t *pValueMap, uint8_t *pJoyState)
-{
-  bool thisState = !digitalRead(ButtonPins[b]);
-
-  if (thisState == true)
-  {
-    *pStateMap |= MAKE_BUTTON_BITMASK_16(b);
-    if (mLastButtonState == false)
-    {
-      mLatchedOn = !mLatchedOn;
+      Serial.printf("just before latch if.. buttonJustPressed = true\n");
       mLastTime = 0;
-      Serial.printf("----------latch switch---------------  %d\n", mLatchedOn);
+      Serial.printf("IsLatchingButton = %d\n", mIsLatchingButton);
+      if (mIsLatchingButton)
+      {
+        mLatchedOn = !mLatchedOn;
+        Serial.printf("----------latch switch---------------  %d\n", mLatchedOn);
+      }
     }
   }
-  mLastButtonState = thisState;
 
-  if (mLatchedOn)
+  if ((mIsLatchingButton && mLatchedOn) || (!mIsLatchingButton && state))
   {
     mActive = true;
     if (mLastTime + mDelay < millis())
@@ -126,6 +111,10 @@ MyJoystickBT_::MyJoystickBT_()
   mTurboDirectCommand.mButtonsMask = 0b1111111110111111;
   mTurboDirectCommand.mDelay = 300;
 
+  // test stuff
+  mTurboDirectCommand.setIsLatchingButton(false);
+  mLatchedCommand.setIsLatchingButton(true);
+
   maAssignedMacros[1] = &this->mLatchedCommand;
   mLatchedCommand.mButtonsMask = 0b111111101111111;
   mLatchedCommand.mDelay = 300;
@@ -155,7 +144,7 @@ void MyJoystickBT_::pollJoystick()
   mPackedButtonValues = 0;
   Command_::resetGlobalMasks();
 
-  // assemble the button state mask
+  // assemble the button state & value masks
   for (int i = 0; i < sizeof(ButtonPins) / sizeof(ButtonPins[0]); i++)
     maAssignedMacros[i]->updateMasks();
   for (int i = 0; i < sizeof(ButtonPins) / sizeof(ButtonPins[0]); i++)
@@ -164,8 +153,8 @@ void MyJoystickBT_::pollJoystick()
   this->data.buttons = mPackedButtonValues;
 
   // MyJoystick.hat() takes joy position in degrees.  Internally,
-  // it maps the degrees to 1-8 value.  -1 is at rest.
-  if (digitalRead(BUTTON_UP_PIN) == LOW)
+  // it maps clockwise from North to 1-8 value.  0 is at rest.
+  if (digitalRead(BUTTON_UP_PIN) == LOW) // read NORTH
   { // read UP and combinations
     mJoyState = maJoyValues[JOY_UP];
     if (digitalRead(BUTTON_RIGHT_PIN) == LOW)
@@ -173,7 +162,7 @@ void MyJoystickBT_::pollJoystick()
     else if (digitalRead(BUTTON_LEFT_PIN) == LOW)
       mJoyState = maJoyValues[JOY_UP_LEFT];
   }
-  else if (digitalRead(BUTTON_DOWN_PIN) == LOW)
+  else if (digitalRead(BUTTON_DOWN_PIN) == LOW) //read SOUTH
   { // read DOWN and combinations
     mJoyState = maJoyValues[JOY_DOWN];
     if (digitalRead(BUTTON_RIGHT_PIN) == LOW)
@@ -206,7 +195,3 @@ void MyJoystickBT_::setHat(uint8_t angle)
 {
   this->data.hat = angle;
 }
-
-
-
-

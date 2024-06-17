@@ -103,6 +103,10 @@ void RemapButtonsApp_::initApp()
     this->mlife = -1;
     mpCompositor->registerAnimation(this, CanvasType::BOTTOM);
     mAppLastTime = millis();
+    mTextSpriteStatic.setLife(50);
+    mTextSpriteStatic.setDrawBox(true);
+    mpCompositor->registerAnimation(&mTextSpriteStatic, CanvasType::TOP);
+    mAppDrawPrompt = true;
     startFromScratch();
 }
 
@@ -113,11 +117,7 @@ void RemapButtonsApp_::startFromScratch()
     mConfirmedTheButton = false;
     mEditButton = -1;
     mNewButtonValue = 0;
-    mPromptString1 = "Hold a button.";
-    mPromptString2 = "Hold <- to exit";
-    mAppDrawPrompt = true;
 }
-
 
 AppletStatus::TAppletStatus RemapButtonsApp_::updateApp()
 {
@@ -135,12 +135,17 @@ AppletStatus::TAppletStatus RemapButtonsApp_::updateApp()
         if (mAppLastTime + mAppDelay > millis())
             return AppletStatus::ALIVE;
         else
-            return AppletStatus::ENDED;
+        {
+            mTextSpriteStatic.mlife = 0;
+            return AppletStatus::RETURN;
+        }
+
+    if (MyJoystickBT.buttonJustPressed(4))
+        mAppDrawPrompt = false;
 
     if (!mFoundTheButton)
     {
         mLocalButtonStateMap = MyJoystickBT.getPackedKeyPresses();
-        mAppDrawPrompt = !mLocalButtonStateMap;
 
         mEditButton = Applet_::findHeldButton(mLocalButtonStateMap, 1500);
         if (mEditButton == 255)
@@ -149,62 +154,21 @@ AppletStatus::TAppletStatus RemapButtonsApp_::updateApp()
         mFoundTheButton = true;
         mNewButtonValue = MyJoystickBT.getButtonValue(mEditButton);
         Serial.println("Found a held button!!  " + String(mEditButton));
-        mAnimInputDialog.mlife = -1;
-        mAnimInputDialog.setPrompt("New Value");
-        mAnimInputDialog.setReturnPointer(&mNewButtonValue);
-        mAnimInputDialog.setRange(1, 32);
+
+        mAnimInputDialog.start("New Value", &mNewButtonValue, 1, 32);
         mpCompositor->registerAnimation(&mAnimInputDialog, CanvasType::TOP);
+        mAppDrawPrompt = false;
         return AppletStatus::ALIVE;
     }
     else if (mFoundTheButton && !mSetTheValue)
     {
-        mAppDrawPrompt = false;
-        
-        if (mAnimInputDialog.finished()) {
+
+        if (mAnimInputDialog.finished())
+        {
             mSetTheValue = true;
             MyJoystickBT.setButtonValue(mEditButton, mNewButtonValue);
             startFromScratch();
         }
-
-        return AppletStatus::ALIVE;
-        
-        // mPromptString1 = "    New Value:   ";
-        // mPromptString2 = "         \x1E";
-        // mPromptString2 += (mNewButtonValue < 10) ? "0" : "";
-        // mPromptString2 += String(mNewButtonValue) + "\x1F      ";
-
-        // if (MyJoystickBT.buttonJustPressed(0)) // cancel
-        // {
-        //     startFromScratch();
-        //     return AppletStatus::ALIVE;
-        // }
-        // if (MyJoystickBT.buttonJustPressed(4)) // accept
-        // {
-        //     mSetTheValue = true;
-        //     MyJoystickBT.setButtonValue(mEditButton, mNewButtonValue);
-        //     return AppletStatus::ALIVE;
-        // }
-        // if (MyJoystickBT.joyJustPressed(JOY_DOWN)) // decrement
-        // {
-        //     mNewButtonValue = ((mNewButtonValue + 32- 2) % 32) + 1;
-        //     return AppletStatus::ALIVE;
-        // }
-        // if (MyJoystickBT.joyJustPressed(JOY_UP)) //increment
-        // {
-        //     mNewButtonValue = (mNewButtonValue % 32) + 1;
-        //     return AppletStatus::ALIVE;
-        // }
-    }
-    else if (mSetTheValue && !mConfirmedTheButton) 
-    {
-        // mPromptString1 = "   Button " + String(mEditButton) + ":";
-        // mPromptString2 = "         ";
-        // mPromptString2 += (mNewButtonValue < 10) ? "0" : "";
-        // mPromptString2 += String(mNewButtonValue);
-        // if (MyJoystickBT.buttonJustPressed(4)) {
-            mConfirmedTheButton = true;
-            startFromScratch();
-        // }
     }
 
     return AppletStatus::ALIVE;
@@ -223,18 +187,102 @@ void RemapButtonsApp_::update()
 void RemapButtonsApp_::draw(JoyDisplay_ *pcanvas)
 {
 
-    if (mAppDrawPrompt)
+    if (!mAppDrawPrompt)
     {
-        pcanvas->setFont(MENU_FONT_FACE);
-        // pcanvas->setTextSize(2);
-        pcanvas->setTextColor(0xF);
-        pcanvas->fillRect(0, 44, 128, 40, 0x6);
-
-        pcanvas->setCursor(0, 59);
-        pcanvas->print(mPromptString1);
-
-        pcanvas->setCursor(0, 72);
-        pcanvas->print(mPromptString2);
-        
+        mTextSpriteStatic.mlife = 0;
     }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////     Assign Macros       ///////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void AssignTurboApp_::initApp()
+{
+    mpappDrawKeysApp->initApp();
+
+    this->mlife = -1;
+    mpCompositor->registerAnimation(this, CanvasType::TOP);
+    mAppLastTime = millis();
+    mTextSpriteStatic.setLife(50);
+    mTextSpriteStatic.setDrawBox(true);
+    mpCompositor->registerAnimation(&mTextSpriteStatic, CanvasType::TOP);
+    startFromScratch();
+}
+
+void AssignTurboApp_::startFromScratch()
+{
+    mFoundTheButton = false;
+    mSetTheValue = false;
+    mEditButton = -1;
+}
+
+bool AssignTurboApp_::exitApp()
+{
+
+    if (MyJoystickBT.joyJustPressed(JOY_LEFT))
+    {
+        mAppLastTime = millis();
+        return false;
+    }
+    else if (MyJoystickBT.joyHeld(JOY_LEFT))
+    {
+        if (mAppLastTime + mAppDelay > millis())
+            return false;
+        else
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+AppletStatus::TAppletStatus AssignTurboApp_::updateApp()
+{
+    mpappDrawKeysApp->updateApp();
+
+    if (exitApp())
+        return AppletStatus::RETURN;
+
+    if (!mFoundTheButton)
+    {
+
+        mEditButton = Applet_::findHeldButton(MyJoystickBT.getPackedKeyPresses(), 1500);
+        if (mEditButton == 255)
+            return AppletStatus::ALIVE;
+
+        mFoundTheButton = true;
+        // mNewButtonValue = MyJoystickBT.getButtonValue(mEditButton);
+        Serial.println("Found a held button!!  " + String(mEditButton));
+
+        // mAnimInputDialog.start("New Value", &mNewButtonValue, 1, 32);
+        mpCompositor->registerAnimation(&mAnimInputDialog, CanvasType::TOP);
+        return AppletStatus::ALIVE;
+    }
+    else if (mFoundTheButton && !mSetTheValue)
+    {
+
+    //     if (mAnimInputDialog.finished())
+    //     {
+    //         mSetTheValue = true;
+    //         MyJoystickBT.setButtonValue(mEditButton, mNewButtonValue);
+    //         startFromScratch();
+    //     }
+    }
+
+    return AppletStatus::TAppletStatus::ALIVE;
+}
+
+void AssignTurboApp_::cleanupApp()
+{
+    mpappDrawKeysApp->cleanupApp();
+    mlife = 0;
+}
+
+void AssignTurboApp_::update()
+{
+}
+
+void AssignTurboApp_::draw(JoyDisplay_ *pcanvas)
+{
 }

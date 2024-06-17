@@ -77,7 +77,6 @@ void setup()
 void loop()
 {
     MyJoystickBT.pollJoystick();
-
     if (menuHotkeyPressed())
         AppSwitcher.switchApp(AppletNames::MENU);
     AppSwitcher.update();
