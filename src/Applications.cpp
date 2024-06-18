@@ -216,6 +216,7 @@ void AssignTurboApp_::initApp()
     
     mTextSpriteBanner.mlife = -1;
     mpCompositor->registerAnimation(&mTextSpriteBanner, CanvasType::BG);
+    mAppDelay = 300;
     startFromScratch();
 }
 
@@ -274,7 +275,6 @@ AppletStatus::TAppletStatus AssignTurboApp_::updateApp()
     }
     else if (!mSetButtonMode)
     {
-        Serial.printf("Setting mode,  ");
         if (!mAnimInputDialogOptions.finished())
             return AppletStatus::ALIVE;
 
@@ -296,7 +296,6 @@ AppletStatus::TAppletStatus AssignTurboApp_::updateApp()
     }
     else if (!mSetButtonDelay)
     {
-        Serial.printf("Setting Delay,  ");
         if (!mAnimInputDialogDelay.finished())
             return AppletStatus::ALIVE;
 
@@ -311,7 +310,6 @@ AppletStatus::TAppletStatus AssignTurboApp_::updateApp()
         if (!mAnimInputDialogOptions.finished())
             return AppletStatus::ALIVE;
 
-        Serial.printf("Setting Latching,  (bool)mSelection is %d", (bool) mSelection);
         MyJoystickBT.setTurboMacroLatching(mEditButton, (bool)mSelection);
         startFromScratch();
     }
@@ -334,3 +332,10 @@ void AssignTurboApp_::update()
 void AssignTurboApp_::draw(JoyDisplay_ *pcanvas)
 {
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////     Create Macro        ///////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+

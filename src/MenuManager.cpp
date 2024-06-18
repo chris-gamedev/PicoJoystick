@@ -1,17 +1,26 @@
 #include "MenuManager.h"
 
-extern bool boolDoFunThings ;
+extern bool boolDoFunThings;
 extern AppletSwitcher_ AppSwitcher;
+extern bool bluetoothOn;
 
 ////////////////////////////////////////////////////    CALLBACKS    ///////////////////////////////////////////////////////
 // placeholder callback pointers
 void myCallback() { Serial.println("inside myCallback"); }
 void buttonsRemap_callback() { AppSwitcher.switchApp(AppletNames::REMAP_BUTTONS); }
 void buttonsAssignTurbo_callback() { AppSwitcher.switchApp(AppletNames::ASSIGN_TURBO); }
-void themeJoypad_callback() {AppSwitcher.setDefaultApp(AppletNames::SHOW_BUTTON_PRESSES);}
-void themeBlank_callback() {AppSwitcher.setDefaultApp(AppletNames::BLANK);}
+void themeJoypad_callback() { AppSwitcher.setDefaultApp(AppletNames::SHOW_BUTTON_PRESSES); }
+void themeBlank_callback() { AppSwitcher.setDefaultApp(AppletNames::BLANK); }
 // temp to turn on/off the fun things.
 void themeDoFunThings_callback() { boolDoFunThings = !boolDoFunThings; }
+void bluetoothToggle_callback()
+{
+    bluetoothOn = !bluetoothOn;
+    if (bluetoothOn)
+        MyJoystickBT.begin();
+    else
+        MyJoystickBT.end();
+}
 ////////////////////////////////////////////////////    CALLBACKS    ///////////////////////////////////////////////////////
 
 uint32_t Menu_::mLastTime = 0;
@@ -19,11 +28,7 @@ AnimTextPrompt_ *Menu_::mUpperText = nullptr;
 AnimTextPrompt_ *Menu_::mLowerText = nullptr;
 
 MenuManager_::MenuManager_(Compositor_ *comp)
-    : mMenuRoot(SubMenu_("Home", nullptr)), Applet_(comp)
-    , Animation_(0, 64 - (TEXT_HEIGHT * 2), 128, TEXT_HEIGHT * 4, 2)
-    , mUpperTextSpriteStatic(0, 64 - (2 * TEXT_HEIGHT), 128, TEXT_HEIGHT * 4, 5)
-    , mLowerTextSpriteStatic(0, 0, 128, 128, 1)
-    , mpCompositor(comp)
+    : mMenuRoot(SubMenu_("Home", nullptr)), Applet_(comp), Animation_(0, 64 - (TEXT_HEIGHT * 2), 128, TEXT_HEIGHT * 4, 2), mUpperTextSpriteStatic(0, 64 - (2 * TEXT_HEIGHT), 128, TEXT_HEIGHT * 4, 5), mLowerTextSpriteStatic(0, 0, 128, 128, 1), mpCompositor(comp)
 {
     this->buildMenu();
     Menu_::mLastTime = 0;
@@ -39,6 +44,7 @@ void MenuManager_::initApp()
     mLowerTextSpriteStatic.mlife = -1;
     mpCompositor->registerAnimation(&mUpperTextSpriteStatic, CanvasType::TOP);
     mpCompositor->registerAnimation(this, CanvasType::BG);
+    MyJoystickBT.setJoyTransmit(false);
 }
 
 void MenuManager_::cleanupApp()
@@ -46,6 +52,7 @@ void MenuManager_::cleanupApp()
     mUpperTextSpriteStatic.mlife = 0;
     mLowerTextSpriteStatic.mlife = 0;
     this->mlife = 0;
+    MyJoystickBT.setJoyTransmit(true);
 }
 
 AppletStatus::TAppletStatus MenuManager_::updateApp()
@@ -64,7 +71,7 @@ void MenuManager_::draw(JoyDisplay_ *pcanvas)
 {
     // pcanvas->fillRoundRect(mX, mY, mW, mH, 10, MENU_BOX_COLOR_BG);
     pcanvas->drawRoundRect(mX, mY, mW, mH, 10, MENU_BOX_COLOR_FG);
-    pcanvas->drawRoundRect(mX +1, mY + 1, mW - 2, mH - 2, 10, MENU_BOX_COLOR_FG);
+    pcanvas->drawRoundRect(mX + 1, mY + 1, mW - 2, mH - 2, 10, MENU_BOX_COLOR_FG);
 }
 
 Menu_ *SubMenu_::action()
@@ -146,7 +153,7 @@ void MenuManager_::buildMenu()
         Menu_* pSystem = pRoot->mChildren[3];
         pSystem->addChild(new SubMenu_("Bluetooth", pSystem));
             Menu_* pBluetooth = pSystem->mChildren[0];
-            pBluetooth->addChild(new Leaf_("On / Off", myCallback,pBluetooth));
+            pBluetooth->addChild(new Leaf_("On / Off", bluetoothToggle_callback,pBluetooth));
             pBluetooth->addChild(new Leaf_("Pair", myCallback,pBluetooth));
             pBluetooth->addChild(new Leaf_("Unpair", myCallback,pBluetooth));
             pBluetooth->addChild(new Leaf_("Name", myCallback,pBluetooth));

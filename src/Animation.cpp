@@ -11,6 +11,18 @@ void Animation_::update()
     else if (mlife > 0)
         mlife--;
 
+    if (mframecount > 1)
+    {
+        if (mframeDelayCounter == 0)
+        {
+            mframe = (mframe + 1) % mframecount;
+            mbitmap = mframearray[mframe];
+            mframeDelayCounter = mframeDelay;
+        }
+        else
+            mframeDelayCounter--;
+    }
+
     if (mdelaycounter > 0)
     {
         mdelaycounter--;
@@ -23,17 +35,22 @@ void Animation_::update()
         mpbehavior->update();
     mX += mdeltaX;
     mY += mdeltaY;
-
-    if (mframecount > 1)
-    {
-        mframe = (mframe + 1) % mframecount;
-        mbitmap = mframearray[mframe];
-    }
 }
 
-void inline Animation_::setParameters(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t order, int16_t life, int16_t delay, int8_t dx, int8_t dy)
+void inline Animation_::setParameters(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t order, int16_t life, int16_t delay, int8_t dx, int8_t dy, int8_t frameDelay)
 {
-    mX = x, mY = y, mW = w, mH = h, mdrawOrder = order, mlife = life, mdelay = delay, mdelaycounter = mdelay, mdeltaX = dx, mdeltaY = dy;
+    mX = x;
+    mY = y;
+    mW = w;
+    mH = h;
+    mdrawOrder = order;
+    mlife = life;
+    mdelay = delay;
+    mdelaycounter = mdelay;
+    mdeltaX = dx;
+    mdeltaY = dy;
+    mframeDelay = frameDelay;
+    mframeDelayCounter = frameDelay;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -82,7 +99,8 @@ void AnimTextStatic1Line_::update() // override this shit for text
 
 void AnimTextStatic1Line_::draw(JoyDisplay_ *pcanvas)
 {
-    if (mDrawBox) {
+    if (mDrawBox)
+    {
         pcanvas->fillRoundRect(mX, mY - 1, mW, mH + 2, 10, MENU_BOX_COLOR_BG);
         pcanvas->drawRoundRect(mX, mY - 1, mW, mH + 2, 10, MENU_BOX_COLOR_FG);
     }
@@ -105,23 +123,24 @@ void AnimTextPrompt_::update() // override this shit for text
 void AnimTextPrompt_::draw(JoyDisplay_ *pcanvas)
 {
 
-    for (auto &it : mvStrings){
+    for (auto &it : mvStrings)
+    {
         Serial.print(it);
         Serial.printf(", Length: %d\n", it.length());
     }
 
-    if (mDrawBox) {
+    if (mDrawBox)
+    {
         pcanvas->fillRoundRect(mX, mY, mW, mH, 10, MENU_BOX_COLOR_BG);
-        pcanvas->drawRoundRect(mX +1 , mY +1 , mW -2 , mH -2 , 10, MENU_BOX_COLOR_FG);
-        pcanvas->drawRoundRect(mX +2 , mY +2 , mW -4 , mH -4 , 10, MENU_BOX_COLOR_FG);
+        pcanvas->drawRoundRect(mX + 1, mY + 1, mW - 2, mH - 2, 10, MENU_BOX_COLOR_FG);
+        pcanvas->drawRoundRect(mX + 2, mY + 2, mW - 4, mH - 4, 10, MENU_BOX_COLOR_FG);
     }
-    
-    
+
     pcanvas->setFont(MENU_FONT_FACE);
     pcanvas->setTextColor(mColor);
     int promptCount = mvStrings.size();
     int x = this->mX;
-    int y = this->mY +TEXT_HEIGHT + 4;
+    int y = this->mY + TEXT_HEIGHT + 4;
     int j = mposition;
     pcanvas->setTextColor(mColor);
     // only display 3 prompts at a time, and adjust screen center
@@ -142,7 +161,7 @@ void AnimTextPrompt_::draw(JoyDisplay_ *pcanvas)
 
 //------------------------------   Text Selection Prompt   ----------------------------------------//
 //------------------------------   Text Selection Prompt   ----------------------------------------//
-void AnimInputDialogList_::start(String title, uint8_t * selection, std::initializer_list<String> prompts)
+void AnimInputDialogList_::start(String title, uint8_t *selection, std::initializer_list<String> prompts)
 {
     mConfirm = false;
     mCancel = false;
@@ -151,14 +170,13 @@ void AnimInputDialogList_::start(String title, uint8_t * selection, std::initial
     mlife = -1;
     mTitle = title;
     mvStrings = prompts;
-
 }
 
 void AnimInputDialogList_::update()
 {
     uint8_t range = mvStrings.size();
 
-        if (MyJoystickBT.buttonJustPressed(0)) // cancel
+    if (MyJoystickBT.buttonJustPressed(0)) // cancel
     {
         mCancel = true;
         mlife = 0;
@@ -188,9 +206,8 @@ void AnimInputDialogList_::draw(JoyDisplay_ *pcanvas)
 {
 
     AnimTextPrompt_::draw(pcanvas);
-    
+
     int x = 64 - (((float)mTitle.length() / 2) * TEXT_WIDTH);
     pcanvas->setCursor(mX + x, mY + TEXT_HEIGHT + 4);
-    Serial.printf("Title is %s", mTitle);
     pcanvas->print(mTitle);
 }

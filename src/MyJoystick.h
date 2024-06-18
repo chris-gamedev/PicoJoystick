@@ -40,7 +40,7 @@
 #define BITMASK_BUTTON_10    (1UL << 10)   
 #define BITMASK_BUTTON_11    (1UL << 11)   
 
-#define BITMASK_MENU_HOTKEY (BITMASK_BUTTON_3 | BITMASK_BUTTON_6 | BITMASK_BUTTON_7)
+#define BITMASK_MENU_HOTKEY (BITMASK_BUTTON_11)
 
 //single button check macro
 #define BUTTON_IS_PRESSED(n, packed) (1U << n & packed)
@@ -198,6 +198,8 @@ public:
   bool inline joyHeld(uint8_t jstate) { return mJoyState == jstate && mLastJoyState == jstate; }
   bool inline joyJustReleased(uint8_t jstate) { return mJoyState != jstate && mLastJoyState == jstate; }
   bool inline joyisFree(uint8_t jstate) { return mJoyState != jstate && mLastJoyState != jstate; }
+  // transmit stuff
+  void inline setJoyTransmit(bool transmit) { mJoyTransmit = transmit;}
   void inline setPauseButton(uint8_t bValue) { mPauseButtonValue = bValue; }
   void inline sendPauseButtonPress()
   {

@@ -281,8 +281,8 @@ const unsigned char scaredy2white [] PROGMEM = {
         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
 };
 //----------------------------  Sprite Array  -------------------------------
-const unsigned char *scaredy_spritesheet[] = {scaredy1blue, scaredy2blue, scaredy1white, scaredy2white};
-const uint8_t scaredy_spritesheet_size = 4;
+const unsigned char *scaredy_spritesheet[] = {scaredy1blue, scaredy2blue, scaredy1blue, scaredy2blue, scaredy1white, scaredy2white, scaredy1white, scaredy2white};
+const uint8_t scaredy_spritesheet_size = 8;
 ///////////////////////////////////////////////////////////////////////////////
 
 

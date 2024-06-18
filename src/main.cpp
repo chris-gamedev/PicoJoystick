@@ -18,6 +18,7 @@ AppletSwitcher_ AppSwitcher(&Compositor);
 
 // temp. add this state to the joystick
 bool joyON = true;
+bool bluetoothOn = true;
 // temp. for menu entry.
 bool boolDoFunThings = true;
 
@@ -29,12 +30,12 @@ bool menuHotkeyPressed();
 
 // temp testing fun things
 
-AnimSprite8_ aSprite8_1(0, 20, 16, 16, 5, 200, 1, 3, 0);
-AnimSprite8_ aSprite8_2(0, 45, 16, 16, 4, 200, 4, 2, 0);
-AnimSprite8_ aSprite8_blinky(0, 55, 16, 16, 5, 80, 4, 3, 0);
-AnimSprite8_ aSprite8_pinky(0, 60, 16, 16, 4, 200, 4, 3, 0);
-AnimSprite8_ aScardey8_1(0, 115, 16, 16, 5, 125, 4, 1, 0);
-AnimSprite8_ aScardey8_2(0, 60, 16, 16, 4, 150, 4, 1, 0);
+AnimSprite8_ aSprite8_1(0, 20, 16, 16, 5, 200, 1, 3, 0, 1);
+AnimSprite8_ aSprite8_2(0, 45, 16, 16, 4, 200, 4, 2, 0, 1);
+AnimSprite8_ aSprite8_blinky(0, 55, 16, 16, 5, 80, 4, 3, 0, 2);
+AnimSprite8_ aSprite8_pinky(0, 60, 16, 16, 4, 200, 4, 3, 0, 2);
+AnimSprite8_ aScardey8_1(0, 115, 16, 16, 5, 125, 4, 1, 0, 2);
+AnimSprite8_ aScardey8_2(0, 60, 16, 16, 4, 150, 4, 1, 0, 2);
 
 Animation_ *funNotUsed[6] = {&aScardey8_1, &aScardey8_2, &aSprite8_1, &aSprite8_2, &aSprite8_blinky, &aSprite8_pinky};
 Animation_ *funInUse[6] = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
@@ -75,6 +76,11 @@ void setup()
     aSprite8_pinky.setBitmapArray(pinky_spritesheet, pinky_spritesheetR_size);
     aScardey8_1.setBitmapArray(scaredy_spritesheet, scaredy_spritesheet_size);
     aScardey8_2.setBitmapArray(scaredy_spritesheet, scaredy_spritesheet_size);
+
+    JoyDisplay.setCursor(50, 50);
+    JoyDisplay.print("test");
+    JoyDisplay.display();
+    delay(3000);
 }
 
 void loop()
@@ -176,10 +182,11 @@ void doFunThings()
         useMe->mX = -20;
         useMe->mY = y;
         useMe->mdrawOrder = deltax;
-        useMe->mlife = 800 * (1 / deltax) + random(200) + 100;
+        // useMe->mlife = 800 * (1 / deltax) + random(200) + 100;
         useMe->mdelay = -1;
         useMe->mdelaycounter = useMe->mdelay;
         useMe->mdeltaX = deltax;
+        useMe->mlife = 168 / deltax + random(50);
         CanvasType::TCanvasType layer = (random(6) + 1 > 4) ? CanvasType::FG : CanvasType::BG;
 
         Compositor.registerAnimation(useMe, layer);

@@ -39,9 +39,7 @@ void TurboButtonCommand_::executeCommand(uint8_t b, uint8_t value, uint16_t *pSt
     *pStateMap |= MAKE_BUTTON_BITMASK_16(b);
     if (MyJoystickBT.buttonJustPressed(b))
     {
-      Serial.printf("just before latch if.. buttonJustPressed = true\n");
       mLastTime = 0;
-      Serial.printf("IsLatchingButton = %d\n", mIsLatchingButton);
       if (mIsLatchingButton)
       {
         mLatchedOn = !mLatchedOn;

@@ -31,7 +31,7 @@ public:
         */
         Animation_(int16_t x, int16_t y, uint8_t w, uint8_t h
                 , uint8_t order, int16_t life = -1, int16_t delay = -1
-                , int8_t dx = 0, int8_t dy = 0) 
+                , int8_t dx = 0, int8_t dy = 0, int8_t framedelay = -1) 
             : mX(x)
             , mY(y)
             , mW(w)
@@ -42,10 +42,14 @@ public:
             , mdelaycounter(mdelay)
             , mdeltaX(dx)
             , mdeltaY(dy)
+            , mframeDelay(framedelay)
+            , mframeDelayCounter(framedelay)
             {}
     // clang-format on
     virtual void update();
-    void setParameters(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t order, int16_t life, int16_t delay, int8_t dx, int8_t dy);
+    void setParameters(int16_t x, int16_t y, uint8_t w, uint8_t h
+                , uint8_t order = 1, int16_t life = -1, int16_t delay = -1
+                , int8_t dx = 0, int8_t dy = 0, int8_t frameDelay = -1);
     virtual void draw(JoyDisplay_ *) = 0;
     void inline setBitmap(const unsigned char bmp[]) { mbitmap = bmp; }
     void inline setBitmap(unsigned char *bmp) { mbitmap = bmp; }
@@ -60,6 +64,8 @@ public:
     const unsigned char *mbitmap = nullptr;
     const unsigned char **mframearray;
     uint8_t mframecount = 1;
+    uint8_t mframeDelay = 0;
+    uint8_t mframeDelayCounter = 0;
     int16_t mlife = -1;
     int16_t mdelay = -1;
     int16_t mdelaycounter = -1;
@@ -120,11 +126,8 @@ class AnimSprite8_ : public Animation_
      */
 public:
     // (x, y, *bmp, w, h, order, life, delay, deltax, deltay)
-    AnimSprite8_(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t order, int16_t life, int16_t delay, int8_t dx, int8_t dy)
-        : Animation_(x, y, w, h, order, life, delay, dx, dy) {}
-    // (x, y, *bmp, w, h, order, life, delay)
-    AnimSprite8_(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t order, int16_t life, int16_t delay)
-        : Animation_(x, y, w, h, order, life, delay, 0, 0) {}
+    AnimSprite8_(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t order = 1, int16_t life = -1, int16_t delay = -1, int8_t dx = 0, int8_t dy = 0, int8_t framedelay = -1)
+        : Animation_(x, y, w, h, order, life, delay, dx, dy, framedelay) {}
 
     void inline setBitmap(const unsigned char *bmp) { mbitmap = bmp; }
     // void update();

@@ -9,7 +9,9 @@ namespace AppletNames
         MENU,
         REMAP_BUTTONS,
         ASSIGN_TURBO,
-        BLANK // always last.  used as size of array.
+        CREATE_MACRO,
+        BLANK, 
+        MAX_VALUE
     };
 }
 
@@ -91,7 +93,7 @@ public:
         // WHEN ADDING:  REMEMBER TO EXPAND THE ARRAY IN THE DAMN HEADER!!!
 
         mApplets[AppletNames::BLANK] = &mBlankApplet;
-        mCurrentApp = AppletNames::ASSIGN_TURBO;
+        mCurrentApp = AppletNames::BLANK;
     }
     void inline addApp(AppletNames::TAppletNames name, Applet_ *app) { mApplets[name] = app; }
     void inline setDefaultApp(AppletNames::TAppletNames app) {mDefaultApp = app;}
@@ -121,7 +123,7 @@ public:
         }
     }
 
-Applet_ *mApplets[5];
+Applet_ *mApplets[AppletNames::MAX_VALUE];
 AppletNames::TAppletNames mDefaultApp = AppletNames::SHOW_BUTTON_PRESSES;
 AppletNames::TAppletNames mCurrentApp = AppletNames::ASSIGN_TURBO;
 AppletNames::TAppletNames mLastApp = mDefaultApp;

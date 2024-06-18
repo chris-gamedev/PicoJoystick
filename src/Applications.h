@@ -76,6 +76,7 @@ public:
 ////////////////////////////////////////////     AssignTurboApp      ///////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+
 class AssignTurboApp_ : public Applet_, public Animation_
 {
 
@@ -124,6 +125,38 @@ public:
     uint8_t mEditButton;
     uint8_t mSelection;
 
+};
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////      Create Macro       ///////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+class CreateMacroApp_ : public Applet_, public Animation_ {
+    CreateMacroApp_(Compositor_ *comp, Applet_ *drawkeyapp)
+        : Applet_(comp)
+        , Animation_(0, 44, 128, 40, 6, -1, -1, 0, 0)
+        , mpappDrawKeysApp(drawkeyapp)
+
+    {
+        
+    }
+
+    // for applet
+    void initApp() {}
+    void startFromScratch() {}
+    AppletStatus::TAppletStatus updateApp() { return AppletStatus::ALIVE;}
+    bool exitApp() { return false;}
+    void cleanupApp() {}
+    // for Animation {}_
+    void update() {}
+    void draw(JoyDisplay_ *pcanvas) {}
+
+    Applet_ *mpappDrawKeysApp;
+    
+    uint32_t mAppLastTime;
+    uint16_t mAppDelay;
 };
 
 #endif
