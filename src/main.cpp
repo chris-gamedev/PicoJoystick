@@ -76,11 +76,6 @@ void setup()
     aSprite8_pinky.setBitmapArray(pinky_spritesheet, pinky_spritesheetR_size);
     aScardey8_1.setBitmapArray(scaredy_spritesheet, scaredy_spritesheet_size);
     aScardey8_2.setBitmapArray(scaredy_spritesheet, scaredy_spritesheet_size);
-
-    JoyDisplay.setCursor(50, 50);
-    JoyDisplay.print("test");
-    JoyDisplay.display();
-    delay(3000);
 }
 
 void loop()
@@ -94,6 +89,7 @@ void loop()
     Compositor.update();
     Compositor.draw();
 
+#ifdef DEADBEEF
     if (MyJoystickBT.buttonJustPressed(0))
         Serial.println("------------- discrete press-0--------------");
     if (MyJoystickBT.buttonJustPressed(1))
@@ -115,6 +111,7 @@ void loop()
         Serial.println("------------- discrete press-JOY-RIGHT--------------");
     if (MyJoystickBT.joyJustPressed(JOY_UP_RIGHT))
         Serial.println("------------- discrete press-JOY-UP-RIGHT--------------");
+#endif        
 }
 
 // todo: rewrite efficiently

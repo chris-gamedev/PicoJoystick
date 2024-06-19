@@ -67,7 +67,7 @@ AppletStatus::TAppletStatus MenuManager_::updateApp()
     return AppletStatus::ALIVE;
 }
 
-void MenuManager_::draw(JoyDisplay_ *pcanvas)
+void MenuManager_::drawAnim(JoyDisplay_ *pcanvas)
 {
     // pcanvas->fillRoundRect(mX, mY, mW, mH, 10, MENU_BOX_COLOR_BG);
     pcanvas->drawRoundRect(mX, mY, mW, mH, 10, MENU_BOX_COLOR_FG);

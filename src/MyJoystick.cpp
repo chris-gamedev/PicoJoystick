@@ -43,7 +43,9 @@ void TurboButtonCommand_::executeCommand(uint8_t b, uint8_t value, uint16_t *pSt
       if (mIsLatchingButton)
       {
         mLatchedOn = !mLatchedOn;
+#ifdef DEADBEEF        
         Serial.printf("----------latch switch---------------  %d\n", mLatchedOn);
+#endif        
       }
     }
   }
@@ -105,17 +107,6 @@ MyJoystickBT_::MyJoystickBT_()
   pinMode(BUTTON_RIGHT_PIN, INPUT_PULLUP);
   pinMode(BUTTON_LEFT_PIN, INPUT_PULLUP);
 
-  maAssignedMacros[0] = &this->mTurboDirectCommand;
-  mTurboDirectCommand.mButtonsMask = 0b1111111110111111;
-  mTurboDirectCommand.mDelay = 300;
-
-  // test stuff
-  mTurboDirectCommand.setIsLatchingButton(false);
-  mLatchedCommand.setIsLatchingButton(true);
-
-  maAssignedMacros[1] = &this->mLatchedCommand;
-  mLatchedCommand.mButtonsMask = 0b111111101111111;
-  mLatchedCommand.mDelay = 300;
 }
 
 /***************************************************************/

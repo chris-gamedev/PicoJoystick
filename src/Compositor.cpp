@@ -35,6 +35,38 @@ void Compositor_::killAnimation(Animation_ *pAnim)
 {
 }
 
+void Compositor_::killAnimation(Animation_ *pAnim, CanvasType::TCanvasType canvas)
+{
+    std::vector<Animation_ *> *pvpCanvas;
+    switch (canvas)
+    {
+    case CanvasType::FG:
+        pvpCanvas = &mvFG;
+        break;
+    case CanvasType::BG:
+        pvpCanvas = &mvBG;
+        break;
+    case CanvasType::TOP:
+        pvpCanvas = &mvTop;
+        break;
+    case CanvasType::BOTTOM:
+        pvpCanvas = &mvBottom;
+        break;
+    }
+
+    std::vector<Animation_ *>::iterator it = pvpCanvas->begin();
+    while ( it != pvpCanvas->end())
+    {
+        if (*it == pAnim)
+        {
+            pvpCanvas->erase(it);
+            break;
+        }
+        else
+            it++;
+    }
+}
+
 void Compositor_::purgeAll()
 {
     mvFG.clear();
@@ -59,7 +91,7 @@ void Compositor_::updateVectors(std::vector<Animation_ *> *v)
 {
     for (std::vector<Animation_ *>::iterator &&it = v->begin(); it != v->end();)
     {
-        (*it)->update();
+        (*it)->updateAnim();
         if ((*it)->mlife == 0)
             it = v->erase(it);
         else
@@ -73,16 +105,13 @@ void Compositor_::draw()
     mpDisplay->clearDisplay();
 
     for (auto &it : mvBG)
-        it->draw(mpDisplay);
+        it->drawAnim(mpDisplay);
     for (auto &it : mvTop)
-        it->draw(mpDisplay);
+        it->drawAnim(mpDisplay);
     for (auto &it : mvBottom)
-        it->draw(mpDisplay);
+        it->drawAnim(mpDisplay);
     for (auto &it : mvFG)
-        it->draw(mpDisplay);
+        it->drawAnim(mpDisplay);
 
     mpDisplay->display();
 }
-
-
-

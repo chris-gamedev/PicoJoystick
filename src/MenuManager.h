@@ -81,7 +81,7 @@ public:
     AppletStatus::TAppletStatus updateApp();
     void cleanupApp();
     
-    void draw(JoyDisplay_ *pcanvas); // TODO: Possibly inherit from animation
+    void drawAnim(JoyDisplay_ *pcanvas); // TODO: Possibly inherit from animation
     SubMenu_ mMenuRoot;
 
 private:

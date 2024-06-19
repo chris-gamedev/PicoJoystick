@@ -19,11 +19,11 @@ void DrawKeyPressesApp_::cleanupApp()
     this->mlife = 0;
 }
 // for animation class
-void DrawKeyPressesApp_::update()
+void DrawKeyPressesApp_::updateAnim()
 {
 }
 
-void DrawKeyPressesApp_::draw(JoyDisplay_ *pcanvas)
+void DrawKeyPressesApp_::drawAnim(JoyDisplay_ *pcanvas)
 {
     // uint16_t packedKeyPresses, uint8_t buttonValues[], uint8_t joyState
     pcanvas->setTextSize(1);
@@ -33,21 +33,24 @@ void DrawKeyPressesApp_::draw(JoyDisplay_ *pcanvas)
     uint8_t joyState = MyJoystickBT.getJoystickState();
 
     // draw background
-    pcanvas->drawBitmap(0, 0, bitmap_SmallButtonLayout, 128, 128, 0xf);
+    // pcanvas->drawBitmap(0, 0, bitmap_SmallButtonLayout, 128, 128, 0xf);
     pcanvas->setFont();
     pcanvas->setTextColor(0xF);
-    uint8_t pressColor = 0x0;
+    uint8_t pressColor = 0x3;
     for (int i = 0; i < map_bitmap_SmallButtonLayout_count - 1; i++)
     {
+        // draw buttons
+        pcanvas->drawBitmap4Bit(map_bitmap_SmallButtonLayout[i][0] - 9, map_bitmap_SmallButtonLayout[i][1] - 9, button1, 20, 20);
         // draw disabled buttons:
         if (!(Command_::sEnabledButtonsMask & MAKE_BUTTON_BITMASK_16(i)))
-            pcanvas->fillCircle(map_bitmap_SmallButtonLayout[i][0], map_bitmap_SmallButtonLayout[i][1], 8, 0x8);
+            pcanvas->fillCircle(map_bitmap_SmallButtonLayout[i][0], map_bitmap_SmallButtonLayout[i][1], 7, 0x8);
         if ((1 << (i)) & packedKeyPresses)
         {
             // Add color here: Black when pressed, gray when pressed but disabled by a macro.
             // probably implement by checking the enabled button mask bitfield?
-            pcanvas->fillCircle(map_bitmap_SmallButtonLayout[i][0], map_bitmap_SmallButtonLayout[i][1], 8, 0x0);
+            pcanvas->fillCircle(map_bitmap_SmallButtonLayout[i][0], map_bitmap_SmallButtonLayout[i][1], 7, 0x0);
             pcanvas->setCursor(map_bitmap_SmallButtonLayout[i][0] - 3 - (buttonValues[i] > 9) * 3, map_bitmap_SmallButtonLayout[i][1] - 4);
+            pcanvas->setTextColor(0xB);
             pcanvas->print(buttonValues[i]);
         }
     }
@@ -59,15 +62,15 @@ void DrawKeyPressesApp_::draw(JoyDisplay_ *pcanvas)
     // Draw N / S on Joystick
     switch (joyState)
     {
-    case 8:
-    case 1:
-    case 2:
+    case JOY_UP_LEFT:
+    case JOY_UP:
+    case JOY_UP_RIGHT:
         // NORTH
         pcanvas->drawBitmap(orgX - 10, orgY - 21, bitmap_arrowUp, 21, 21, 0xF);
         break;
-    case 4:
-    case 5:
-    case 6:
+    case JOY_DOWN_RIGHT:
+    case JOY_DOWN:
+    case JOY_DOWN_LEFT:
         // SOUTH
         pcanvas->drawBitmap(orgX - 10, orgY, bitmap_arrowDown, 21, 21, 0xF);
         break;
@@ -75,16 +78,18 @@ void DrawKeyPressesApp_::draw(JoyDisplay_ *pcanvas)
     // draw W / E on Joystick
     switch (joyState)
     {
-    case 2:
-    case 3:
-    case 4:
+    case JOY_UP_RIGHT:
+    case JOY_RIGHT:
+    case JOY_DOWN_RIGHT:
         // EAST
         pcanvas->drawBitmap(orgX, orgY - 10, bitmap_arrowRight, 21, 21, 0xF);
         break;
-    case 6:
-    case 7:
-    case 8:
+    case JOY_DOWN_LEFT:
+    case JOY_LEFT:
+    case JOY_UP_LEFT:
         // WEST
+        if (joyState == 8)
+            Serial.println("Joy is 8");
         pcanvas->drawBitmap(orgX - 21, orgY - 10, bitmap_arrowLeft, 21, 21, 0xF);
         break;
     }
@@ -103,11 +108,11 @@ void RemapButtonsApp_::initApp()
     this->mlife = -1;
     mpCompositor->registerAnimation(this, CanvasType::BOTTOM);
     mAppLastTime = millis();
-    
+
     mTextSpriteStatic.setLife(50);
     mTextSpriteStatic.setDrawBox(true);
     mpCompositor->registerAnimation(&mTextSpriteStatic, CanvasType::TOP);
-    
+
     mTextSpriteBanner.mlife = -1;
     mpCompositor->registerAnimation(&mTextSpriteBanner, CanvasType::BG);
     mAppDrawPrompt = true;
@@ -160,19 +165,19 @@ AppletStatus::TAppletStatus RemapButtonsApp_::updateApp()
         Serial.println("Found a held button!!  " + String(mEditButton));
 
         mAnimInputDialog.start("New Value", &mNewButtonValue, 1, 32);
-        mpCompositor->registerAnimation(&mAnimInputDialog, CanvasType::TOP);
+        // mpCompositor->registerAnimation(&mAnimInputDialog, CanvasType::TOP);
         mAppDrawPrompt = false;
         return AppletStatus::ALIVE;
     }
     else if (mFoundTheButton && !mSetTheValue)
     {
 
-        if (mAnimInputDialog.finished())
-        {
-            mSetTheValue = true;
-            MyJoystickBT.setButtonValue(mEditButton, mNewButtonValue);
-            startFromScratch();
-        }
+        if (mAnimInputDialog.updateDialog())
+            return AppletStatus::ALIVE;
+
+        mSetTheValue = true;
+        MyJoystickBT.setButtonValue(mEditButton, mNewButtonValue);
+        startFromScratch();
     }
 
     return AppletStatus::ALIVE;
@@ -185,11 +190,11 @@ void RemapButtonsApp_::cleanupApp()
     mTextSpriteBanner.mlife = 0;
 }
 
-void RemapButtonsApp_::update()
+void RemapButtonsApp_::updateAnim()
 {
 }
 
-void RemapButtonsApp_::draw(JoyDisplay_ *pcanvas)
+void RemapButtonsApp_::drawAnim(JoyDisplay_ *pcanvas)
 {
 
     if (!mAppDrawPrompt)
@@ -209,14 +214,13 @@ void AssignTurboApp_::initApp()
     this->mlife = -1;
     mpCompositor->registerAnimation(this, CanvasType::TOP);
     mAppLastTime = millis();
-    
+
     mTextSpriteStatic.setLife(50);
     mTextSpriteStatic.setDrawBox(true);
     mpCompositor->registerAnimation(&mTextSpriteStatic, CanvasType::TOP);
-    
+
     mTextSpriteBanner.mlife = -1;
     mpCompositor->registerAnimation(&mTextSpriteBanner, CanvasType::BG);
-    mAppDelay = 300;
     startFromScratch();
 }
 
@@ -270,14 +274,15 @@ AppletStatus::TAppletStatus AssignTurboApp_::updateApp()
         mFoundTheButton = true;
         Serial.println("Found a held button!!  " + String(mEditButton));
         mAnimInputDialogOptions.start("Turbo:", &mSelection, {"On", "Off"});
-        mpCompositor->registerAnimation(&mAnimInputDialogOptions, CanvasType::TOP);
+        // mpCompositor->registerAnimation(&mAnimInputDialogOptions, CanvasType::TOP);
         return AppletStatus::ALIVE;
     }
     else if (!mSetButtonMode)
     {
-        if (!mAnimInputDialogOptions.finished())
+        if (mAnimInputDialogOptions.updateDialog())
             return AppletStatus::ALIVE;
 
+        Serial.printf("mSelection is %d", mSelection);
         mSetButtonMode = true;
         switch (mSelection)
         {
@@ -289,25 +294,27 @@ AppletStatus::TAppletStatus AssignTurboApp_::updateApp()
             MyJoystickBT.setToTurboMacro(mEditButton);
             mTurboDelayValue = MyJoystickBT.getTurboMacroDelay(mEditButton);
             mAnimInputDialogDelay.start("Delay (m/s)", &mTurboDelayValue, 10, 4000);
-            mpCompositor->registerAnimation(&mAnimInputDialogDelay, CanvasType::TOP);
+            // mpCompositor->registerAnimation(&mAnimInputDialogDelay, CanvasType::TOP);
             break;
         }
         return AppletStatus::ALIVE;
     }
     else if (!mSetButtonDelay)
     {
-        if (!mAnimInputDialogDelay.finished())
+        Serial.printf("buttonJustPressed: %d\n", MyJoystickBT.buttonJustPressed(4));
+        if (mAnimInputDialogDelay.updateDialog())
+        {
             return AppletStatus::ALIVE;
-
+        }
         mSetButtonDelay = true;
         MyJoystickBT.setTurboMacroDelay(mEditButton, mTurboDelayValue);
         mAnimInputDialogOptions.start("Latching", &mSelection, {"Off", "On"});
-        mpCompositor->registerAnimation(&mAnimInputDialogOptions, CanvasType::TOP);
+        // mpCompositor->registerAnimation(&mAnimInputDialogOptions, CanvasType::TOP);
         return AppletStatus::ALIVE;
     }
     else if (!mSetButtonLatching)
     {
-        if (!mAnimInputDialogOptions.finished())
+        if (mAnimInputDialogOptions.updateDialog())
             return AppletStatus::ALIVE;
 
         MyJoystickBT.setTurboMacroLatching(mEditButton, (bool)mSelection);
@@ -316,8 +323,6 @@ AppletStatus::TAppletStatus AssignTurboApp_::updateApp()
     return AppletStatus::ALIVE;
 }
 
-
-
 void AssignTurboApp_::cleanupApp()
 {
     mpappDrawKeysApp->cleanupApp();
@@ -325,17 +330,14 @@ void AssignTurboApp_::cleanupApp()
     mTextSpriteBanner.mlife = 0;
 }
 
-void AssignTurboApp_::update()
+void AssignTurboApp_::updateAnim()
 {
 }
 
-void AssignTurboApp_::draw(JoyDisplay_ *pcanvas)
+void AssignTurboApp_::drawAnim(JoyDisplay_ *pcanvas)
 {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////     Create Macro        ///////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-

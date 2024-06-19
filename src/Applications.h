@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <array>
 #include "Compositor.h"
+#include "Dialog.h"
 #include "MyJoystick.h"
 #include "Applet.h"
 #include "Animation.h"
@@ -19,8 +20,8 @@ public:
     AppletStatus::TAppletStatus updateApp();
     void cleanupApp();
     // for Animation_
-    void update();
-    void draw(JoyDisplay_ *pcanvas);
+    void updateAnim();
+    void drawAnim(JoyDisplay_ *pcanvas);
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -34,7 +35,7 @@ public:
     RemapButtonsApp_(Compositor_ *comp, Applet_ *drawkeyapp)
         : Applet_(comp), Animation_(0, 44, 128, 40, 6, -1, -1, 0, 0)
         , mTextSpriteStatic(0, 64 - (2 * TEXT_HEIGHT), 128, TEXT_HEIGHT * 4, 5)
-        , mAnimInputDialog("New Value", &mNewButtonValue, 1, 32, 0, 64 - (2 * TEXT_HEIGHT), 128, TEXT_HEIGHT * 4, 6)
+        , mAnimInputDialog(comp, &mNewButtonValue, 1, 32, "New Value", 0, 64 - (2 * TEXT_HEIGHT), 128, TEXT_HEIGHT * 4, 6)
         , mTextSpriteBanner(0, 128 - TEXT_HEIGHT - 1, 128, TEXT_HEIGHT, 1)
         , mpappDrawKeysApp(drawkeyapp)
     {
@@ -49,8 +50,8 @@ public:
     AppletStatus::TAppletStatus updateApp();
     void cleanupApp();
     // for Animation_
-    void update();
-    void draw(JoyDisplay_ *pcanvas);
+    void updateAnim();
+    void drawAnim(JoyDisplay_ *pcanvas);
 
     Applet_ *mpappDrawKeysApp;
     AnimInputDialogInt_<uint8_t> mAnimInputDialog;
@@ -62,7 +63,7 @@ public:
     uint32_t mLastLocalButtonStateMap;
 
     uint32_t mAppLastTime;
-    uint16_t mAppDelay = 1500;
+    uint16_t mAppDelay = 300;
     uint8_t mEditButton = -1;
     uint8_t mNewButtonValue;
     bool mAppDrawPrompt = true;
@@ -86,14 +87,14 @@ public:
         , Animation_(0, 44, 128, 40, 6, -1, -1, 0, 0)
         , mTextSpriteStatic(0, 64 - (2 * TEXT_HEIGHT), 128, TEXT_HEIGHT * 4, 5)
         , mTextSpriteBanner(0, 128 - TEXT_HEIGHT - 1, 128, TEXT_HEIGHT, 1)
-        , mAnimInputDialogDelay ("New Value", &mTurboDelayValue, 1, 32, 0, 64 - (2 * TEXT_HEIGHT), 128, TEXT_HEIGHT * 4, 6)
-        , mAnimInputDialogOptions("Title", &mSelection)
+        //(Compositor_ *comp, I *inputVar, I lower, I upper, String prompt = "", int16_t x = 0, int16_t y = 64 - (TEXT_HEIGHT * 2) - 5, uint8_t w = 128, uint8_t h = TEXT_HEIGHT * 4 + 10, uint8_t order = 1, int16_t life = -1)
+        , mAnimInputDialogDelay (comp, &mTurboDelayValue, 10, 4000, "New Value", 0, 64 - (2 * TEXT_HEIGHT), 128, TEXT_HEIGHT * 4, 6)
+        , mAnimInputDialogOptions(comp, &mSelection, "Title")
         , mpappDrawKeysApp(drawkeyapp)
 
     {
         std::vector<String> prompts = {"Hold Button", "<- to exit"};
         mTextSpriteStatic.setText(prompts);
-        mAnimInputDialogOptions.setDrawBox(true);
         mTextSpriteBanner.setText("Edit Turbo");
         mTextSpriteBanner.setDrawBox(true);
         
@@ -106,8 +107,8 @@ public:
     bool exitApp();
     void cleanupApp();
     // for Animation_
-    void update();
-    void draw(JoyDisplay_ *pcanvas);
+    void updateAnim();
+    void drawAnim(JoyDisplay_ *pcanvas);
 
     Applet_ *mpappDrawKeysApp;
     AnimInputDialogInt_<uint16_t> mAnimInputDialogDelay;
@@ -117,7 +118,7 @@ public:
     
     uint16_t mTurboDelayValue;
     uint32_t mAppLastTime;
-    uint16_t mAppDelay;
+    uint16_t mAppDelay = 300;
     bool mFoundTheButton = false;
     bool mSetButtonMode = false;
     bool mSetButtonDelay = false;
@@ -150,8 +151,8 @@ class CreateMacroApp_ : public Applet_, public Animation_ {
     bool exitApp() { return false;}
     void cleanupApp() {}
     // for Animation {}_
-    void update() {}
-    void draw(JoyDisplay_ *pcanvas) {}
+    void updateAnim() {}
+    void drawAnim(JoyDisplay_ *pcanvas) {}
 
     Applet_ *mpappDrawKeysApp;
     

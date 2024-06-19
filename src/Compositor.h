@@ -11,10 +11,10 @@ namespace CanvasType
 {
     enum TCanvasType
     {
-        FG = 1,
-        BG = 2,
-        TOP = 4,
-        BOTTOM = 8
+        BG = 0,
+        BOTTOM = 1,
+        TOP = 2,
+        FG = 3
     };
 }
 
@@ -30,6 +30,7 @@ public:
     }
     void registerAnimation(Animation_ *pAnim, CanvasType::TCanvasType canvas);
     void killAnimation(Animation_ *pAnim);
+    void killAnimation(Animation_ *pAnim, CanvasType::TCanvasType canvas);
     void purgeAll();
     void update();
     void draw();
@@ -41,6 +42,8 @@ public:
     std::vector<Animation_ *> mvBG;
     std::vector<Animation_ *> mvTop;
     std::vector<Animation_ *> mvBottom;
+
+    std::vector<Animation_ *> *apvAllCanvases[4] = {&mvBG, &mvBottom, &mvTop, &mvFG };
 
 protected:
     void inline updateVectors(std::vector<Animation_ *> *v);

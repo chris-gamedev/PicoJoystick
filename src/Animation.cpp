@@ -3,7 +3,7 @@
 ////////////////////////////////////////////  Animation_  ///////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void Animation_::update()
+void Animation_::updateAnim()
 {
 
     if (mlife == 0)
@@ -57,11 +57,11 @@ void inline Animation_::setParameters(int16_t x, int16_t y, uint8_t w, uint8_t h
 ////////////////////////////////////////////   Sprite 1   ///////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void AnimSprite1_::draw(JoyDisplay_ *pcanvas)
+void AnimSprite1_::drawAnim(JoyDisplay_ *pcanvas)
 {
 }
 
-void AnimSprite8_::draw(JoyDisplay_ *pcanvas)
+void AnimSprite8_::drawAnim(JoyDisplay_ *pcanvas)
 {
     pcanvas->drawBitmap4Bit(mX, mY, mbitmap, mW, mH);
 }
@@ -70,19 +70,19 @@ void AnimSprite8_::draw(JoyDisplay_ *pcanvas)
 //////////////////////////////////////////////   Static   ///////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void AnimStatic1_::update() // override this shit for static sprites.
+void AnimStatic1_::updateAnim() // override this shit for static sprites.
 {
 }
 
-void AnimStatic1_::draw(JoyDisplay_ *pcanvas)
+void AnimStatic1_::drawAnim(JoyDisplay_ *pcanvas)
 {
 }
 
-void AnimStatic4_::update() // override this shit for static sprites.
+void AnimStatic4_::updateAnim() // override this shit for static sprites.
 {
 }
 
-void AnimStatic4_::draw(JoyDisplay_ *pcanvas)
+void AnimStatic4_::drawAnim(JoyDisplay_ *pcanvas)
 {
     pcanvas->drawBitmap4Bit(mX, mY, mbitmap, mW, mH);
 }
@@ -91,13 +91,13 @@ void AnimStatic4_::draw(JoyDisplay_ *pcanvas)
 //////////////////////////////////////////////   Text   /////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void AnimTextStatic1Line_::update() // override this shit for text
+void AnimTextStatic1Line_::updateAnim() // override this shit for text
 {
     if (mlife > 0)
         mlife--;
 }
 
-void AnimTextStatic1Line_::draw(JoyDisplay_ *pcanvas)
+void AnimTextStatic1Line_::drawAnim(JoyDisplay_ *pcanvas)
 {
     if (mDrawBox)
     {
@@ -113,22 +113,22 @@ void AnimTextStatic1Line_::draw(JoyDisplay_ *pcanvas)
 }
 
 //--------------------------------------------------------------------------------------------------//
-void AnimTextPrompt_::update() // override this shit for text
+void AnimTextPrompt_::updateAnim() // override this shit for text
 {
-    Animation_::update();
+    Animation_::updateAnim();
     if (mdelaycounter > 0)
         return;
 }
 
-void AnimTextPrompt_::draw(JoyDisplay_ *pcanvas)
+void AnimTextPrompt_::drawAnim(JoyDisplay_ *pcanvas)
 {
-
+#ifdef DEADBEEF
     for (auto &it : mvStrings)
     {
         Serial.print(it);
         Serial.printf(", Length: %d\n", it.length());
     }
-
+#endif
     if (mDrawBox)
     {
         pcanvas->fillRoundRect(mX, mY, mW, mH, 10, MENU_BOX_COLOR_BG);
@@ -146,7 +146,7 @@ void AnimTextPrompt_::draw(JoyDisplay_ *pcanvas)
     // only display 3 prompts at a time, and adjust screen center
     int count = (promptCount > 3) ? 3 : promptCount;
     if (count == 2)
-        y += TEXT_HEIGHT / 2;
+        y += (TEXT_HEIGHT / 2.0F);
     if (count == 1)
         y += TEXT_HEIGHT;
 
@@ -157,57 +157,4 @@ void AnimTextPrompt_::draw(JoyDisplay_ *pcanvas)
         pcanvas->setCursor(x + mX + mTextOffsetX, y + mTextOffsetY);
         pcanvas->println(mvStrings[j]);
     }
-}
-
-//------------------------------   Text Selection Prompt   ----------------------------------------//
-//------------------------------   Text Selection Prompt   ----------------------------------------//
-void AnimInputDialogList_::start(String title, uint8_t *selection, std::initializer_list<String> prompts)
-{
-    mConfirm = false;
-    mCancel = false;
-    mpReturnPointer = selection;
-    mposition = 0;
-    mlife = -1;
-    mTitle = title;
-    mvStrings = prompts;
-}
-
-void AnimInputDialogList_::update()
-{
-    uint8_t range = mvStrings.size();
-
-    if (MyJoystickBT.buttonJustPressed(0)) // cancel
-    {
-        mCancel = true;
-        mlife = 0;
-        return;
-    }
-    if (MyJoystickBT.buttonJustPressed(4)) // accept
-    {
-        mConfirm = true;
-        mlife = 0;
-        *mpReturnPointer = mposition;
-        return;
-    }
-    if (MyJoystickBT.joyJustPressed(JOY_DOWN)) // decrement
-    {
-        mposition = (mposition + range - 1) % range;
-        return;
-    }
-
-    if (MyJoystickBT.joyJustPressed(JOY_UP)) // increment
-    {
-        mposition = (mposition + 1) % range;
-        return;
-    }
-}
-
-void AnimInputDialogList_::draw(JoyDisplay_ *pcanvas)
-{
-
-    AnimTextPrompt_::draw(pcanvas);
-
-    int x = 64 - (((float)mTitle.length() / 2) * TEXT_WIDTH);
-    pcanvas->setCursor(mX + x, mY + TEXT_HEIGHT + 4);
-    pcanvas->print(mTitle);
 }

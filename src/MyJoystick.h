@@ -58,7 +58,11 @@
 #define JOY_LEFT          7 
 #define JOY_UP_LEFT       8 
 
-// array of physical button pin numbers on pico
+// Button definitions for applets / menu / etc
+#define APPLET_CANCEL_BUTTON    0
+#define APPLET_CONFIRM_BUTTON   4
+#define APPLET_EXIT_JOYSTATE    7
+
 
 #define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c"
 #define BYTE_TO_BINARY(byte)  \
@@ -72,6 +76,7 @@
   ((byte) & 0x01 ? '1' : '0')
 // clang-format on
 
+// array of physical button pin numbers on pico
 const int ButtonPins[] =
     {
         BUTTON_00_PIN,
@@ -221,14 +226,11 @@ public:
   uint8_t inline getButtonValue(uint8_t b) { return ((b >= 0) && (b < 12)) ? maButtonValues[b] : -1; }
 
   DirectButtonCommand_ mDefaultDirectCommand;
-  TurboButtonCommand_ mTurboDirectCommand;
-  TurboButtonCommand_ mLatchedCommand;
-  std::forward_list<Command_ *, std::allocator<Command_ *>> mlActiveMacros;
   Command_ *maAssignedMacros[12] = {&mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand};
   TurboButtonCommand_ maTurboMacros[12];
   uint8_t mButtons[12];
   uint8_t maButtonValues[12];
-  uint8_t maJoyValues[8];
+  uint8_t maJoyValues[9];
   bool mJoyTransmit = true;
   uint16_t mPackedButtonStates;
   uint32_t mPackedButtonValues;
