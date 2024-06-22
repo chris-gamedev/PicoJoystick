@@ -74,28 +74,6 @@ MyJoystickBT_::MyJoystickBT_()
   this->use8bit(true);
   this->useManualSend(true);
 
-  maButtonValues[0] = 1;
-  maButtonValues[1] = 2;
-  maButtonValues[2] = 4;
-  maButtonValues[3] = 5;
-  maButtonValues[4] = 7;
-  maButtonValues[5] = 8;
-  maButtonValues[6] = 11;
-  maButtonValues[7] = 12;
-  maButtonValues[8] = 13;
-  maButtonValues[9] = 14;
-  maButtonValues[10] = 15;
-  maButtonValues[11] = 20;
-
-  maJoyValues[0] = JOY_IDLE;
-  maJoyValues[1] = JOY_UP;
-  maJoyValues[2] = JOY_UP_RIGHT;
-  maJoyValues[3] = JOY_RIGHT;
-  maJoyValues[4] = JOY_DOWN_RIGHT;
-  maJoyValues[5] = JOY_DOWN;
-  maJoyValues[6] = JOY_DOWN_LEFT;
-  maJoyValues[7] = JOY_LEFT;
-  maJoyValues[8] = JOY_UP_LEFT;
 
   for (int i = 0; i < sizeof(ButtonPins) / sizeof(int); i++)
   {
@@ -172,14 +150,7 @@ void MyJoystickBT_::pollJoystick()
     this->send_now();
 }
 
-/********************************************************/
-/**
- * setHat - sets the dPad value of the gamepad report (bluetooth or usb).
- * The inherited hat() member functino from HID_Joystick wasn't working,
- * so I set the data.hat inherited from HID_Joystick myself here.
- *  @param angle - Value from 1 - 8, clockwise starting from North.
- *
- */
+// directly set report data in HID_Joystick
 void MyJoystickBT_::setHat(uint8_t angle)
 {
   this->data.hat = angle;

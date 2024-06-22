@@ -8,8 +8,9 @@
 #include "MyJoystick.h"
 #include "Applet.h"
 #include "Animation.h"
+#include "Configuration.h"
 
-class DrawKeyPressesApp_ : public Applet_, public Animation_
+class DrawKeyPressesApp_ : public Applet_, public Animation_, public IConfigurable_
 {
 public:
     DrawKeyPressesApp_(Compositor_ *comp)
@@ -22,6 +23,9 @@ public:
     // for Animation_
     void updateAnim();
     void drawAnim(JoyDisplay_ *pcanvas);
+    void configure (Configuration *pconfig);
+    
+     uint8_t maMacroMap[12] = {0};
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -110,7 +114,7 @@ public:
     void updateAnim();
     void drawAnim(JoyDisplay_ *pcanvas);
 
-    Applet_ *mpappDrawKeysApp;
+    Applet_ * const mpappDrawKeysApp;
     AnimInputDialogInt_<uint16_t> mAnimInputDialogDelay;
     AnimInputDialogList_ mAnimInputDialogOptions;
     AnimTextPrompt_ mTextSpriteStatic;
@@ -129,35 +133,5 @@ public:
 };
 
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////      Create Macro       ///////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-class CreateMacroApp_ : public Applet_, public Animation_ {
-    CreateMacroApp_(Compositor_ *comp, Applet_ *drawkeyapp)
-        : Applet_(comp)
-        , Animation_(0, 44, 128, 40, 6, -1, -1, 0, 0)
-        , mpappDrawKeysApp(drawkeyapp)
-
-    {
-        
-    }
-
-    // for applet
-    void initApp() {}
-    void startFromScratch() {}
-    AppletStatus::TAppletStatus updateApp() { return AppletStatus::ALIVE;}
-    bool exitApp() { return false;}
-    void cleanupApp() {}
-    // for Animation {}_
-    void updateAnim() {}
-    void drawAnim(JoyDisplay_ *pcanvas) {}
-
-    Applet_ *mpappDrawKeysApp;
-    
-    uint32_t mAppLastTime;
-    uint16_t mAppDelay;
-};
 
 #endif

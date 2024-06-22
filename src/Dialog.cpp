@@ -64,12 +64,3 @@ void AnimInputDialogList_::endDialog()
     mpCompositor->killAnimation(&manimTitle, CanvasType::FG);
 }
 
-// void AnimInputDialogList_::drawAnim(JoyDisplay_ *pcanvas)
-// {
-
-//     AnimTextPrompt_::drawAnim(pcanvas);
-
-//     int x = 64 - (((float)mTitle.length() / 2) * TEXT_WIDTH);
-//     pcanvas->setCursor(mX + x, mY + TEXT_HEIGHT + 4);
-//     pcanvas->print(mTitle);
-// }

@@ -1,25 +1,26 @@
 #include "MenuManager.h"
 
-extern bool boolDoFunThings;
+
 extern AppletSwitcher_ AppSwitcher;
-extern bool bluetoothOn;
+extern Configurator_ Configurator;
 
 ////////////////////////////////////////////////////    CALLBACKS    ///////////////////////////////////////////////////////
 // placeholder callback pointers
 void myCallback() { Serial.println("inside myCallback"); }
 void buttonsRemap_callback() { AppSwitcher.switchApp(AppletNames::REMAP_BUTTONS); }
 void buttonsAssignTurbo_callback() { AppSwitcher.switchApp(AppletNames::ASSIGN_TURBO); }
+void buttonsCreateMacro_callback() { AppSwitcher.switchApp(AppletNames::CREATE_MACRO); }
 void themeJoypad_callback() { AppSwitcher.setDefaultApp(AppletNames::SHOW_BUTTON_PRESSES); }
 void themeBlank_callback() { AppSwitcher.setDefaultApp(AppletNames::BLANK); }
-// temp to turn on/off the fun things.
-void themeDoFunThings_callback() { boolDoFunThings = !boolDoFunThings; }
+void themeDoFunThings_callback() { 
+    Configurator.mConfig.funThings_on = !Configurator.mConfig.funThings_on;
+    Configurator.configurate();
+}
 void bluetoothToggle_callback()
 {
-    bluetoothOn = !bluetoothOn;
-    if (bluetoothOn)
-        MyJoystickBT.begin();
-    else
-        MyJoystickBT.end();
+        // using these causes reconnection to result in IO Error 
+        // MyJoystickBT.begin();
+        // MyJoystickBT.end();
 }
 ////////////////////////////////////////////////////    CALLBACKS    ///////////////////////////////////////////////////////
 
@@ -129,7 +130,7 @@ void MenuManager_::buildMenu()
             pMacros->addChild(new Leaf_("Assign", myCallback, pMacros));
             pMacros->addChild(new Leaf_("Edit", myCallback, pMacros));
             pMacros->addChild(new Leaf_("Wizard", myCallback, pMacros));
-            pMacros->addChild(new Leaf_("Manual", myCallback, pMacros));
+            pMacros->addChild(new Leaf_("Manual", buttonsCreateMacro_callback, pMacros));
     pRoot->addChild(new SubMenu_("Joystick", &mMenuRoot));
         Menu_* pJoystick = pRoot->mChildren[1];
         pJoystick->addChild(new Leaf_("Orient", myCallback, pJoystick));

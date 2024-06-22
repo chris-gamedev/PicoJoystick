@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <initializer_list>
 #include "Display.h"
-#include "MyJoystick.h"
 
 class Behavior_
 {
@@ -211,7 +210,12 @@ public:
     void drawAnim(JoyDisplay_ *pcanvas);
 
     bool mDrawBox = false;
+    
     String mText;
+    GFXfont const *mpFont = MENU_FONT_FACE;
+    uint8_t mFontWidth = TEXT_WIDTH;
+    int8_t mXOffset = 0;
+    int8_t mYOffset = - 2;
 };
 
 /// @brief 8 bit Static Sprite.  No Moving, No Animation. Registered with compositor

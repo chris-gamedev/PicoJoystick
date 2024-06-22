@@ -4,6 +4,7 @@
 #include <JoystickBT.h>
 #include <HID_Joystick.h>
 #include <forward_list>
+#include "Configuration.h"
 
 // clang-format off
 // physical pinout of buttons and Joystick
@@ -185,7 +186,7 @@ public:
 /////////////////////////////////  MyJoystick  /////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-class MyJoystickBT_ : public JoystickBT_, public Debouncer_
+class MyJoystickBT_ : public JoystickBT_, public IConfigurable_, public Debouncer_
 {
 public:
   MyJoystickBT_();
@@ -194,17 +195,20 @@ public:
   uint32_t inline getPackedKeyPresses() { return mPackedButtonStates; }
   uint8_t inline getJoystickState() { return mJoyState; }
   uint8_t inline *getButtonValues() { return maButtonValues; }
+
   bool inline buttonJustPressed(uint8_t b) { return ((MAKE_BUTTON_BITMASK_16(b) & mPackedButtonStates) && !(MAKE_BUTTON_BITMASK_16(b) & mLastPackedButtonStates)); }
   bool inline buttonHeldDown(uint8_t b) { return ((MAKE_BUTTON_BITMASK_16(b) & mPackedButtonStates) && (MAKE_BUTTON_BITMASK_16(b) & mLastPackedButtonStates)); }
   bool inline buttonJustReleased(uint8_t b) { return (!(MAKE_BUTTON_BITMASK_16(b) & mPackedButtonStates) && (MAKE_BUTTON_BITMASK_16(b) & mLastPackedButtonStates)); }
   bool inline buttonIsFree(uint8_t b) { return (!(MAKE_BUTTON_BITMASK_16(b) & mPackedButtonStates) && !(MAKE_BUTTON_BITMASK_16(b) & mLastPackedButtonStates)); }
   bool inline allButtonsFree() { return (!mPackedButtonStates && !mLastPackedButtonStates); }
+  uint8_t inline joyJustPressed() { return (mJoyState != mLastJoyState) ? mJoyState : 0; }
   bool inline joyJustPressed(uint8_t jstate) { return mJoyState == jstate && mLastJoyState != jstate; }
   bool inline joyHeld(uint8_t jstate) { return mJoyState == jstate && mLastJoyState == jstate; }
+  uint8_t inline joyHeld() { return (mJoyState == mLastJoyState) ? mJoyState : 0; }
   bool inline joyJustReleased(uint8_t jstate) { return mJoyState != jstate && mLastJoyState == jstate; }
   bool inline joyisFree(uint8_t jstate) { return mJoyState != jstate && mLastJoyState != jstate; }
   // transmit stuff
-  void inline setJoyTransmit(bool transmit) { mJoyTransmit = transmit;}
+  void inline setJoyTransmit(bool transmit) { mJoyTransmit = transmit; }
   void inline setPauseButton(uint8_t bValue) { mPauseButtonValue = bValue; }
   void inline sendPauseButtonPress()
   {
@@ -212,25 +216,32 @@ public:
     this->send_now();
   }
   // Macro Stuff
-  inline void setToDefaultMacro(uint8_t button) { maAssignedMacros[button] = &mDefaultDirectCommand;} 
-  inline void setToTurboMacro(uint8_t button) { maAssignedMacros[button] = &maTurboMacros[button];}
-  inline void setTurboMacroDelay(uint8_t button, uint16_t delay) {maTurboMacros[button].mDelay = delay;}
-  inline void setTurboMacroLatching(uint8_t button, bool latch) { maTurboMacros[button].mIsLatchingButton = latch;}
-  inline uint16_t getTurboMacroDelay(uint8_t button) {return maTurboMacros[button].mDelay;}
-  
+  inline void setToDefaultMacro(uint8_t button) { maAssignedMacros[button] = &mDefaultDirectCommand; }
+  inline void setToTurboMacro(uint8_t button) { maAssignedMacros[button] = &maTurboMacros[button]; }
+  inline void setTurboMacroDelay(uint8_t button, uint16_t delay) { maTurboMacros[button].mDelay = delay; }
+  inline void setTurboMacroLatching(uint8_t button, bool latch) { maTurboMacros[button].mIsLatchingButton = latch; }
+  inline uint16_t getTurboMacroDelay(uint8_t button) { return maTurboMacros[button].mDelay; }
+
   void inline setButtonValue(uint8_t b, uint8_t v)
   {
     if ((b >= 0) && (b < 12) && (v > 0) && (v < 33))
       maButtonValues[b] = v;
   }
   uint8_t inline getButtonValue(uint8_t b) { return ((b >= 0) && (b < 12)) ? maButtonValues[b] : -1; }
+  void configure(Configuration *config)
+  {
+    mJoyTransmit = config->joystick_transmitToHost;
+    for (int i = 0; i < 9; i++)
+      maJoyValues[i] = config->joystick_joyValueMap[i];
+    for (int i = 0; i < 12; i++)
+      maButtonValues[i] = config->joystick_buttonValueMap[i];
+  }
 
   DirectButtonCommand_ mDefaultDirectCommand;
-  Command_ *maAssignedMacros[12] = {&mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand};
   TurboButtonCommand_ maTurboMacros[12];
-  uint8_t mButtons[12];
-  uint8_t maButtonValues[12];
-  uint8_t maJoyValues[9];
+  Command_ *maAssignedMacros[12] = {&mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand};
+  uint8_t maButtonValues[12] = { 1, 2, 4, 5, 7, 8, 11, 12, 13, 14, 15, 20};
+  uint8_t maJoyValues[9] = {JOY_IDLE, JOY_UP, JOY_UP_RIGHT, JOY_RIGHT, JOY_DOWN_RIGHT, JOY_DOWN, JOY_DOWN_LEFT, JOY_LEFT, JOY_UP_LEFT };
   bool mJoyTransmit = true;
   uint16_t mPackedButtonStates;
   uint32_t mPackedButtonValues;

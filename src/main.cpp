@@ -5,7 +5,11 @@
 #include "MenuManager.h"
 #include "Images.h"
 #include "Applications.h"
-#include "Pacman.h"
+#include "CreateMacro.h"
+#include "Configuration.h"
+#include "FunThings.h"
+
+
 
 Compositor_ Compositor(&JoyDisplay);
 
@@ -14,7 +18,14 @@ MenuManager_ MenuManager(&Compositor);
 DrawKeyPressesApp_ DrawKeyPresses(&Compositor);
 RemapButtonsApp_ RemapButtons(&Compositor, &DrawKeyPresses);
 AssignTurboApp_ AssignTurbo(&Compositor, &DrawKeyPresses);
+CreateMacroApp_ CreateMacro(&Compositor, &DrawKeyPresses);
 AppletSwitcher_ AppSwitcher(&Compositor);
+
+// Fun Things!!
+FunThings_ Fun(&Compositor);
+
+// Config
+Configurator_ Configurator({&MyJoystickBT, &DrawKeyPresses, &Fun});
 
 // temp. add this state to the joystick
 bool joyON = true;
@@ -28,22 +39,7 @@ uint32_t timeMenuHotkeyLast;
 
 bool menuHotkeyPressed();
 
-// temp testing fun things
 
-AnimSprite8_ aSprite8_1(0, 20, 16, 16, 5, 200, 1, 3, 0, 1);
-AnimSprite8_ aSprite8_2(0, 45, 16, 16, 4, 200, 4, 2, 0, 1);
-AnimSprite8_ aSprite8_blinky(0, 55, 16, 16, 5, 80, 4, 3, 0, 2);
-AnimSprite8_ aSprite8_pinky(0, 60, 16, 16, 4, 200, 4, 3, 0, 2);
-AnimSprite8_ aScardey8_1(0, 115, 16, 16, 5, 125, 4, 1, 0, 2);
-AnimSprite8_ aScardey8_2(0, 60, 16, 16, 4, 150, 4, 1, 0, 2);
-
-Animation_ *funNotUsed[6] = {&aScardey8_1, &aScardey8_2, &aSprite8_1, &aSprite8_2, &aSprite8_blinky, &aSprite8_pinky};
-Animation_ *funInUse[6] = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
-
-uint32_t funDelay = 10;
-uint32_t funLastTime = 0;
-
-void doFunThings();
 
 void setup()
 
@@ -63,19 +59,15 @@ void setup()
     JoyDisplay.clearDisplay();
     JoyDisplay.display();
 
+    Configurator.configurate();
+    
     AppSwitcher.addApp(AppletNames::MENU, &MenuManager);
     AppSwitcher.addApp(AppletNames::SHOW_BUTTON_PRESSES, &DrawKeyPresses);
     AppSwitcher.addApp(AppletNames::REMAP_BUTTONS, &RemapButtons);
+    AppSwitcher.addApp(AppletNames::CREATE_MACRO, &CreateMacro);
     AppSwitcher.addApp(AppletNames::ASSIGN_TURBO, &AssignTurbo);
     AppSwitcher.start();
 
-    // temp testing fun things
-    aSprite8_1.setBitmapArray(msPacMan_spritesheetR, msPacMan_spritesheet_size);
-    aSprite8_2.setBitmapArray(msPacMan_spritesheetR, msPacMan_spritesheet_size);
-    aSprite8_blinky.setBitmapArray(blinky_spritesheet, blinky_spritesheet_size);
-    aSprite8_pinky.setBitmapArray(pinky_spritesheet, pinky_spritesheetR_size);
-    aScardey8_1.setBitmapArray(scaredy_spritesheet, scaredy_spritesheet_size);
-    aScardey8_2.setBitmapArray(scaredy_spritesheet, scaredy_spritesheet_size);
 }
 
 void loop()
@@ -84,10 +76,13 @@ void loop()
     if (menuHotkeyPressed())
         AppSwitcher.switchApp(AppletNames::MENU);
     AppSwitcher.update();
-    if (boolDoFunThings)
-        doFunThings();
+    // fun happens here
+    Serial.print("in main, ");
+    Fun.doTheFunThings();
     Compositor.update();
+    // Serial.print("after comp update, ");
     Compositor.draw();
+    Serial.print("after comp draw, ");
 
 #ifdef DEADBEEF
     if (MyJoystickBT.buttonJustPressed(0))
@@ -138,63 +133,3 @@ bool menuHotkeyPressed()
     return false;
 }
 
-void doFunThings()
-{
-    // delay for starting a random animation
-    if ((funLastTime + funDelay) > millis())
-        return;
-
-    funLastTime += funDelay;
-    Animation_ *useMe = nullptr;
-    Animation_ *temp = nullptr;
-    // sort out the dead ones
-    for (int i = 0; i < 6; i++)
-    {
-        if (funInUse[i] == nullptr)
-            continue;
-        if (funInUse[i]->mlife == 0)
-        {
-            temp = funInUse[i];
-            funInUse[i] = nullptr;
-            funNotUsed[i] = temp;
-        }
-    }
-    // pick a free one
-    for (int i = 0; i < 6; i++)
-    {
-        if (funNotUsed[i] != nullptr)
-        {
-            useMe = funNotUsed[i];
-            funNotUsed[i] = nullptr;
-            funInUse[i] = useMe;
-            break;
-        }
-    }
-
-    // set up and release our new friend
-    if (useMe != nullptr)
-    {
-        int deltax = random(5) + 1;
-        int y = random(100) + 10;
-        useMe->mX = -20;
-        useMe->mY = y;
-        useMe->mdrawOrder = deltax;
-        // useMe->mlife = 800 * (1 / deltax) + random(200) + 100;
-        useMe->mdelay = -1;
-        useMe->mdelaycounter = useMe->mdelay;
-        useMe->mdeltaX = deltax;
-        useMe->mlife = 168 / deltax + random(50);
-        CanvasType::TCanvasType layer = (random(6) + 1 > 4) ? CanvasType::FG : CanvasType::BG;
-
-        Compositor.registerAnimation(useMe, layer);
-    }
-}
-
-class DoFunThings
-{
-
-public:
-    DoFunThings()
-    {
-    }
-};

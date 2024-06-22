@@ -62,7 +62,7 @@ class MenuManager_ : public Applet_, public Animation_
 {
 public:
     Menu_ *currentMenuNode = nullptr;
-    Compositor_ *mpCompositor;
+    Compositor_ * const mpCompositor;
     
     AnimTextPrompt_ mUpperTextSpriteStatic;
     AnimTextPrompt_ mLowerTextSpriteStatic;

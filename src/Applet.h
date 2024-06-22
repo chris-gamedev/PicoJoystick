@@ -10,7 +10,7 @@ namespace AppletNames
         REMAP_BUTTONS,
         ASSIGN_TURBO,
         CREATE_MACRO,
-        BLANK, 
+        BLANK,
         MAX_VALUE
     };
 }
@@ -32,7 +32,7 @@ public:
     virtual void initApp() {};
     virtual AppletStatus::TAppletStatus updateApp() { return AppletStatus::ALIVE; }
     virtual void cleanupApp() {}
-    Compositor_ *mpCompositor;
+    Compositor_ *const mpCompositor;
 
     static uint8_t
     findHeldButton(uint32_t statemap, uint16_t delay)
@@ -93,11 +93,11 @@ public:
         // WHEN ADDING:  REMEMBER TO EXPAND THE ARRAY IN THE DAMN HEADER!!!
 
         mApplets[AppletNames::BLANK] = &mBlankApplet;
-        mCurrentApp = AppletNames::ASSIGN_TURBO;
+        mCurrentApp = AppletNames::BLANK;
     }
     void inline addApp(AppletNames::TAppletNames name, Applet_ *app) { mApplets[name] = app; }
-    void inline setDefaultApp(AppletNames::TAppletNames app) {mDefaultApp = app;}
-    void inline switchApp(AppletNames::TAppletNames app) 
+    void inline setDefaultApp(AppletNames::TAppletNames app) { mDefaultApp = app; }
+    void inline switchApp(AppletNames::TAppletNames app)
     {
         mApplets[mCurrentApp]->cleanupApp();
         mLastApp = mCurrentApp;
@@ -123,12 +123,12 @@ public:
         }
     }
 
-Applet_ *mApplets[AppletNames::MAX_VALUE];
-AppletNames::TAppletNames mDefaultApp = AppletNames::SHOW_BUTTON_PRESSES;
-AppletNames::TAppletNames mCurrentApp = AppletNames::ASSIGN_TURBO;
-AppletNames::TAppletNames mLastApp = mDefaultApp;
-Compositor_ *mpCompositor;
-Applet_ mBlankApplet;
+    Compositor_ *const mpCompositor;
+    Applet_ *mApplets[AppletNames::MAX_VALUE];
+    AppletNames::TAppletNames mDefaultApp = AppletNames::BLANK;
+    AppletNames::TAppletNames mCurrentApp = AppletNames::BLANK;
+    AppletNames::TAppletNames mLastApp = mDefaultApp;
+    Applet_ mBlankApplet;
 };
 
 extern AppletSwitcher_ AppSwitcher;

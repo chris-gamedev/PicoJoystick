@@ -1,4 +1,8 @@
 #include "Applications.h"
+#include "manifold6pt7b.h"
+#include "Images.h"
+
+extern Configurator_ Configurator;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////     DrawKeyPresses      ///////////////////////////////////////////
@@ -26,30 +30,32 @@ void DrawKeyPressesApp_::updateAnim()
 void DrawKeyPressesApp_::drawAnim(JoyDisplay_ *pcanvas)
 {
     // uint16_t packedKeyPresses, uint8_t buttonValues[], uint8_t joyState
+    pcanvas->setFont(&manifold6pt7b);
     pcanvas->setTextSize(1);
-    pcanvas->setFont();
+    pcanvas->setTextColor(0xF);
     uint32_t packedKeyPresses = MyJoystickBT.getPackedKeyPresses();
     uint8_t *buttonValues = MyJoystickBT.getButtonValues();
     uint8_t joyState = MyJoystickBT.getJoystickState();
-
-    // draw background
-    // pcanvas->drawBitmap(0, 0, bitmap_SmallButtonLayout, 128, 128, 0xf);
-    pcanvas->setFont();
-    pcanvas->setTextColor(0xF);
+    uint8_t buttonCenterColor = 0x9;
     uint8_t pressColor = 0x3;
     for (int i = 0; i < map_bitmap_SmallButtonLayout_count - 1; i++)
     {
-        // draw buttons
-        pcanvas->drawBitmap4Bit(map_bitmap_SmallButtonLayout[i][0] - 9, map_bitmap_SmallButtonLayout[i][1] - 9, button1, 20, 20);
-        // draw disabled buttons:
-        if (!(Command_::sEnabledButtonsMask & MAKE_BUTTON_BITMASK_16(i)))
-            pcanvas->fillCircle(map_bitmap_SmallButtonLayout[i][0], map_bitmap_SmallButtonLayout[i][1], 7, 0x8);
-        if ((1 << (i)) & packedKeyPresses)
+        // set Disabled Button center color:
+        if (packedKeyPresses & MAKE_BUTTON_BITMASK_16(i))
+            buttonCenterColor = 0x2;
+        else if (!(Command_::sEnabledButtonsMask & MAKE_BUTTON_BITMASK_16(i)))
+            buttonCenterColor = 0x6; // disabled
+        else
+            buttonCenterColor = 0x8; // enabled
+        
+        // draw button center
+        pcanvas->drawBitmap(map_bitmap_SmallButtonLayout[i][0] - 9, map_bitmap_SmallButtonLayout[i][1] - 9, bitmap_ButtonCenter, 20, 20, buttonCenterColor);
+        // draw button ring
+        pcanvas->drawBitmap(map_bitmap_SmallButtonLayout[i][0] - 9, map_bitmap_SmallButtonLayout[i][1] - 9, bitmap_buttonRingAllArray[maMacroMap[i]], 20, 20, 0xD);
+
+        if (packedKeyPresses & MAKE_BUTTON_BITMASK_16(i))
         {
-            // Add color here: Black when pressed, gray when pressed but disabled by a macro.
-            // probably implement by checking the enabled button mask bitfield?
-            pcanvas->fillCircle(map_bitmap_SmallButtonLayout[i][0], map_bitmap_SmallButtonLayout[i][1], 7, 0x0);
-            pcanvas->setCursor(map_bitmap_SmallButtonLayout[i][0] - 3 - (buttonValues[i] > 9) * 3, map_bitmap_SmallButtonLayout[i][1] - 4);
+            pcanvas->setCursor(map_bitmap_SmallButtonLayout[i][0] - 3 - (buttonValues[i] > 9) * 3, map_bitmap_SmallButtonLayout[i][1] + 4);
             pcanvas->setTextColor(0xB);
             pcanvas->print(buttonValues[i]);
         }
@@ -89,12 +95,17 @@ void DrawKeyPressesApp_::drawAnim(JoyDisplay_ *pcanvas)
     case JOY_UP_LEFT:
         // WEST
         if (joyState == 8)
-            Serial.println("Joy is 8");
         pcanvas->drawBitmap(orgX - 21, orgY - 10, bitmap_arrowLeft, 21, 21, 0xF);
         break;
     }
 
     pcanvas->drawPixel(map_bitmap_SmallButtonLayout[12][0], map_bitmap_SmallButtonLayout[12][1], 0xA);
+}
+
+void DrawKeyPressesApp_::configure(Configuration *pconfig)
+{
+        for (int i = 0; i < 12; i++) 
+            maMacroMap[i] = pconfig->drawKeypresses_macroMap[i];
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -165,7 +176,6 @@ AppletStatus::TAppletStatus RemapButtonsApp_::updateApp()
         Serial.println("Found a held button!!  " + String(mEditButton));
 
         mAnimInputDialog.start("New Value", &mNewButtonValue, 1, 32);
-        // mpCompositor->registerAnimation(&mAnimInputDialog, CanvasType::TOP);
         mAppDrawPrompt = false;
         return AppletStatus::ALIVE;
     }
@@ -274,7 +284,6 @@ AppletStatus::TAppletStatus AssignTurboApp_::updateApp()
         mFoundTheButton = true;
         Serial.println("Found a held button!!  " + String(mEditButton));
         mAnimInputDialogOptions.start("Turbo:", &mSelection, {"On", "Off"});
-        // mpCompositor->registerAnimation(&mAnimInputDialogOptions, CanvasType::TOP);
         return AppletStatus::ALIVE;
     }
     else if (!mSetButtonMode)
@@ -282,26 +291,25 @@ AppletStatus::TAppletStatus AssignTurboApp_::updateApp()
         if (mAnimInputDialogOptions.updateDialog())
             return AppletStatus::ALIVE;
 
-        Serial.printf("mSelection is %d", mSelection);
         mSetButtonMode = true;
         switch (mSelection)
         {
         case 1:
             MyJoystickBT.setToDefaultMacro(mEditButton);
+            Configurator.mConfig.drawKeypresses_macroMap[mEditButton] = MacroMapType::none;
+            Configurator.configurate();
             startFromScratch();
             break;
         case 0:
             MyJoystickBT.setToTurboMacro(mEditButton);
             mTurboDelayValue = MyJoystickBT.getTurboMacroDelay(mEditButton);
             mAnimInputDialogDelay.start("Delay (m/s)", &mTurboDelayValue, 10, 4000);
-            // mpCompositor->registerAnimation(&mAnimInputDialogDelay, CanvasType::TOP);
             break;
         }
         return AppletStatus::ALIVE;
     }
     else if (!mSetButtonDelay)
     {
-        Serial.printf("buttonJustPressed: %d\n", MyJoystickBT.buttonJustPressed(4));
         if (mAnimInputDialogDelay.updateDialog())
         {
             return AppletStatus::ALIVE;
@@ -309,7 +317,6 @@ AppletStatus::TAppletStatus AssignTurboApp_::updateApp()
         mSetButtonDelay = true;
         MyJoystickBT.setTurboMacroDelay(mEditButton, mTurboDelayValue);
         mAnimInputDialogOptions.start("Latching", &mSelection, {"Off", "On"});
-        // mpCompositor->registerAnimation(&mAnimInputDialogOptions, CanvasType::TOP);
         return AppletStatus::ALIVE;
     }
     else if (!mSetButtonLatching)
@@ -318,6 +325,8 @@ AppletStatus::TAppletStatus AssignTurboApp_::updateApp()
             return AppletStatus::ALIVE;
 
         MyJoystickBT.setTurboMacroLatching(mEditButton, (bool)mSelection);
+        Configurator.mConfig.drawKeypresses_macroMap[mEditButton] = (mSelection) ? MacroMapType::latchedTurbo : MacroMapType::turbo;
+        Configurator.configurate();
         startFromScratch();
     }
     return AppletStatus::ALIVE;

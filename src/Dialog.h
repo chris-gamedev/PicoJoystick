@@ -21,11 +21,11 @@ public:
         
     }
     // clang-format on
+    Compositor_ * const mpCompositor;
     AnimTextStatic1Line_ manimTitle;
     AnimStaticBGBox_ manimBGBox;
     virtual bool updateDialog() = 0;
     virtual void endDialog() = 0;
-    Compositor_ *mpCompositor;
     int16_t mX = 0;
     int16_t mY = 0;
     uint8_t mH = 0;
@@ -154,14 +154,12 @@ bool AnimInputDialogInt_<I>::updateDialog()
 {
     if (MyJoystickBT.buttonJustPressed(0)) // cancel
     {
-        Serial.print("0 button just pressed");
         mCancel = true;
         endDialog();
         return false;
     }
     if (MyJoystickBT.buttonJustPressed(4)) // accept
     {
-        Serial.print("4 button just pressed");
         mConfirm = true;
         *mpReturnPointer = mNewValue;
         endDialog();
@@ -179,7 +177,6 @@ bool AnimInputDialogInt_<I>::updateDialog()
     }
     if (MyJoystickBT.joyJustPressed(JOY_UP)) // increment
     {
-        Serial.print("Joy UP just pressed");
         mNewValue = (mNewValue - mLowerBound + 1) % mRange + mLowerBound;
         mLastTime = millis();
     }
@@ -196,25 +193,5 @@ bool AnimInputDialogInt_<I>::updateDialog()
 
     return true;
 }
-// template <typename I>
-// void AnimInputDialogInt_<I>::drawAnim(JoyDisplay_ *pcanvas)
-// {
-
-    // pcanvas->fillRoundRect(mX, mY, mW, mH, 10, MENU_BOX_COLOR_BG);
-    // pcanvas->drawRoundRect(mX, mY, mW, mH, 10, MENU_BOX_COLOR_FG);
-
-    // pcanvas->setFont(MENU_FONT_FACE);
-    // pcanvas->setTextColor(0xF);
-    // pcanvas->setTextWrap(false);
-
-    // pcanvas->setCursor(mX + 64 - (TEXT_WIDTH * mPrompt.length() / 2), mY + TEXT_HEIGHT * 1.5);
-    // pcanvas->print(mPrompt);
-
-    // mPrompt2 = String(mNewValue);
-    // while (mPrompt2.length() < mZeroPad)
-    //     mPrompt2 = "0" + mPrompt2;
-    // pcanvas->setCursor(mX + 64 - (TEXT_WIDTH * mPrompt2.length() / 2), mY + TEXT_HEIGHT * 2.5 + 2);
-    // pcanvas->print(mPrompt2);
-// }
 
 #endif // DIALOG_H

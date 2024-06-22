@@ -77,6 +77,7 @@ void Compositor_::purgeAll()
 
 void Compositor_::update()
 {
+    Serial.print("In comp, ");
     if (mclock + mclockdelay >= millis())
         return;
     mclock += mclockdelay;
@@ -106,12 +107,18 @@ void Compositor_::draw()
 
     for (auto &it : mvBG)
         it->drawAnim(mpDisplay);
+        Serial.print("comp. after bg, ");
     for (auto &it : mvTop)
         it->drawAnim(mpDisplay);
+        Serial.print("comp. after top, ");
+
     for (auto &it : mvBottom)
         it->drawAnim(mpDisplay);
+        Serial.print("comp. after bot, ");
+        
     for (auto &it : mvFG)
         it->drawAnim(mpDisplay);
+        Serial.print("comp. after fg, ");
 
     mpDisplay->display();
 }

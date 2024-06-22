@@ -105,10 +105,10 @@ void AnimTextStatic1Line_::drawAnim(JoyDisplay_ *pcanvas)
         pcanvas->drawRoundRect(mX, mY - 1, mW, mH + 2, 10, MENU_BOX_COLOR_FG);
     }
 
-    pcanvas->setFont(MENU_FONT_FACE);
+    pcanvas->setFont(mpFont);
     pcanvas->setTextWrap(false);
     pcanvas->setTextColor(mColor);
-    pcanvas->setCursor((mW / 2) - ((float)mText.length() / 2 * TEXT_WIDTH), mY + TEXT_HEIGHT - 2);
+    pcanvas->setCursor((mW / 2) - ((float)mText.length() / 2 * mFontWidth) + mXOffset, mY + TEXT_HEIGHT + mYOffset);
     pcanvas->print(mText);
 }
 
