@@ -2,15 +2,15 @@
 
 extern MyJoystickBT_ MyJoystickBT;
 
-PhraseTable_::PhraseTable_(uint8_t x, uint8_t y, std::vector<MacroWord> phrase) 
-: Animation_(x, y, 128, 100, 10), manimTopMessage(x, 1, 128, 15, 10)
+PhraseTable_::PhraseTable_(uint8_t x, uint8_t y, std::vector<MacroWord> phrase)
+    : Animation_(x, y, 128, 100, 10), manimTopMessage(x, 1, 128, 15, 10)
 
 {
     manimTopMessage.setText("Edit");
     manimTopMessage.mDrawBox = true;
     manimTopMessage.mpFont = &manifold6pt7b;
     manimTopMessage.mFontWidth = 7;
-    manimTopMessage.mYOffset = - 3;
+    manimTopMessage.mYOffset = -3;
     initTable(phrase);
 }
 
@@ -118,7 +118,8 @@ bool PhraseTable_::update()
         (*this.*c)();
     }
     uint8_t joystate = MyJoystickBT.joyJustPressed();
-    switch (joystate) {
+    switch (joystate)
+    {
     case JOY_UP:
         moveCursor(0, -1);
         break;
@@ -151,7 +152,7 @@ void PhraseTable_::drawAnim(JoyDisplay_ *pcanvas)
                       mvpRows[mcursorY]->maCells[mcursorX]->mW,
                       mvpRows[mcursorY]->maCells[mcursorX]->mH +
                           2,
-                      0x6);
+                      0x5);
 #ifdef DEADBEEF
     Serial.printf("cell x %d, y %d, w %d, h %d,   cursorx %d, cursory %d\n",
                   mvpRows[mcursorY]->maCells[mcursorX]->mX,

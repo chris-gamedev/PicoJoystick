@@ -18,7 +18,6 @@ namespace CanvasType
     };
 }
 
-
 class Compositor_
 {
 public:
@@ -43,11 +42,10 @@ public:
     std::vector<Animation_ *> mvTop;
     std::vector<Animation_ *> mvBottom;
 
-    std::vector<Animation_ *> *apvAllCanvases[4] = {&mvBG, &mvBottom, &mvTop, &mvFG };
+    std::vector<Animation_ *> *apvAllCanvases[4] = {&mvBG, &mvBottom, &mvTop, &mvFG};
 
 protected:
     void inline updateVectors(std::vector<Animation_ *> *v);
 };
-
 
 #endif

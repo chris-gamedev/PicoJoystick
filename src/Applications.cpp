@@ -47,7 +47,7 @@ void DrawKeyPressesApp_::drawAnim(JoyDisplay_ *pcanvas)
             buttonCenterColor = 0x6; // disabled
         else
             buttonCenterColor = 0x8; // enabled
-        
+
         // draw button center
         pcanvas->drawBitmap(map_bitmap_SmallButtonLayout[i][0] - 9, map_bitmap_SmallButtonLayout[i][1] - 9, bitmap_ButtonCenter, 20, 20, buttonCenterColor);
         // draw button ring
@@ -95,17 +95,15 @@ void DrawKeyPressesApp_::drawAnim(JoyDisplay_ *pcanvas)
     case JOY_UP_LEFT:
         // WEST
         if (joyState == 8)
-        pcanvas->drawBitmap(orgX - 21, orgY - 10, bitmap_arrowLeft, 21, 21, 0xF);
+            pcanvas->drawBitmap(orgX - 21, orgY - 10, bitmap_arrowLeft, 21, 21, 0xF);
         break;
     }
-
-    pcanvas->drawPixel(map_bitmap_SmallButtonLayout[12][0], map_bitmap_SmallButtonLayout[12][1], 0xA);
 }
 
 void DrawKeyPressesApp_::configure(Configuration *pconfig)
 {
-        for (int i = 0; i < 12; i++) 
-            maMacroMap[i] = pconfig->drawKeypresses_macroMap[i];
+    for (int i = 0; i < 12; i++)
+        maMacroMap[i] = pconfig->drawKeypresses_macroMap[i];
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -173,7 +171,6 @@ AppletStatus::TAppletStatus RemapButtonsApp_::updateApp()
 
         mFoundTheButton = true;
         mNewButtonValue = MyJoystickBT.getButtonValue(mEditButton);
-        Serial.println("Found a held button!!  " + String(mEditButton));
 
         mAnimInputDialog.start("New Value", &mNewButtonValue, 1, 32);
         mAppDrawPrompt = false;
@@ -282,7 +279,6 @@ AppletStatus::TAppletStatus AssignTurboApp_::updateApp()
             return AppletStatus::ALIVE;
 
         mFoundTheButton = true;
-        Serial.println("Found a held button!!  " + String(mEditButton));
         mAnimInputDialogOptions.start("Turbo:", &mSelection, {"On", "Off"});
         return AppletStatus::ALIVE;
     }

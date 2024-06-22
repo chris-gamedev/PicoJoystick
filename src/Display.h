@@ -31,7 +31,6 @@
 #define MENU_BOX_COLOR_FG 0X9
 #define MENU_TEXT_COLOR_FG 0xF
 
-
 /// @brief Interface to be used with Animator Class
 class AdaFourBit : Adafruit_GFX
 {
@@ -54,10 +53,10 @@ public:
 class JoyDisplay_ : public Adafruit_SSD1327
 {
 public:
-
     JoyDisplay_()
         : Adafruit_SSD1327{128, 128, &SPI, OLED_DC, OLED_RESET, OLED_CS}
-    {}
+    {
+    }
     void drawBitmap4Bit(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h);
 };
 

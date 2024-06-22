@@ -9,8 +9,6 @@
 #include "Configuration.h"
 #include "FunThings.h"
 
-
-
 Compositor_ Compositor(&JoyDisplay);
 
 // Applets
@@ -27,19 +25,11 @@ FunThings_ Fun(&Compositor);
 // Config
 Configurator_ Configurator({&MyJoystickBT, &DrawKeyPresses, &Fun});
 
-// temp. add this state to the joystick
-bool joyON = true;
-bool bluetoothOn = true;
-// temp. for menu entry.
-bool boolDoFunThings = true;
-
 // find a good home for these?
 uint32_t timeMenuHotkeyDelay = 1000;
 uint32_t timeMenuHotkeyLast;
 
 bool menuHotkeyPressed();
-
-
 
 void setup()
 
@@ -76,13 +66,9 @@ void loop()
     if (menuHotkeyPressed())
         AppSwitcher.switchApp(AppletNames::MENU);
     AppSwitcher.update();
-    // fun happens here
-    Serial.print("in main, ");
     Fun.doTheFunThings();
     Compositor.update();
-    // Serial.print("after comp update, ");
     Compositor.draw();
-    Serial.print("after comp draw, ");
 
 #ifdef DEADBEEF
     if (MyJoystickBT.buttonJustPressed(0))
@@ -132,4 +118,3 @@ bool menuHotkeyPressed()
         timeMenuHotkeyLast = 0;
     return false;
 }
-

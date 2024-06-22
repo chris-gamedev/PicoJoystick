@@ -2,12 +2,9 @@
 
 JoyDisplay_ JoyDisplay;
 
-
-
 /// @brief Draw prompts from a given vector of strings to the menu buffer
 /// @param vP vector of strings
 /// @param currentPrompt current prompt position in the prompt vector
-
 
 void JoyDisplay_::drawBitmap4Bit(int16_t x, int16_t y, const uint8_t *bitmap,
                                  int16_t w, int16_t h)
@@ -33,7 +30,3 @@ void JoyDisplay_::drawBitmap4Bit(int16_t x, int16_t y, const uint8_t *bitmap,
     }
     endWrite();
 }
-
-
-
-

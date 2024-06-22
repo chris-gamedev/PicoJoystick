@@ -8,20 +8,22 @@
 #include "Compositor.h"
 #include "Applet.h"
 
-
 /// @brief Abstract class for menu entries. Contains vector of children Menu_ entries
 class Menu_
 {
 public:
-
     Menu_(String name, Menu_ *parent) : mName(name), mpParent(parent) {}
-    void inline addChild(Menu_ * child) { mChildren.push_back(child); mChildPrompts.push_back(child->mName); }
+    void inline addChild(Menu_ *child)
+    {
+        mChildren.push_back(child);
+        mChildPrompts.push_back(child->mName);
+    }
     virtual Menu_ *action()
     {
         Serial.println("-----ERROR!!!      INSIDE MENU_ ACTION");
         return nullptr;
     }
-    
+
     String mName;
     // parent node.
     Menu_ *const mpParent;
@@ -62,8 +64,8 @@ class MenuManager_ : public Applet_, public Animation_
 {
 public:
     Menu_ *currentMenuNode = nullptr;
-    Compositor_ * const mpCompositor;
-    
+    Compositor_ *const mpCompositor;
+
     AnimTextPrompt_ mUpperTextSpriteStatic;
     AnimTextPrompt_ mLowerTextSpriteStatic;
     MenuManager_(Compositor_ *comp);
@@ -80,7 +82,7 @@ public:
     void initApp();
     AppletStatus::TAppletStatus updateApp();
     void cleanupApp();
-    
+
     void drawAnim(JoyDisplay_ *pcanvas); // TODO: Possibly inherit from animation
     SubMenu_ mMenuRoot;
 

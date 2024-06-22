@@ -46,9 +46,7 @@ public:
             {}
     // clang-format on
     virtual void updateAnim();
-    void setParameters(int16_t x, int16_t y, uint8_t w, uint8_t h
-                , uint8_t order = 1, int16_t life = -1, int16_t delay = -1
-                , int8_t dx = 0, int8_t dy = 0, int8_t frameDelay = -1);
+    void setParameters(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t order = 1, int16_t life = -1, int16_t delay = -1, int8_t dx = 0, int8_t dy = 0, int8_t frameDelay = -1);
     virtual void drawAnim(JoyDisplay_ *) = 0;
     void inline setBitmap(const unsigned char bmp[]) { mbitmap = bmp; }
     void inline setBitmap(unsigned char *bmp) { mbitmap = bmp; }
@@ -181,17 +179,18 @@ public:
     void drawAnim(JoyDisplay_ *pcanvas);
 };
 
-class AnimStaticBGBox_ : public Animation_ 
+class AnimStaticBGBox_ : public Animation_
 {
 public:
-AnimStaticBGBox_(int16_t x, int16_t y, uint8_t w = 128, uint8_t h = TEXT_HEIGHT + 2, uint8_t order = 1)
-: Animation_(x, y, w, h, order) {}
+    AnimStaticBGBox_(int16_t x, int16_t y, uint8_t w = 128, uint8_t h = TEXT_HEIGHT + 2, uint8_t order = 1)
+        : Animation_(x, y, w, h, order) {}
 
-void updateAnim() {}
-void drawAnim(JoyDisplay_ *pcanvas) {
-    pcanvas->fillRoundRect(mX, mY, mW, mH, 10, MENU_BOX_COLOR_BG);
-    pcanvas->drawRoundRect(mX, mY, mW, mH, 10, MENU_BOX_COLOR_FG);
-}
+    void updateAnim() {}
+    void drawAnim(JoyDisplay_ *pcanvas)
+    {
+        pcanvas->fillRoundRect(mX, mY, mW, mH, 10, MENU_BOX_COLOR_BG);
+        pcanvas->drawRoundRect(mX, mY, mW, mH, 10, MENU_BOX_COLOR_FG);
+    }
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -204,18 +203,18 @@ public:
         : Animation_(x, y, w, h, order, life, -1, 0, 0) {}
 
     // void inline setBitmap(const unsigned char *bmp) { mbitmap = bmp; }
-    void inline setText(String t) { mText = t;}
-    void inline setDrawBox(bool drawBox) { mDrawBox = drawBox;}
+    void inline setText(String t) { mText = t; }
+    void inline setDrawBox(bool drawBox) { mDrawBox = drawBox; }
     void updateAnim();
     void drawAnim(JoyDisplay_ *pcanvas);
 
     bool mDrawBox = false;
-    
+
     String mText;
     GFXfont const *mpFont = MENU_FONT_FACE;
     uint8_t mFontWidth = TEXT_WIDTH;
     int8_t mXOffset = 0;
-    int8_t mYOffset = - 2;
+    int8_t mYOffset = -2;
 };
 
 /// @brief 8 bit Static Sprite.  No Moving, No Animation. Registered with compositor
@@ -247,7 +246,6 @@ public:
         mlife = life;
         mdelay = delay;
     }
-    
 
     std::vector<String> mvStrings;
     uint8_t mposition = 0;

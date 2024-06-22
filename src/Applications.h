@@ -23,25 +23,20 @@ public:
     // for Animation_
     void updateAnim();
     void drawAnim(JoyDisplay_ *pcanvas);
-    void configure (Configuration *pconfig);
-    
-     uint8_t maMacroMap[12] = {0};
+    void configure(Configuration *pconfig);
+
+    uint8_t maMacroMap[12] = {0};
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////    RemapButtonsApp_     ///////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
 class RemapButtonsApp_ : public Applet_, public Animation_
 {
 public:
     RemapButtonsApp_(Compositor_ *comp, Applet_ *drawkeyapp)
-        : Applet_(comp), Animation_(0, 44, 128, 40, 6, -1, -1, 0, 0)
-        , mTextSpriteStatic(0, 64 - (2 * TEXT_HEIGHT), 128, TEXT_HEIGHT * 4, 5)
-        , mAnimInputDialog(comp, &mNewButtonValue, 1, 32, "New Value", 0, 64 - (2 * TEXT_HEIGHT), 128, TEXT_HEIGHT * 4, 6)
-        , mTextSpriteBanner(0, 128 - TEXT_HEIGHT - 1, 128, TEXT_HEIGHT, 1)
-        , mpappDrawKeysApp(drawkeyapp)
+        : Applet_(comp), Animation_(0, 44, 128, 40, 6, -1, -1, 0, 0), mTextSpriteStatic(0, 64 - (2 * TEXT_HEIGHT), 128, TEXT_HEIGHT * 4, 5), mAnimInputDialog(comp, &mNewButtonValue, 1, 32, "New Value", 0, 64 - (2 * TEXT_HEIGHT), 128, TEXT_HEIGHT * 4, 6), mTextSpriteBanner(0, 128 - TEXT_HEIGHT - 1, 128, TEXT_HEIGHT, 1), mpappDrawKeysApp(drawkeyapp)
     {
         std::vector<String> prompts = {"Hold Button", "<- to exit"};
         mTextSpriteStatic.setText(prompts);
@@ -76,32 +71,25 @@ public:
     bool mConfirmedTheButton = false;
 };
 
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////     AssignTurboApp      ///////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 
 class AssignTurboApp_ : public Applet_, public Animation_
 {
 
 public:
     AssignTurboApp_(Compositor_ *comp, Applet_ *drawkeyapp)
-        : Applet_(comp)
-        , Animation_(0, 44, 128, 40, 6, -1, -1, 0, 0)
-        , mTextSpriteStatic(0, 64 - (2 * TEXT_HEIGHT), 128, TEXT_HEIGHT * 4, 5)
-        , mTextSpriteBanner(0, 128 - TEXT_HEIGHT - 1, 128, TEXT_HEIGHT, 1)
-        //(Compositor_ *comp, I *inputVar, I lower, I upper, String prompt = "", int16_t x = 0, int16_t y = 64 - (TEXT_HEIGHT * 2) - 5, uint8_t w = 128, uint8_t h = TEXT_HEIGHT * 4 + 10, uint8_t order = 1, int16_t life = -1)
-        , mAnimInputDialogDelay (comp, &mTurboDelayValue, 10, 4000, "New Value", 0, 64 - (2 * TEXT_HEIGHT), 128, TEXT_HEIGHT * 4, 6)
-        , mAnimInputDialogOptions(comp, &mSelection, "Title")
-        , mpappDrawKeysApp(drawkeyapp)
+        : Applet_(comp), Animation_(0, 44, 128, 40, 6, -1, -1, 0, 0), mTextSpriteStatic(0, 64 - (2 * TEXT_HEIGHT), 128, TEXT_HEIGHT * 4, 5), mTextSpriteBanner(0, 128 - TEXT_HEIGHT - 1, 128, TEXT_HEIGHT, 1)
+          //(Compositor_ *comp, I *inputVar, I lower, I upper, String prompt = "", int16_t x = 0, int16_t y = 64 - (TEXT_HEIGHT * 2) - 5, uint8_t w = 128, uint8_t h = TEXT_HEIGHT * 4 + 10, uint8_t order = 1, int16_t life = -1)
+          ,
+          mAnimInputDialogDelay(comp, &mTurboDelayValue, 10, 4000, "New Value", 0, 64 - (2 * TEXT_HEIGHT), 128, TEXT_HEIGHT * 4, 6), mAnimInputDialogOptions(comp, &mSelection, "Title"), mpappDrawKeysApp(drawkeyapp)
 
     {
         std::vector<String> prompts = {"Hold Button", "<- to exit"};
         mTextSpriteStatic.setText(prompts);
         mTextSpriteBanner.setText("Edit Turbo");
         mTextSpriteBanner.setDrawBox(true);
-        
     }
 
     // for applet
@@ -114,12 +102,12 @@ public:
     void updateAnim();
     void drawAnim(JoyDisplay_ *pcanvas);
 
-    Applet_ * const mpappDrawKeysApp;
+    Applet_ *const mpappDrawKeysApp;
     AnimInputDialogInt_<uint16_t> mAnimInputDialogDelay;
     AnimInputDialogList_ mAnimInputDialogOptions;
     AnimTextPrompt_ mTextSpriteStatic;
     AnimTextStatic1Line_ mTextSpriteBanner;
-    
+
     uint16_t mTurboDelayValue;
     uint32_t mAppLastTime;
     uint16_t mAppDelay = 300;
@@ -129,9 +117,6 @@ public:
     bool mSetButtonLatching = false;
     uint8_t mEditButton;
     uint8_t mSelection;
-
 };
-
-
 
 #endif

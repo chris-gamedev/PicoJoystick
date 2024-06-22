@@ -30,7 +30,6 @@ void DirectButtonCommand_::executeCommand(uint8_t b, uint8_t value, uint16_t *pS
 
 //---------------------------------------------------------------------------------------
 
-
 void TurboButtonCommand_::executeCommand(uint8_t b, uint8_t value, uint16_t *pStateMap, uint32_t *pValueMap, uint8_t *pJoyState)
 {
   bool state = !digitalRead(ButtonPins[b]);
@@ -43,9 +42,9 @@ void TurboButtonCommand_::executeCommand(uint8_t b, uint8_t value, uint16_t *pSt
       if (mIsLatchingButton)
       {
         mLatchedOn = !mLatchedOn;
-#ifdef DEADBEEF        
+#ifdef DEADBEEF
         Serial.printf("----------latch switch---------------  %d\n", mLatchedOn);
-#endif        
+#endif
       }
     }
   }
@@ -63,6 +62,17 @@ void TurboButtonCommand_::executeCommand(uint8_t b, uint8_t value, uint16_t *pSt
     mActive = false;
 }
 
+//----------------------------------------------------------------------------------------
+
+void MacroButtonCommand_ ::executeCommand(uint8_t b, uint8_t value, uint16_t *pStateMap, uint32_t *pValueMap, uint8_t *pJoyState)
+{
+  if (!digitalRead(ButtonPins[b]))
+  {
+    *pStateMap |= MAKE_BUTTON_BITMASK_16(b);
+    Command_::addButtonToValues(b, value, mButtonsMask, pValueMap, pJoyState);
+  }
+}
+
 //---------------------------------------------------------------------------------------
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -74,7 +84,6 @@ MyJoystickBT_::MyJoystickBT_()
   this->use8bit(true);
   this->useManualSend(true);
 
-
   for (int i = 0; i < sizeof(ButtonPins) / sizeof(int); i++)
   {
     pinMode(ButtonPins[i], INPUT_PULLUP);
@@ -84,7 +93,6 @@ MyJoystickBT_::MyJoystickBT_()
   pinMode(BUTTON_DOWN_PIN, INPUT_PULLUP);
   pinMode(BUTTON_RIGHT_PIN, INPUT_PULLUP);
   pinMode(BUTTON_LEFT_PIN, INPUT_PULLUP);
-
 }
 
 /***************************************************************/
@@ -122,15 +130,15 @@ void MyJoystickBT_::pollJoystick()
   // MyJoystick.hat() takes joy position in degrees.  Internally,
   // it maps clockwise from North to 1-8 value.  0 is at rest.
   if (digitalRead(BUTTON_UP_PIN) == LOW) // read NORTH
-  { // read UP and combinations
+  {                                      // read UP and combinations
     mJoyState = maJoyValues[JOY_UP];
     if (digitalRead(BUTTON_RIGHT_PIN) == LOW)
       mJoyState = maJoyValues[JOY_UP_RIGHT];
     else if (digitalRead(BUTTON_LEFT_PIN) == LOW)
       mJoyState = maJoyValues[JOY_UP_LEFT];
   }
-  else if (digitalRead(BUTTON_DOWN_PIN) == LOW) //read SOUTH
-  { // read DOWN and combinations
+  else if (digitalRead(BUTTON_DOWN_PIN) == LOW) // read SOUTH
+  {                                             // read DOWN and combinations
     mJoyState = maJoyValues[JOY_DOWN];
     if (digitalRead(BUTTON_RIGHT_PIN) == LOW)
       mJoyState = maJoyValues[JOY_DOWN_RIGHT];

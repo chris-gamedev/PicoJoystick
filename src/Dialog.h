@@ -21,7 +21,7 @@ public:
         
     }
     // clang-format on
-    Compositor_ * const mpCompositor;
+    Compositor_ *const mpCompositor;
     AnimTextStatic1Line_ manimTitle;
     AnimStaticBGBox_ manimBGBox;
     virtual bool updateDialog() = 0;
@@ -52,8 +52,6 @@ public:
         manimTitle.setText(prompt);
         manimTitle.setDrawBox(false);
         manimPromptList.setDrawBox(false);
-
-        // start("", nullptr, {});
     }
 
     AnimTextPrompt_ manimPromptList;
@@ -185,7 +183,7 @@ bool AnimInputDialogInt_<I>::updateDialog()
         if (mLastTime + 350 < millis())
             mNewValue = (mNewValue - mLowerBound + 1) % mRange + mLowerBound;
     }
-    
+
     mValueString = String(mNewValue);
     while (mValueString.length() < String(mUpperBound).length())
         mValueString = "0" + mValueString;

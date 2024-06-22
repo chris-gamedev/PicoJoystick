@@ -1,6 +1,5 @@
 #include "MenuManager.h"
 
-
 extern AppletSwitcher_ AppSwitcher;
 extern Configurator_ Configurator;
 
@@ -12,15 +11,16 @@ void buttonsAssignTurbo_callback() { AppSwitcher.switchApp(AppletNames::ASSIGN_T
 void buttonsCreateMacro_callback() { AppSwitcher.switchApp(AppletNames::CREATE_MACRO); }
 void themeJoypad_callback() { AppSwitcher.setDefaultApp(AppletNames::SHOW_BUTTON_PRESSES); }
 void themeBlank_callback() { AppSwitcher.setDefaultApp(AppletNames::BLANK); }
-void themeDoFunThings_callback() { 
+void themeDoFunThings_callback()
+{
     Configurator.mConfig.funThings_on = !Configurator.mConfig.funThings_on;
     Configurator.configurate();
 }
 void bluetoothToggle_callback()
 {
-        // using these causes reconnection to result in IO Error 
-        // MyJoystickBT.begin();
-        // MyJoystickBT.end();
+    // using these causes reconnection to result in IO Error
+    // MyJoystickBT.begin();
+    // MyJoystickBT.end();
 }
 ////////////////////////////////////////////////////    CALLBACKS    ///////////////////////////////////////////////////////
 

@@ -114,9 +114,11 @@ public:
   {
 
     mHistory[b] = (mHistory[b] << 1) | digitalRead(b);
+#ifdef DEADBEEF
     Serial.printf("History of button %d is :", mHistory[b]);
     Serial.printf(BYTE_TO_BINARY_PATTERN, BYTE_TO_BINARY(mHistory[b]));
     Serial.printf("\n");
+#endif
     if (mHistory[b] == mMask)
       mHistory[b] = 0;
 
@@ -182,6 +184,12 @@ public:
   bool mIsLatchingButton;
 };
 
+class MacroButtonCommand_ : public Command_
+{
+public:
+  void executeCommand(uint8_t b, uint8_t value, uint16_t *pStateMap, uint32_t *pValueMap, uint8_t *pJoyState);
+};
+
 ////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////  MyJoystick  /////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -240,8 +248,8 @@ public:
   DirectButtonCommand_ mDefaultDirectCommand;
   TurboButtonCommand_ maTurboMacros[12];
   Command_ *maAssignedMacros[12] = {&mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand};
-  uint8_t maButtonValues[12] = { 1, 2, 4, 5, 7, 8, 11, 12, 13, 14, 15, 20};
-  uint8_t maJoyValues[9] = {JOY_IDLE, JOY_UP, JOY_UP_RIGHT, JOY_RIGHT, JOY_DOWN_RIGHT, JOY_DOWN, JOY_DOWN_LEFT, JOY_LEFT, JOY_UP_LEFT };
+  uint8_t maButtonValues[12] = {1, 2, 4, 5, 7, 8, 11, 12, 13, 14, 15, 20};
+  uint8_t maJoyValues[9] = {JOY_IDLE, JOY_UP, JOY_UP_RIGHT, JOY_RIGHT, JOY_DOWN_RIGHT, JOY_DOWN, JOY_DOWN_LEFT, JOY_LEFT, JOY_UP_LEFT};
   bool mJoyTransmit = true;
   uint16_t mPackedButtonStates;
   uint32_t mPackedButtonValues;

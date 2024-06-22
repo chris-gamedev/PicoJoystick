@@ -1,7 +1,6 @@
 #include "FunThings.h"
 #include "Pacman.h"
 
-
 FunThings_::FunThings_(Compositor_ *comp)
     // clang-format off
         : mpComp(comp)
@@ -13,14 +12,12 @@ FunThings_::FunThings_(Compositor_ *comp)
         , aScardey8_2(0, 60, 16, 16, 4, 150, 4, 1, 0, 2)
 // clang-format on
 {
-    
-        aSprite8_1.setBitmapArray(msPacMan_spritesheetR, msPacMan_spritesheet_size);
-        aSprite8_2.setBitmapArray(msPacMan_spritesheetR, msPacMan_spritesheet_size);
-        aSprite8_blinky.setBitmapArray(blinky_spritesheet, blinky_spritesheet_size);
-        aSprite8_pinky.setBitmapArray(pinky_spritesheet, pinky_spritesheetR_size);
-        aScardey8_1.setBitmapArray(scaredy_spritesheet, scaredy_spritesheet_size);
-        aScardey8_2.setBitmapArray(scaredy_spritesheet, scaredy_spritesheet_size);
-    
+    aSprite8_1.setBitmapArray(msPacMan_spritesheetR, msPacMan_spritesheet_size);
+    aSprite8_2.setBitmapArray(msPacMan_spritesheetR, msPacMan_spritesheet_size);
+    aSprite8_blinky.setBitmapArray(blinky_spritesheet, blinky_spritesheet_size);
+    aSprite8_pinky.setBitmapArray(pinky_spritesheet, pinky_spritesheetR_size);
+    aScardey8_1.setBitmapArray(scaredy_spritesheet, scaredy_spritesheet_size);
+    aScardey8_2.setBitmapArray(scaredy_spritesheet, scaredy_spritesheet_size);
 }
 
 void FunThings_::doTheFunThings()

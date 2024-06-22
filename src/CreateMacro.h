@@ -9,7 +9,7 @@
 extern MyJoystickBT_ MyJoystickBT;
 class PhraseTable_;
 
-typedef void (PhraseTable_:: *tableCommand)();
+typedef void (PhraseTable_::*tableCommand)();
 
 struct MacroWord
 {
@@ -18,7 +18,8 @@ struct MacroWord
     uint16_t mDuration = 50;
 };
 
-struct Macro {
+struct Macro
+{
     std::vector<MacroWord> phrase;
     String name;
     uint16_t disabledButtonsMap = 0;
@@ -43,19 +44,18 @@ public:
 class IRow_
 {
 public:
-    IRow_(uint8_t x, uint8_t y, struct MacroWord word = {0, 0, 0}) : mX(x), mY(y), mWord(word){}
+    IRow_(uint8_t x, uint8_t y, struct MacroWord word = {0, 0, 0}) : mX(x), mY(y), mWord(word) {}
     virtual void draw(JoyDisplay_ *pcanvas)
     {
         // pcanvas->drawRect(mX, mY, mW, mH, 0xF);
     }
-    struct MacroWord mWord = {1,2,3};
+    struct MacroWord mWord = {1, 2, 3};
     ICell_ *maCells[3];
     uint8_t mX = 0;
     uint8_t mY = 0;
     uint8_t mW = 0;
     uint8_t mH = 0;
 };
-
 
 ///////////////-------------------------  PhraseTable_ ----------------------////////////////////
 class PhraseTable_ : public Animation_
@@ -70,15 +70,22 @@ public:
     bool update();
     void addRowBefore();
     void removeRow();
-    void StartEditStatemap() {mEditingStateMap = true; manimTopMessage.mText = "Edit Buttons";}
-    void StartEditWordDuration() {mEditingWordDuration = true; manimTopMessage.mText = "Edit Duration";}
+    void StartEditStatemap()
+    {
+        mEditingStateMap = true;
+        manimTopMessage.mText = "Edit Buttons";
+    }
+    void StartEditWordDuration()
+    {
+        mEditingWordDuration = true;
+        manimTopMessage.mText = "Edit Duration";
+    }
     bool editWordDuration();
     bool editStatemap();
     void updateAnim() {};
     void drawAnim(JoyDisplay_ *pcanvas);
     std::vector<MacroWord> savePhrase();
     void deleteTable();
-
 
     std::vector<IRow_ *> mvpRows;
     int8_t mcursorX = 0;
@@ -93,14 +100,12 @@ public:
     uint16_t const mLowerDelayBound = 50;
 };
 
-
-
 ///////////////-------------------------     Cells    ----------------------////////////////////
 
-class AddCell_ : public ICell_ 
+class AddCell_ : public ICell_
 {
-    public:
-    AddCell_() 
+public:
+    AddCell_()
     {
         mX = 0;
         mW = 128;
@@ -112,7 +117,7 @@ class AddCell_ : public ICell_
 class DeleteCell_ : public ICell_
 {
 public:
-    DeleteCell_() 
+    DeleteCell_()
     {
         mX = 0;
         mW = 8;
@@ -130,7 +135,7 @@ public:
 class EditCell_ : public ICell_
 {
 public:
-    EditCell_(struct MacroWord *word) : mpWord(word) 
+    EditCell_(struct MacroWord *word) : mpWord(word)
     {
         mX = 9;
         mW = 86;
@@ -217,7 +222,6 @@ public:
         maCells[0] = &mAddCell;
         maCells[1] = &mAddCell;
         maCells[2] = &mAddCell;
-
     }
     void draw(JoyDisplay_ *pcanvas)
     {
@@ -236,20 +240,15 @@ public:
 
 class CreateMacroApp_ : public Applet_
 {
-    public:
+public:
     CreateMacroApp_(Compositor_ *comp, Applet_ *drawkeyapp)
-        : Applet_(comp)
-        , mPhraseTable(0, 18, {})
-        , mpappDrawKeysApp(drawkeyapp)
-        , manimBottom(0, 112, 128, 15)
-        , manimInputDialogSave(comp, &mSave, "Save?")
-        
+        : Applet_(comp), mPhraseTable(0, 18, {}), mpappDrawKeysApp(drawkeyapp), manimBottom(0, 112, 128, 15), manimInputDialogSave(comp, &mSave, "Save?")
 
     {
         manimBottom.setText("Edit Macro");
         manimBottom.mpFont = &manifold6pt7b;
         manimBottom.mFontWidth = 7;
-        manimBottom.mYOffset = - 3;
+        manimBottom.mYOffset = -3;
         manimBottom.mDrawBox = true;
     }
 
