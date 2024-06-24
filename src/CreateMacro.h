@@ -11,19 +11,19 @@ class PhraseTable_;
 
 typedef void (PhraseTable_::*tableCommand)();
 
-struct MacroWord
-{
-    uint16_t mButtonStateMap = 0;
-    uint8_t mJoyState = 0;
-    uint16_t mDuration = 50;
-};
+// struct MacroWord
+// {
+//     uint16_t mButtonStateMap = 0;
+//     uint8_t mJoyState = 0;
+//     uint16_t mDuration = 50;
+// };
 
-struct Macro
-{
-    std::vector<MacroWord> phrase;
-    String name;
-    uint16_t disabledButtonsMap = 0;
-};
+// struct Macro
+// {
+//     std::vector<MacroWord> phrase;
+//     String name;
+//     uint16_t disabledButtonsMap = 0;
+// };
 
 class ICell_
 {

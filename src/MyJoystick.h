@@ -8,6 +8,9 @@
 
 // clang-format off
 // physical pinout of buttons and Joystick
+#define NUMBER_OF_BUTTONS 12
+#define NUMBER_OF_CUSTOM_MACROS 8
+
 #define BUTTON_00_PIN     0
 #define BUTTON_01_PIN     1
 #define BUTTON_02_PIN     2
@@ -24,7 +27,6 @@
 #define BUTTON_RIGHT_PIN  7
 #define BUTTON_DOWN_PIN   8 
 #define BUTTON_UP_PIN     9
-
 
 
 // button bitmasks
@@ -129,6 +131,22 @@ public:
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////   COMMANDS AND MACROS   ///////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+struct MacroWord
+{
+  uint16_t mButtonStateMap = 0;
+  uint8_t mJoyState = 0;
+  uint16_t mDuration = 50;
+};
+
+struct Macro
+{
+  std::vector<MacroWord> phrase;
+  String name = "-blank-";
+  uint16_t enabledButtonsMap = 0xFFFF;
+  uint8_t enabledJoystickState = 0xFF;
+};
+
 class Command_
 {
 public:
@@ -188,6 +206,9 @@ class MacroButtonCommand_ : public Command_
 {
 public:
   void executeCommand(uint8_t b, uint8_t value, uint16_t *pStateMap, uint32_t *pValueMap, uint8_t *pJoyState);
+  struct Macro mMacro;
+  uint8_t mCurrentWord = 0;
+  bool mForceDisableLock = false;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////
@@ -199,7 +220,6 @@ class MyJoystickBT_ : public JoystickBT_, public IConfigurable_, public Debounce
 public:
   MyJoystickBT_();
   void pollJoystick();
-  void setHat(uint8_t angle);
   uint32_t inline getPackedKeyPresses() { return mPackedButtonStates; }
   uint8_t inline getJoystickState() { return mJoyState; }
   uint8_t inline *getButtonValues() { return maButtonValues; }
@@ -216,7 +236,14 @@ public:
   bool inline joyJustReleased(uint8_t jstate) { return mJoyState != jstate && mLastJoyState == jstate; }
   bool inline joyisFree(uint8_t jstate) { return mJoyState != jstate && mLastJoyState != jstate; }
   // transmit stuff
-  void inline setJoyTransmit(bool transmit) { mJoyTransmit = transmit; }
+  void inline toggleJoyTransmit(bool transmit) { 
+    mJoyTransmit = transmit;
+    if (!transmit) {
+      this->data.buttons = 0;
+      this->data.hat = 0;
+      this->send_now();
+    }
+     }
   void inline setPauseButton(uint8_t bValue) { mPauseButtonValue = bValue; }
   void inline sendPauseButtonPress()
   {
@@ -229,6 +256,16 @@ public:
   inline void setTurboMacroDelay(uint8_t button, uint16_t delay) { maTurboMacros[button].mDelay = delay; }
   inline void setTurboMacroLatching(uint8_t button, bool latch) { maTurboMacros[button].mIsLatchingButton = latch; }
   inline uint16_t getTurboMacroDelay(uint8_t button) { return maTurboMacros[button].mDelay; }
+  inline void setToCustomMacro(uint8_t button, uint8_t macro) { maAssignedMacros[button] = & maMacros[macro];}
+
+  void forceDisableCustomMacros(bool disable)
+  {
+    for (int i = 0; i < NUMBER_OF_CUSTOM_MACROS; i++)
+    {
+      maMacros[i].mActive = false;
+      maMacros[i].mForceDisableLock = disable;
+    }
+  }
 
   void inline setButtonValue(uint8_t b, uint8_t v)
   {
@@ -246,9 +283,10 @@ public:
   }
 
   DirectButtonCommand_ mDefaultDirectCommand;
-  TurboButtonCommand_ maTurboMacros[12];
-  Command_ *maAssignedMacros[12] = {&mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand};
-  uint8_t maButtonValues[12] = {1, 2, 4, 5, 7, 8, 11, 12, 13, 14, 15, 20};
+  TurboButtonCommand_ maTurboMacros[NUMBER_OF_BUTTONS];
+  MacroButtonCommand_ maMacros[NUMBER_OF_CUSTOM_MACROS];
+  Command_ *maAssignedMacros[NUMBER_OF_BUTTONS] = {&maMacros[0], &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand};
+  uint8_t maButtonValues[NUMBER_OF_BUTTONS] = {1, 2, 4, 5, 7, 8, 11, 12, 13, 14, 15, 20};
   uint8_t maJoyValues[9] = {JOY_IDLE, JOY_UP, JOY_UP_RIGHT, JOY_RIGHT, JOY_DOWN_RIGHT, JOY_DOWN, JOY_DOWN_LEFT, JOY_LEFT, JOY_UP_LEFT};
   bool mJoyTransmit = true;
   uint16_t mPackedButtonStates;

@@ -9,6 +9,7 @@ void myCallback() { Serial.println("inside myCallback"); }
 void buttonsRemap_callback() { AppSwitcher.switchApp(AppletNames::REMAP_BUTTONS); }
 void buttonsAssignTurbo_callback() { AppSwitcher.switchApp(AppletNames::ASSIGN_TURBO); }
 void buttonsCreateMacro_callback() { AppSwitcher.switchApp(AppletNames::CREATE_MACRO); }
+void buttonsAssignMacro_callback() { AppSwitcher.switchApp(AppletNames::ASSIGN_MACRO); }
 void themeJoypad_callback() { AppSwitcher.setDefaultApp(AppletNames::SHOW_BUTTON_PRESSES); }
 void themeBlank_callback() { AppSwitcher.setDefaultApp(AppletNames::BLANK); }
 void themeDoFunThings_callback()
@@ -45,7 +46,8 @@ void MenuManager_::initApp()
     mLowerTextSpriteStatic.mlife = -1;
     mpCompositor->registerAnimation(&mUpperTextSpriteStatic, CanvasType::TOP);
     mpCompositor->registerAnimation(this, CanvasType::BG);
-    MyJoystickBT.setJoyTransmit(false);
+    MyJoystickBT.toggleJoyTransmit(false);
+    MyJoystickBT.forceDisableCustomMacros(true);
 }
 
 void MenuManager_::cleanupApp()
@@ -53,7 +55,8 @@ void MenuManager_::cleanupApp()
     mUpperTextSpriteStatic.mlife = 0;
     mLowerTextSpriteStatic.mlife = 0;
     this->mlife = 0;
-    MyJoystickBT.setJoyTransmit(true);
+    MyJoystickBT.toggleJoyTransmit(true);
+    MyJoystickBT.forceDisableCustomMacros(false);
 }
 
 AppletStatus::TAppletStatus MenuManager_::updateApp()
@@ -127,7 +130,7 @@ void MenuManager_::buildMenu()
             pAutoFire->addChild(new Leaf_("Wizard", myCallback, pAutoFire));
         pButtons->addChild(new SubMenu_("Macros", mMenuRoot.mChildren[0]));
             Menu_* pMacros = pButtons->mChildren[2];
-            pMacros->addChild(new Leaf_("Assign", myCallback, pMacros));
+            pMacros->addChild(new Leaf_("Assign", buttonsAssignMacro_callback, pMacros));
             pMacros->addChild(new Leaf_("Edit", myCallback, pMacros));
             pMacros->addChild(new Leaf_("Wizard", myCallback, pMacros));
             pMacros->addChild(new Leaf_("Manual", buttonsCreateMacro_callback, pMacros));

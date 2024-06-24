@@ -44,7 +44,7 @@ void DrawKeyPressesApp_::drawAnim(JoyDisplay_ *pcanvas)
         if (packedKeyPresses & MAKE_BUTTON_BITMASK_16(i))
             buttonCenterColor = 0x2;
         else if (!(Command_::sEnabledButtonsMask & MAKE_BUTTON_BITMASK_16(i)))
-            buttonCenterColor = 0x6; // disabled
+            buttonCenterColor = 0x5; // disabled
         else
             buttonCenterColor = 0x8; // enabled
 
@@ -94,8 +94,7 @@ void DrawKeyPressesApp_::drawAnim(JoyDisplay_ *pcanvas)
     case JOY_LEFT:
     case JOY_UP_LEFT:
         // WEST
-        if (joyState == 8)
-            pcanvas->drawBitmap(orgX - 21, orgY - 10, bitmap_arrowLeft, 21, 21, 0xF);
+        pcanvas->drawBitmap(orgX - 21, orgY - 10, bitmap_arrowLeft, 21, 21, 0xF);
         break;
     }
 }
@@ -125,6 +124,8 @@ void RemapButtonsApp_::initApp()
     mTextSpriteBanner.mlife = -1;
     mpCompositor->registerAnimation(&mTextSpriteBanner, CanvasType::BG);
     mAppDrawPrompt = true;
+    MyJoystickBT.forceDisableCustomMacros(true);
+    MyJoystickBT.toggleJoyTransmit(false);
     startFromScratch();
 }
 
@@ -195,6 +196,8 @@ void RemapButtonsApp_::cleanupApp()
     mpappDrawKeysApp->cleanupApp();
     mlife = 0;
     mTextSpriteBanner.mlife = 0;
+    MyJoystickBT.forceDisableCustomMacros(false);
+    MyJoystickBT.toggleJoyTransmit(true);
 }
 
 void RemapButtonsApp_::updateAnim()
@@ -211,15 +214,13 @@ void RemapButtonsApp_::drawAnim(JoyDisplay_ *pcanvas)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////     Assign Macros       ///////////////////////////////////////////
+////////////////////////////////////////////     Assign Turbo        ///////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void AssignTurboApp_::initApp()
 {
     mpappDrawKeysApp->initApp();
 
-    this->mlife = -1;
-    mpCompositor->registerAnimation(this, CanvasType::TOP);
     mAppLastTime = millis();
 
     mTextSpriteStatic.setLife(50);
@@ -228,6 +229,10 @@ void AssignTurboApp_::initApp()
 
     mTextSpriteBanner.mlife = -1;
     mpCompositor->registerAnimation(&mTextSpriteBanner, CanvasType::BG);
+
+    MyJoystickBT.forceDisableCustomMacros(true);
+    MyJoystickBT.toggleJoyTransmit(false);
+
     startFromScratch();
 }
 
@@ -331,18 +336,138 @@ AppletStatus::TAppletStatus AssignTurboApp_::updateApp()
 void AssignTurboApp_::cleanupApp()
 {
     mpappDrawKeysApp->cleanupApp();
-    mlife = 0;
     mTextSpriteBanner.mlife = 0;
-}
 
-void AssignTurboApp_::updateAnim()
-{
-}
-
-void AssignTurboApp_::drawAnim(JoyDisplay_ *pcanvas)
-{
+    MyJoystickBT.forceDisableCustomMacros(false);
+    MyJoystickBT.toggleJoyTransmit(true);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////     Create Macro        ///////////////////////////////////////////
+////////////////////////////////////////////     Assign Macros       ///////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void AssignMacroApp_::initApp()
+{
+    mpappDrawKeysApp->initApp();
+
+    mAppLastTime = millis();
+
+    mTextSpriteStatic.mlife = 50;
+    mTextSpriteStatic.mDrawBox = true;
+    mTextSpriteStatic.setText({"Hold Button", "<- to exit"});
+    mpCompositor->registerAnimation(&mTextSpriteStatic, CanvasType::TOP);
+
+    mTextSpriteBanner.mlife = -1;
+    mpCompositor->registerAnimation(&mTextSpriteBanner, CanvasType::BG);
+
+    MyJoystickBT.forceDisableCustomMacros(true);
+    MyJoystickBT.toggleJoyTransmit(false);
+
+    startFromScratch();
+}
+
+void AssignMacroApp_::startFromScratch()
+{
+    mEditButton = -1;
+    mFoundTheButton = false;
+    mFoundTheButton = false;
+    mSetButtonMode = false;
+}
+
+bool AssignMacroApp_::exitApp()
+{
+
+    if (MyJoystickBT.joyJustPressed(JOY_LEFT))
+    {
+        startFromScratch();
+        mAppLastTime = millis();
+        return false;
+    }
+    else if (MyJoystickBT.joyHeld(JOY_LEFT))
+    {
+        if (mAppLastTime + mAppDelay > millis())
+            return false;
+        else
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+AppletStatus::TAppletStatus AssignMacroApp_::updateApp()
+{
+    mpappDrawKeysApp->updateApp();
+
+    if (exitApp())
+    {
+        return AppletStatus::RETURN;
+    }
+
+    if (!mFoundTheButton)
+    {
+
+        mEditButton = Applet_::findHeldButton(MyJoystickBT.getPackedKeyPresses(), 1500);
+        if (mEditButton == 255)
+            return AppletStatus::ALIVE;
+
+        mFoundTheButton = true;
+        // clang-format off
+        mAnimInputDialogOptions.start("Macro:", &mSelection, {
+                        "1" + MyJoystickBT.maMacros[0].mMacro.name
+                      , "2" + MyJoystickBT.maMacros[1].mMacro.name
+                      , "3" + MyJoystickBT.maMacros[2].mMacro.name
+                      , "4" + MyJoystickBT.maMacros[3].mMacro.name
+                      , "5" + MyJoystickBT.maMacros[4].mMacro.name
+                      , "6" + MyJoystickBT.maMacros[5].mMacro.name
+                      , "7" + MyJoystickBT.maMacros[6].mMacro.name
+                      , "8" + MyJoystickBT.maMacros[7].mMacro.name
+                      , "None (default)"});
+                      
+        // clang-format on
+        return AppletStatus::ALIVE;
+    }
+    else if (!mSetButtonMode)
+    {
+        if (mAnimInputDialogOptions.updateDialog())
+            return AppletStatus::ALIVE;
+
+        if (mAnimInputDialogOptions.mCancel){
+            mFoundTheButton = false;
+            return AppletStatus::ALIVE;
+        }
+        if (mSelection == NUMBER_OF_CUSTOM_MACROS){
+            MyJoystickBT.setToDefaultMacro(mEditButton);
+            mFoundTheButton = false;
+            return AppletStatus::ALIVE;
+        }
+
+        if (MyJoystickBT.maMacros[mSelection].mMacro.phrase.size() == 0)
+        {
+            mTextSpriteStatic.setText({"Empty Macro", "Try Again"});
+            mTextSpriteStatic.mlife = 50;
+            mpCompositor->registerAnimation(&mTextSpriteStatic, CanvasType::FG);
+            mFoundTheButton = false;
+            return AppletStatus::ALIVE;
+        }
+        
+        
+        MyJoystickBT.setToCustomMacro(mEditButton, mSelection);
+        Configurator.mConfig.drawKeypresses_macroMap[mEditButton] = mSelection + 1;
+        Configurator.configurate();
+        startFromScratch();
+
+        return AppletStatus::ALIVE;
+    }
+
+    return AppletStatus::ALIVE;
+}
+
+void AssignMacroApp_::cleanupApp()
+{
+    mpappDrawKeysApp->cleanupApp();
+    mTextSpriteBanner.mlife = 0;
+
+    MyJoystickBT.forceDisableCustomMacros(false);
+    MyJoystickBT.toggleJoyTransmit(true);
+}

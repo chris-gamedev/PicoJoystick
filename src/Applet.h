@@ -10,6 +10,7 @@ namespace AppletNames
         REMAP_BUTTONS,
         ASSIGN_TURBO,
         CREATE_MACRO,
+        ASSIGN_MACRO,
         BLANK,
         MAX_VALUE
     };
@@ -93,7 +94,7 @@ public:
         // WHEN ADDING:  REMEMBER TO EXPAND THE ARRAY IN THE DAMN HEADER!!!
 
         mApplets[AppletNames::BLANK] = &mBlankApplet;
-        mCurrentApp = AppletNames::BLANK;
+        mCurrentApp = AppletNames::ASSIGN_MACRO;
     }
     void inline addApp(AppletNames::TAppletNames name, Applet_ *app) { mApplets[name] = app; }
     void inline setDefaultApp(AppletNames::TAppletNames app) { mDefaultApp = app; }

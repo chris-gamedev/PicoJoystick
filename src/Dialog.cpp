@@ -43,13 +43,13 @@ bool AnimInputDialogList_::updateDialog()
         endDialog();
         return false;
     }
-    if (MyJoystickBT.joyJustPressed(JOY_DOWN)) // decrement
+    if (MyJoystickBT.joyJustPressed(JOY_UP)) // decrement
     {
         mPosition = (mPosition + range - 1) % range;
         manimPromptList.setPosition(mPosition);
     }
 
-    if (MyJoystickBT.joyJustPressed(JOY_UP)) // increment
+    if (MyJoystickBT.joyJustPressed(JOY_DOWN)) // increment
     {
         mPosition = (mPosition + 1) % range;
         manimPromptList.setPosition(mPosition);

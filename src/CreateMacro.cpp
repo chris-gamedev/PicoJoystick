@@ -177,16 +177,18 @@ void PhraseTable_::drawAnim(JoyDisplay_ *pcanvas)
 
 std::vector<MacroWord> PhraseTable_::savePhrase()
 {
-    std::vector<MacroWord> phrase(mvpRows.size() / 2);
+    std::vector<MacroWord> phrase;
     if (mvpRows.size() > 1)
     {
         std::vector<IRow_ *>::iterator it = mvpRows.begin() + 1;
         while (it != mvpRows.end())
         {
+            Serial.printf("Inside saving.  Word is : %d, %d, %d\n", (*it)->mWord.mButtonStateMap, (*it)->mWord.mJoyState, (*it)->mWord.mDuration);
             phrase.push_back((*it)->mWord);
             it += 2;
         }
     }
+    Serial.printf("phrase size is UGA %d\n", phrase.size());
     return phrase;
 }
 
@@ -336,6 +338,8 @@ void CreateMacroApp_::initApp()
     mPhraseTable.mlife = -1;
     mpCompositor->registerAnimation(&manimBottom, CanvasType::FG);
     mpCompositor->registerAnimation(&mPhraseTable, CanvasType::FG);
+    MyJoystickBT.forceDisableCustomMacros(true);
+    MyJoystickBT.toggleJoyTransmit(false);
     startFromScratch();
 }
 
@@ -372,14 +376,19 @@ AppletStatus::TAppletStatus CreateMacroApp_::updateApp()
         switch (mSave)
         {
         case 0:
-            mMacro.phrase = mPhraseTable.savePhrase();
+            MyJoystickBT.maMacros[0].mMacro.phrase = this->mMacro.phrase;
+            Serial.print("saving. output is: \n");
+            for (auto& it : MyJoystickBT.maMacros[0].mMacro.phrase){
+                Serial.printf("size of returned phrase is %d\n", MyJoystickBT.maMacros[0].mMacro.phrase.size());
+                Serial.printf("word:  b= %d, j=%d, dur=%d\n", it.mButtonStateMap, it.mJoyState, it.mDuration);
+            }
             break;
         case 1:
             break;
         }
         startFromScratch();
 
-        return AppletStatus::ENDED;
+        return AppletStatus::RETURN;
         // mPhraseTable.deleteTable();
     }
     return AppletStatus::ALIVE;
@@ -387,7 +396,10 @@ AppletStatus::TAppletStatus CreateMacroApp_::updateApp()
 
 void CreateMacroApp_::cleanupApp()
 {
+
     mPhraseTable.deleteTable();
     mPhraseTable.mlife = 0;
     manimBottom.mlife = 0;
+    MyJoystickBT.forceDisableCustomMacros(false);
+    MyJoystickBT.toggleJoyTransmit(true);
 }

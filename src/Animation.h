@@ -22,10 +22,11 @@ public:
          * @param w - width
          * @param h - height
          * @param order - draw order 
-         * @param life - number of updates before kill
-         * @param delay - compositor clock ticks per update
+         * @param life - number of updates before kill. -1 for no kill
+         * @param delay - compositor clock ticks per update. -1 for no delay
          * @param dx - delta X to move per tick
          * @param dy - delta Y to move per tick
+         * @param framedelay - ticks between each spritesheet frame
          * 
         */
         Animation_(int16_t x, int16_t y, uint8_t w, uint8_t h
@@ -231,7 +232,7 @@ public:
         mvStrings.clear();
         mvStrings.push_back(s);
     }
-    void inline setText(std::vector<String> strings) { mvStrings = strings; };
+    void inline setText(std::initializer_list<String> strings) { mvStrings = strings; };
     void inline setText(std::vector<String> strings, uint8_t pos)
     {
         mvStrings = strings;
