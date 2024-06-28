@@ -248,22 +248,15 @@ void AssignTurboApp_::startFromScratch()
 
 bool AssignTurboApp_::exitApp()
 {
-
     if (MyJoystickBT.joyJustPressed(JOY_LEFT))
     {
         startFromScratch();
         mAppLastTime = millis();
-        return false;
     }
     else if (MyJoystickBT.joyHeld(JOY_LEFT))
-    {
-        if (mAppLastTime + mAppDelay > millis())
-            return false;
-        else
-        {
+        if (mAppLastTime + mAppDelay < millis())
             return true;
-        }
-    }
+
     return false;
 }
 
@@ -278,7 +271,6 @@ AppletStatus::TAppletStatus AssignTurboApp_::updateApp()
 
     if (!mFoundTheButton)
     {
-
         mEditButton = Applet_::findHeldButton(MyJoystickBT.getPackedKeyPresses(), 1500);
         if (mEditButton == 255)
             return AppletStatus::ALIVE;
@@ -376,22 +368,15 @@ void AssignMacroApp_::startFromScratch()
 
 bool AssignMacroApp_::exitApp()
 {
-
     if (MyJoystickBT.joyJustPressed(JOY_LEFT))
     {
         startFromScratch();
         mAppLastTime = millis();
-        return false;
     }
     else if (MyJoystickBT.joyHeld(JOY_LEFT))
-    {
-        if (mAppLastTime + mAppDelay > millis())
-            return false;
-        else
-        {
+        if (mAppLastTime + mAppDelay < millis())
             return true;
-        }
-    }
+
     return false;
 }
 
@@ -400,13 +385,10 @@ AppletStatus::TAppletStatus AssignMacroApp_::updateApp()
     mpappDrawKeysApp->updateApp();
 
     if (exitApp())
-    {
         return AppletStatus::RETURN;
-    }
 
     if (!mFoundTheButton)
     {
-
         mEditButton = Applet_::findHeldButton(MyJoystickBT.getPackedKeyPresses(), 1500);
         if (mEditButton == 255)
             return AppletStatus::ALIVE;
@@ -414,16 +396,16 @@ AppletStatus::TAppletStatus AssignMacroApp_::updateApp()
         mFoundTheButton = true;
         // clang-format off
         mAnimInputDialogOptions.start("Macro:", &mSelection, {
-                        "1" + MyJoystickBT.maMacros[0].mMacro.name
-                      , "2" + MyJoystickBT.maMacros[1].mMacro.name
-                      , "3" + MyJoystickBT.maMacros[2].mMacro.name
-                      , "4" + MyJoystickBT.maMacros[3].mMacro.name
-                      , "5" + MyJoystickBT.maMacros[4].mMacro.name
-                      , "6" + MyJoystickBT.maMacros[5].mMacro.name
-                      , "7" + MyJoystickBT.maMacros[6].mMacro.name
-                      , "8" + MyJoystickBT.maMacros[7].mMacro.name
-                      , "None (default)"});
-                      
+                        MyJoystickBT.maMacros[0].mMacro.name
+                      , MyJoystickBT.maMacros[1].mMacro.name
+                      , MyJoystickBT.maMacros[2].mMacro.name
+                      , MyJoystickBT.maMacros[3].mMacro.name
+                      , MyJoystickBT.maMacros[4].mMacro.name
+                      , MyJoystickBT.maMacros[5].mMacro.name
+                      , MyJoystickBT.maMacros[6].mMacro.name
+                      , MyJoystickBT.maMacros[7].mMacro.name
+                      , "None"});
+
         // clang-format on
         return AppletStatus::ALIVE;
     }
@@ -432,11 +414,13 @@ AppletStatus::TAppletStatus AssignMacroApp_::updateApp()
         if (mAnimInputDialogOptions.updateDialog())
             return AppletStatus::ALIVE;
 
-        if (mAnimInputDialogOptions.mCancel){
+        if (mAnimInputDialogOptions.mCancel)
+        {
             mFoundTheButton = false;
             return AppletStatus::ALIVE;
         }
-        if (mSelection == NUMBER_OF_CUSTOM_MACROS){
+        if (mSelection == NUMBER_OF_CUSTOM_MACROS)
+        {
             MyJoystickBT.setToDefaultMacro(mEditButton);
             mFoundTheButton = false;
             return AppletStatus::ALIVE;
@@ -450,8 +434,7 @@ AppletStatus::TAppletStatus AssignMacroApp_::updateApp()
             mFoundTheButton = false;
             return AppletStatus::ALIVE;
         }
-        
-        
+
         MyJoystickBT.setToCustomMacro(mEditButton, mSelection);
         Configurator.mConfig.drawKeypresses_macroMap[mEditButton] = mSelection + 1;
         Configurator.configurate();

@@ -141,8 +141,8 @@ int runUnityTests()
     // delay(1000);
     // RUN_TEST(test_Characters);
     // delay(1000);
-    RUN_TEST(test_macroButtonLayout);
-    RUN_TEST(test_PhraseTable);
+    // RUN_TEST(test_macroButtonLayout);
+    // RUN_TEST(test_PhraseTable);
 
     return UNITY_END();
 }

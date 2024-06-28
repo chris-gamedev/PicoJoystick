@@ -2,10 +2,14 @@
 #define CONFIGURATION_H
 #include <vector>
 #include <array>
+#include <map>
+#include <FS.h>
+#include <LittleFS.h>
 
 namespace MacroMapType
 {
-    enum TMacroMapType {
+    enum TMacroMapType
+    {
         none,
         macro1,
         macro2,
@@ -20,23 +24,41 @@ namespace MacroMapType
     };
 }
 
-struct Configuration
+namespace ConfigTokens
+{
+    enum TConfigTokens
+    {
+        global_menuHotKey_ON,
+        joystick_joyValueMap,
+        joystick_buttonValueMap,
+        joystick_transmitToHost,
+        drawKeyPresses_macroMap,
+        funThings_on
+
+    };
+}
+
+typedef struct Configuration
 {
     // Global
     bool global_menuHotkey_on = true;
-
-    // MyJoystick
-    uint8_t joystick_joyValueMap[9] = {0, 1, 2, 3, 4, 5, 6, 7, 8};
-    uint8_t joystick_buttonValueMap[12] = {1, 2, 4, 5, 7, 8, 11, 12, 13, 14, 15, 20};
+    std::array<uint8_t, 9> joystick_joyValueMap = {0, 1, 2, 3, 4, 5, 6, 7, 8};
+    std::array<uint8_t, 12> joystick_buttonValueMap = {1, 2, 4, 5, 7, 8, 11, 12, 13, 14, 15, 20};
     bool joystick_transmitToHost = true;
-    // Menu
-
-    // Apps
     std::array<uint8_t, 12> drawKeypresses_macroMap = {MacroMapType::none};
-
-    // funStuff
     bool funThings_on = true;
-};
+
+    inline bool operator==(const Configuration &rhs)
+    {
+        bool rVal;
+        return this->global_menuHotkey_on == rhs.global_menuHotkey_on &&
+               this->joystick_joyValueMap == rhs.joystick_joyValueMap &&
+               this->joystick_buttonValueMap == rhs.joystick_buttonValueMap &&
+               this->joystick_transmitToHost == rhs.joystick_transmitToHost &&
+               this->drawKeypresses_macroMap == rhs.drawKeypresses_macroMap &&
+               this->funThings_on == rhs.funThings_on;
+    }
+} Configuration;
 
 class IConfigurable_
 {
@@ -51,14 +73,117 @@ public:
     {
         mvpConfigurables = list;
     }
-
-    struct Configuration mConfig;
+    // clang-format off
+    const std::map<String, ConfigTokens::TConfigTokens> configTokenMap = {
+        {String("GLOBAL_MENUHOTKEY_ON"), ConfigTokens::global_menuHotKey_ON}
+        , {String("JOYSTICK_JOYVALUEMAP"), ConfigTokens::joystick_joyValueMap}
+        , {String("JOYSTICK_BUTTONVALUEMAP"), ConfigTokens::joystick_buttonValueMap}
+        , {String("JOYSTICK_TRANSMITTOHOST"), ConfigTokens::joystick_transmitToHost}
+        , {String("DRAWKEYPRESSES_MACROMAP"), ConfigTokens::drawKeyPresses_macroMap}
+        , {String("FUNTHINGS_ON"), ConfigTokens::funThings_on}
+        };
+    // clang-format on
+    Configuration mConfig;
     std::vector<IConfigurable_ *> mvpConfigurables;
     void registerConfigurable(IConfigurable_ *c) { mvpConfigurables.push_back(c); }
     void configurate()
     {
         for (auto it : mvpConfigurables)
             it->configure(&mConfig);
+    }
+
+    File openConfigFile(const char *filename, const char *mode);
+    bool parsableLine(String line, int lineCounter);
+    std::vector<uint16_t> buildTokenVector(String *token, String value, int lineCounter);
+    int importConfigFile(const char *filename, Configuration *pconfig);
+
+    void saveConfigToFile(const char *filename, Configuration *pconfig);
+
+    void saveTokenToConfig(String token, String value, Configuration *pconfig)
+    {
+        auto t = configTokenMap.find(token);
+        if (t == configTokenMap.end())
+        {
+            Serial.printf("--TOKEN %s NOT FOUND IN CONFIGURATION--\n", token.c_str());
+            return;
+        }
+    }
+
+    void saveTokenToConfig(String token, std::vector<uint16_t> values, Configuration *pconfig)
+    {
+        auto t = configTokenMap.find(token);
+        if (t == configTokenMap.end())
+        {
+            Serial.printf("--TOKEN %s NOT FOUND IN CONFIGURATION--\n", token.c_str());
+            return;
+        }
+        int i = 0;
+        switch (t->second)
+        {
+        case ConfigTokens::joystick_joyValueMap:
+            assignTokenValuesToArray(token, pconfig->joystick_joyValueMap, &values);
+            break;
+        case ConfigTokens::joystick_buttonValueMap:
+            assignTokenValuesToArray(token, pconfig->joystick_buttonValueMap, &values);
+            break;
+        case ConfigTokens::drawKeyPresses_macroMap:
+            assignTokenValuesToArray(token, pconfig->drawKeypresses_macroMap, &values);
+            break;
+        case ConfigTokens::global_menuHotKey_ON:
+            pconfig->global_menuHotkey_on = static_cast<bool>(values[0]);
+            break;
+        case ConfigTokens::joystick_transmitToHost:
+            pconfig->joystick_transmitToHost = static_cast<bool>(values[0]);
+            break;
+        case ConfigTokens::funThings_on:
+            pconfig->funThings_on = static_cast<bool>(values[0]);
+            break;
+        }
+        Serial.printf("%s, size:%d -- seemed to be successful\n", token.c_str(), values.size());
+    }
+
+    template <std::size_t N>
+    void assignTokenValuesToArray(String token, std::array<uint8_t, N> &arr, std::vector<uint16_t> *values)
+    {
+        if (values->size() != arr.size())
+        {
+            Serial.printf("%s : --INVALID NUMBER OF VALUES--\n", token.c_str());
+            return;
+        }
+        int i = 0;
+        for (auto it : *values)
+            arr[i++] = static_cast<uint8_t>(it);
+    }
+    template <std::size_t N>
+    void tokenizeArrayToFile(String name, File f, const std::array<uint8_t, N> &arr);
+
+    void printFileToSerial(const char *filename)
+    {
+
+        if (!LittleFS.begin())
+        {
+            Serial.printf("--ERROR-- Failed to open file system...\n");
+        }
+        File f = LittleFS.open(filename, "r");
+        if (!f)
+        {
+            Serial.printf("--ERROR-- Failed to open file \"%s\" for \"r\"\n", filename);
+            return;
+        }
+        delay(2000);
+
+        int lineCounter = 0;
+        Serial.printf("starting loop\n");
+        while (f.available())
+        {
+            lineCounter++;
+            String line = f.readStringUntil('\n');
+            line.trim();
+            Serial.printf("%s\n", line.c_str());
+        }
+        Serial.printf("Line Count: %d\n", lineCounter);
+        f.close();
+        LittleFS.end();
     }
 };
 
