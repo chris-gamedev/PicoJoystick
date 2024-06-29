@@ -36,7 +36,13 @@ class RemapButtonsApp_ : public Applet_, public Animation_
 {
 public:
     RemapButtonsApp_(Compositor_ *comp, Applet_ *drawkeyapp)
-        : Applet_(comp), Animation_(0, 44, 128, 40, 6, -1, -1, 0, 0), mTextSpriteStatic(0, 64 - (2 * TEXT_HEIGHT), 128, TEXT_HEIGHT * 4, 5), mAnimInputDialog(comp, &mNewButtonValue, 1, 32, "New Value", 0, 64 - (2 * TEXT_HEIGHT), 128, TEXT_HEIGHT * 4, 6), mTextSpriteBanner(0, 128 - TEXT_HEIGHT - 1, 128, TEXT_HEIGHT, 1), mpappDrawKeysApp(drawkeyapp)
+        // clang-format off
+        : Applet_(comp), Animation_(0, 44, 128, 40, 6, -1, -1, 0, 0)
+        , mTextSpriteStatic(0, 64 - (2 * TEXT_HEIGHT), 128, TEXT_HEIGHT * 4, 5)
+        , mAnimInputDialog(comp, &mNewButtonValue, 1, 32, "New Value", 0, 64 - (2 * TEXT_HEIGHT), 128, TEXT_HEIGHT * 4, 6)
+        , mTextSpriteBanner(0, 128 - TEXT_HEIGHT - 1, 128, TEXT_HEIGHT, 1)
+        , mpappDrawKeysApp(drawkeyapp)
+    // clang-format on
     {
         mTextSpriteStatic.setText({"Hold Button", "<- to exit"});
         mTextSpriteBanner.setDrawBox(true);
@@ -156,5 +162,38 @@ public:
     uint8_t mEditButton;
     uint8_t mSelection;
 };
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////    Save Configuration     /////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+class SaveConfigurationApp_ : public Applet_
+{
+public:
+    SaveConfigurationApp_(Compositor_ *comp)
+        : Applet_(comp)
+        , manimInputFilenameDialog(comp, &mFilename)
+        , mTextSpriteStatic(0, 64 - (2 * TEXT_HEIGHT), 128, TEXT_HEIGHT * 4, 5)
+    {
+        mTextSpriteStatic.setText({"Line 1", "Line 2"});
+        mTextSpriteStatic.mDrawBox = true;
+    }
+    void initApp();
+    
+    AppletStatus::TAppletStatus updateApp();
+    void cleanupApp();
+    void startFromScratch();
+
+    String mFilename = "";
+    AnimInputDialogString_ manimInputFilenameDialog;
+    AnimTextPrompt_ mTextSpriteStatic;
+    bool mEnteredFilename = false;
+    bool mSavedFile = false;
+    bool mShowConfirmation = false;
+};
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////    RemapButtonsApp_     ///////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #endif

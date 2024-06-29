@@ -285,7 +285,7 @@ public:
   DirectButtonCommand_ mDefaultDirectCommand;
   TurboButtonCommand_ maTurboMacros[NUMBER_OF_BUTTONS];
   MacroButtonCommand_ maMacros[NUMBER_OF_CUSTOM_MACROS];
-  Command_ *maAssignedMacros[NUMBER_OF_BUTTONS] = {&maMacros[0], &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand};
+  Command_ *maAssignedMacros[NUMBER_OF_BUTTONS] = {&mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand};
   uint8_t maButtonValues[NUMBER_OF_BUTTONS] = {1, 2, 4, 5, 7, 8, 11, 12, 13, 14, 15, 20};
   uint8_t maJoyValues[9] = {JOY_IDLE, JOY_UP, JOY_UP_RIGHT, JOY_RIGHT, JOY_DOWN_RIGHT, JOY_DOWN, JOY_DOWN_LEFT, JOY_LEFT, JOY_UP_LEFT};
   bool mJoyTransmit = true;

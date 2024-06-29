@@ -97,7 +97,8 @@ public:
     std::vector<uint16_t> buildTokenVector(String *token, String value, int lineCounter);
     int importConfigFile(const char *filename, Configuration *pconfig);
 
-    void saveConfigToFile(const char *filename, Configuration *pconfig);
+    bool saveConfigToFile(const char *filename, Configuration *pconfig);
+    bool inline saveCurrentConfig(const char *filename) { return saveConfigToFile(filename, &this->mConfig);}
 
     void saveTokenToConfig(String token, String value, Configuration *pconfig)
     {

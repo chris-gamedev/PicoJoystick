@@ -13,7 +13,7 @@ void setUp(void)
 {
     // set stuff up here
     LittleFSConfig cfg;
-    cfg.setAutoFormat(false);
+    cfg.setAutoFormat(false);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
     
     LittleFS.setConfig(cfg);
 

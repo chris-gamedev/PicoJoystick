@@ -454,3 +454,75 @@ void AssignMacroApp_::cleanupApp()
     MyJoystickBT.forceDisableCustomMacros(false);
     MyJoystickBT.toggleJoyTransmit(true);
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////    Save Configuration     /////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void SaveConfigurationApp_::initApp()
+{
+    MyJoystickBT.forceDisableCustomMacros(true);
+    MyJoystickBT.toggleJoyTransmit(false);
+
+    startFromScratch();
+}
+
+void SaveConfigurationApp_::startFromScratch()
+{
+    mFilename = "";
+    mEnteredFilename = false;
+    mSavedFile = false;
+    mShowConfirmation = false;
+    mTextSpriteStatic.setLife(50);
+    mTextSpriteStatic.setDrawBox(true);
+    mTextSpriteStatic.setText({"Enter a", "Filename"});
+    mpCompositor->registerAnimation(&mTextSpriteStatic, CanvasType::TOP);
+
+    manimInputFilenameDialog.start("Save As:", &mFilename);
+}
+
+AppletStatus::TAppletStatus SaveConfigurationApp_::updateApp()
+{
+    if (!mEnteredFilename)
+    {
+        if (manimInputFilenameDialog.updateDialog())
+            return AppletStatus::ALIVE;
+
+        if (manimInputFilenameDialog.mCancel)
+            return AppletStatus::RETURN;
+
+        if (mFilename.length() > 0)
+        {
+            mEnteredFilename = true;
+            return AppletStatus::ALIVE;
+        }
+        else
+            startFromScratch();
+    }
+    else if (!mSavedFile)
+    {
+        mSavedFile = Configurator.saveCurrentConfig(mFilename.c_str());
+        if (!mSavedFile)
+        {
+            mTextSpriteStatic.setText({"ERROR:", "Could Not Save"});
+            mTextSpriteStatic.setLife(80);
+            mpCompositor->registerAnimation(&mTextSpriteStatic, CanvasType::TOP);
+            return AppletStatus::RETURN;
+        }
+    }
+    else if (!mShowConfirmation)
+    {
+        mShowConfirmation = true;
+        mTextSpriteStatic.setText({"Config Saved as", mFilename.c_str()});
+        mTextSpriteStatic.setLife(100);
+        mpCompositor->registerAnimation(&mTextSpriteStatic, CanvasType::TOP);
+        return AppletStatus::RETURN;
+    }
+    return AppletStatus::ALIVE;
+}
+
+void SaveConfigurationApp_::cleanupApp()
+{
+    MyJoystickBT.forceDisableCustomMacros(false);
+    MyJoystickBT.toggleJoyTransmit(true);
+}

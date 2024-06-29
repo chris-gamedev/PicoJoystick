@@ -1,0 +1,14 @@
+"filename", "language", "Ini", "C++", "JSON with Comments", "C", "comment", "blank", "total"
+"/home/chris/Documents/PlatformIO/Projects/PicoJoystick/PicoJoystick.code-workspace", "JSON with Comments", 0, 0, 100, 0, 0, 0, 100
+"/home/chris/Documents/PlatformIO/Projects/PicoJoystick/platformio.ini", "Ini", 3, 0, 0, 0, -4, -3, -4
+"/home/chris/Documents/PlatformIO/Projects/PicoJoystick/src/Applications.cpp", "C++", 0, -14, 0, 0, 0, -3, -17
+"/home/chris/Documents/PlatformIO/Projects/PicoJoystick/src/Configuration.c", "C", 0, 0, 0, 0, 0, -1, -1
+"/home/chris/Documents/PlatformIO/Projects/PicoJoystick/src/Configuration.cpp", "C++", 0, 159, 0, 0, 3, 25, 187
+"/home/chris/Documents/PlatformIO/Projects/PicoJoystick/src/Configuration.h", "C++", 0, 120, 0, 0, -2, 7, 125
+"/home/chris/Documents/PlatformIO/Projects/PicoJoystick/src/Dialog.cpp", "C++", 0, 134, 0, 0, 6, 14, 154
+"/home/chris/Documents/PlatformIO/Projects/PicoJoystick/src/Dialog.h", "C++", 0, 34, 0, 0, 3, 10, 47
+"/home/chris/Documents/PlatformIO/Projects/PicoJoystick/test/embedded/Configuration/test_saveConfig.cpp", "C++", 0, 108, 0, 0, 9, 38, 155
+"/home/chris/Documents/PlatformIO/Projects/PicoJoystick/test/embedded/Dialogs/test_inputDialog/test_StringInput.cpp", "C++", 0, 60, 0, 0, 4, 22, 86
+"/home/chris/Documents/PlatformIO/Projects/PicoJoystick/test/embedded/Display/FontTest/test_fontTest.cpp", "C++", 0, 117, 0, 0, 20, 23, 160
+"/home/chris/Documents/PlatformIO/Projects/PicoJoystick/test/embedded/Display/test_FontTest/test_fontTest.cpp", "C++", 0, -119, 0, 0, -18, -23, -160
+"Total", "-", 3, 599, 100, 0, 21, 109, 832

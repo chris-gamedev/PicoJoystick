@@ -167,11 +167,11 @@ inline void Configurator_::tokenizeArrayToFile(String name, File f, const std::a
     }
 }
 
-void Configurator_::saveConfigToFile(const char *filename, Configuration *pconfig)
+bool Configurator_::saveConfigToFile(const char *filename, Configuration *pconfig)
 {
-    File f = openConfigFile(filename, "w");
+    File f = openConfigFile(filename, "w"); // littleFS begins here
     if (!f)
-        return;
+        return false;
     f.printf("#Custom Configuration: %s\n", filename);
     f.print("#\n");
     f.print("#\n");
@@ -183,5 +183,10 @@ void Configurator_::saveConfigToFile(const char *filename, Configuration *pconfi
     f.printf("<funThings_on=%d>\n", pconfig->funThings_on);
 
     f.close();
+    
+    bool fileCreated = LittleFS.exists(filename);
+    
     LittleFS.end();
+    
+    return fileCreated;
 }

@@ -2,10 +2,6 @@
 	"folders": [
 		{
 			"path": "."
-		},
-		{
-			"name": "LittleFSTest",
-			"path": "../LittleFSTest"
 		}
 	],
 	"settings": {

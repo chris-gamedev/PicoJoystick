@@ -35,21 +35,18 @@ public:
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////      Input Dialog          /////////////////////////////////////////
+///////////////////////////////////////      Input Dialog - List     ///////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 class AnimInputDialogList_ : public IDialog_
 {
 public:
-    AnimInputDialogList_(Compositor_ *comp, uint8_t *inputVar, String prompt = "", int16_t x = 0, int16_t y = 64 - (TEXT_HEIGHT * 2) - 5, uint8_t w = 128, uint8_t h = TEXT_HEIGHT * 4 + 10, uint8_t order = 1, int16_t life = -1, int16_t delay = -1, int16_t deltax = 0, int16_t deltay = 0)
+    AnimInputDialogList_(Compositor_ *comp, uint8_t *inputVar, String title = "", int16_t x = 0, int16_t y = 64 - (TEXT_HEIGHT * 2) - 5, uint8_t w = 128, uint8_t h = TEXT_HEIGHT * 4 + 10, uint8_t order = 1, int16_t life = -1, int16_t delay = -1, int16_t deltax = 0, int16_t deltay = 0)
         : IDialog_(comp, x, y, order)
-          // , manimBGBox(x, y, w, TEXT_HEIGHT * 4 + 4, 1)
-          // , manimTitle(x, y + 2, 128, TEXT_HEIGHT, 5)
-          ,
-          manimPromptList(x, y + 2 + TEXT_HEIGHT, 128, TEXT_HEIGHT * 2, order), mpReturnPointer(inputVar)
+        , manimPromptList(x, y + 2 + TEXT_HEIGHT, 128, TEXT_HEIGHT * 2, order), mpReturnPointer(inputVar)
 
     {
-        manimTitle.setText(prompt);
+        manimTitle.setText(title);
         manimTitle.setDrawBox(false);
         manimPromptList.setDrawBox(false);
     }
@@ -66,9 +63,60 @@ public:
     String mTitle;
     uint8_t *mpReturnPointer;
     uint8_t mPosition = 0;
-    bool mConfirm;
-    bool mCancel;
+    // bool mConfirm;
+    // bool mCancel;
 };
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////    Input Dialog - String     ///////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+class AnimInputDialogString_ : public IDialog_
+{
+public:
+    AnimInputDialogString_(Compositor_ *comp, String *inputVar, String title = "", int16_t x = 0, int16_t y = 64 - (TEXT_HEIGHT * 2) - 5, uint8_t w = 128, uint8_t h = TEXT_HEIGHT * 4 + 10, uint8_t order = 1, int16_t life = -1, int16_t delay = -1, int16_t deltax = 0, int16_t deltay = 0)
+        : IDialog_(comp, x, y, order)
+        , manimEditTextBox(x, y + TEXT_HEIGHT + 2)
+        , mpReturnPointer(inputVar)
+        
+    {
+        manimTitle.setText(title);
+        manimTitle.mDrawBox = false;
+        manimEditTextBox.mDrawBox = false;
+        manimEditTextBox.mCenterText = false;
+        manimEditTextBox.mXOffset = 5;
+        manimEditTextBox.mYOffset = 0;
+        
+        if (inputVar != nullptr) 
+            manimEditTextBox.setText(*inputVar);
+
+    }
+
+    void start(String title, String *selection);
+    bool updateDialog();
+    void endDialog();
+    void moveCursor(int8_t dir);
+    void changeCharacter(int8_t dir);
+    void deleteCharacter();
+    bool finished() { return mConfirm || mCancel; }
+    void setTitle(String title) { manimTitle.setText(title); }
+
+    AnimTextCursor1Line_ manimEditTextBox;
+    String mTitle;
+    String *mpReturnPointer;
+    uint8_t const mMaxStringLength = 20;
+    uint8_t const mMaxDisplayLength = 10;
+    int8_t mStartChar = 0;
+    int8_t mEndChar = mMaxDisplayLength;
+    int8_t mCursor = 0;
+    String mEditString;
+    uint32_t mLastTime;
+    // bool mConfirm;
+    // bool mCancel;
+};
+
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////      Input Dialog Template         ///////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -147,6 +195,7 @@ public:
     bool mCancel = false;
     uint32_t mLastTime;
 };
+
 template <typename I>
 bool AnimInputDialogInt_<I>::updateDialog()
 {

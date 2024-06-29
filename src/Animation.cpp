@@ -91,7 +91,7 @@ void AnimStatic4_::drawAnim(JoyDisplay_ *pcanvas)
 //////////////////////////////////////////////   Text   /////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void AnimTextStatic1Line_::updateAnim() // override this shit for text
+void AnimTextStatic1Line_::updateAnim() 
 {
     if (mlife > 0)
         mlife--;
@@ -108,7 +108,10 @@ void AnimTextStatic1Line_::drawAnim(JoyDisplay_ *pcanvas)
     pcanvas->setFont(mpFont);
     pcanvas->setTextWrap(false);
     pcanvas->setTextColor(mColor);
-    pcanvas->setCursor((mW / 2) - ((float)mText.length() / 2 * mFontWidth) + mXOffset, mY + TEXT_HEIGHT + mYOffset);
+    int8_t x = mXOffset;
+    if (mCenterText)
+        x = (mW / 2) - ((float)mText.length() / 2 * mFontWidth) + mXOffset;
+    pcanvas->setCursor(x , mY + TEXT_HEIGHT + mYOffset);
     pcanvas->print(mText);
 }
 

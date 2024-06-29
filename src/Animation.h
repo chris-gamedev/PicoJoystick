@@ -214,11 +214,61 @@ public:
     String mText;
     GFXfont const *mpFont = MENU_FONT_FACE;
     uint8_t mFontWidth = TEXT_WIDTH;
+    uint8_t mFontHeight = TEXT_HEIGHT;
     int8_t mXOffset = 0;
     int8_t mYOffset = -2;
+    bool mCenterText = true;
 };
 
-/// @brief 8 bit Static Sprite.  No Moving, No Animation. Registered with compositor
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+class AnimTextCursor1Line_ : public AnimTextStatic1Line_
+{
+public:
+    AnimTextCursor1Line_(int16_t x, int16_t y, uint8_t w = 128, uint8_t h = TEXT_HEIGHT + 2, uint8_t order = 10, int16_t life = -1)
+        : AnimTextStatic1Line_(x, y, w, h, order, life)
+    {
+        mCenterText = false;
+        mXOffset = 5;
+    }
+
+    int8_t mCursor = 0;
+    uint8_t mMaxStringLength = 20;
+    uint8_t mMaxDisplayLength = 12;
+    int8_t mStartChar = 0;
+    int8_t mEndChar = mMaxDisplayLength;
+    
+    String mFullString;
+    void moveCursor(int8_t dir)
+    {
+        mCursor += dir;
+        mCursor = (mCursor < 0) ? 0 : mCursor;
+        mCursor = (mCursor > mFullString.length() - 1) ? mFullString.length() - 1 : mCursor;
+        if (mCursor < mStartChar)
+            // feedText(-1);
+            mStartChar = mCursor;
+        else if (mCursor > mStartChar + mMaxDisplayLength - 1 && mStartChar + mMaxDisplayLength < mFullString.length())
+        {
+            mStartChar = mCursor - mMaxDisplayLength + 1;
+        }
+    }
+    
+    void setText(String text) {
+        mFullString = text;
+        mCursor = (mCursor > mFullString.length() - 1) ? mFullString.length() - 1 : mCursor;
+    }
+    void drawAnim(JoyDisplay_ *pcanvas)
+    {
+        int8_t cursorX = (mCursor - mStartChar) * mFontWidth;
+        int8_t cursorY = 0;
+        mText = mFullString.substring(mStartChar, mStartChar + mMaxDisplayLength);
+
+        pcanvas->fillRect(cursorX + mX + mXOffset - 2, cursorY + mY + mYOffset, mFontWidth + 3, mFontHeight + 5, 0xB);
+        AnimTextStatic1Line_::drawAnim(pcanvas);
+    }
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 
 class AnimTextPrompt_ : public Animation_
 {

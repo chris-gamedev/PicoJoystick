@@ -72,6 +72,8 @@ void loop()
     Compositor.update();
     Compositor.draw();
 
+    
+
 #ifdef DEADBEEF
     if (MyJoystickBT.buttonJustPressed(0))
         Serial.println("------------- discrete press-0--------------");
