@@ -16,6 +16,7 @@ void themeDoFunThings_callback() {Configurator.mConfig.funThings_on = !Configura
 
 // system
 void systemSaveConfiguration_callback() { AppSwitcher.switchApp(AppletNames::SAVE_CONFIGURATION); }
+void systemLoadConfiguration_callback() { AppSwitcher.switchApp(AppletNames::LOAD_CONFIGURATION); }
 void systemPrintConfigToSerial() { } // TODO NEED THIS ONE BADLY
 void serialFSInfo_callback() { Configurator.printFileSystemInfoToSerial();}
 void serialFiletree_callback() { Configurator.printFileTreeToSerial();}
@@ -174,7 +175,7 @@ void MenuManager_::buildMenu()
         pSystem->addChild(new SubMenu_("Config", pSystem));
             Menu_* pSaveConfig = pSystem->mChildren[2];
             pSaveConfig->addChild(new Leaf_("Save Config", systemSaveConfiguration_callback, pSaveConfig));
-            pSaveConfig->addChild(new Leaf_("Load Config", myCallback, pSaveConfig));
+            pSaveConfig->addChild(new Leaf_("Load Config", systemLoadConfiguration_callback, pSaveConfig));
             pSaveConfig->addChild(new Leaf_("Print to Serial", myCallback, pSaveConfig));
         pSystem->addChild(new Leaf_("Defaults", myCallback, pSystem));
         pSystem->addChild(new SubMenu_("Advanced", pSystem));

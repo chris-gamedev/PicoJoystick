@@ -12,6 +12,7 @@ namespace AppletNames
         CREATE_MACRO,
         ASSIGN_MACRO,
         SAVE_CONFIGURATION,
+        LOAD_CONFIGURATION,
         BLANK,
         MAX_VALUE
     };

@@ -2,6 +2,7 @@
 
 extern MyJoystickBT_ MyJoystickBT;
 
+
 void AnimInputDialogList_::start(String title, uint8_t *selection, std::initializer_list<String> prompts)
 {
 
@@ -74,7 +75,6 @@ void AnimInputDialogString_::start(String title, String *returnString)
     mConfirm = false;
     mCancel = false;
     mpReturnPointer = returnString;
-    
     mEditString = *returnString;
     if (mEditString.length() == 0)
         mEditString = " ";
@@ -120,12 +120,13 @@ bool AnimInputDialogString_::updateDialog()
     }
     uint8_t joyState = MyJoystickBT.joyJustPressed();
     uint8_t joyHeldState = MyJoystickBT.joyHeld();
-    if (joyState) {
+    if (joyState)
+    {
         mLastTime = millis();
     }
     if (joyHeldState && mLastTime + 300 < millis())
         joyState = joyHeldState;
-    
+
     switch (joyState)
     {
     case JOY_LEFT: // decrement
@@ -141,7 +142,7 @@ bool AnimInputDialogString_::updateDialog()
         changeCharacter(-1);
         break;
     }
-    
+
     return true;
 }
 
@@ -154,11 +155,15 @@ void AnimInputDialogString_::endDialog()
 
 void AnimInputDialogString_::moveCursor(int8_t dir)
 {
+#ifdef DEADBEEF
     Serial.printf("Dialog:  moving cursor %d, cursor=%d\n", dir, mCursor);
+#endif
     if (mCursor + dir > (int32_t)mEditString.length() - 1 && mEditString.length() < mMaxStringLength && mEditString[mCursor] != ' ')
     {
-        Serial.printf("(%d > %d && %d < %d && %d\n", (mCursor + dir),  (mEditString.length() - 1), mEditString.length(), mMaxStringLength, (mEditString[mCursor] != ' '));
-        Serial.printf("adding space.  dir:%d, cursor=%d, mEditString[cursor]=%c\n", dir, mCursor,  mEditString[mCursor]);
+#ifdef DEADBEEF
+        Serial.printf("(%d > %d && %d < %d && %d\n", (mCursor + dir), (mEditString.length() - 1), mEditString.length(), mMaxStringLength, (mEditString[mCursor] != ' '));
+        Serial.printf("adding space.  dir:%d, cursor=%d, mEditString[cursor]=%c\n", dir, mCursor, mEditString[mCursor]);
+#endif
         mEditString += " ";
         manimEditTextBox.setText(mEditString);
     }

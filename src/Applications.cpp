@@ -530,3 +530,96 @@ void SaveConfigurationApp_::cleanupApp()
     MyJoystickBT.forceDisableCustomMacros(false);
     MyJoystickBT.toggleJoyTransmit(true);
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////        LoadConfigApp_        //////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void LoadConfigApp_::initApp()
+{
+    MyJoystickBT.forceDisableCustomMacros(true);
+    MyJoystickBT.toggleJoyTransmit(false);
+    mNoFiles = false;
+
+    mvFileList = Configurator.getConfigFileList();
+    if (mvFileList.size() == 0)
+    {
+        mNoFiles = true;
+        mTextSpriteStatic.setText({"No Saved", "Configs."});
+        mTextSpriteStatic.mlife = 50;
+        mpCompositor->registerAnimation(&mTextSpriteStatic, CanvasType::FG);
+    }
+    startFromScratch();
+}
+
+void LoadConfigApp_::startFromScratch()
+{
+    mStartDialog = false;
+    mSelectedFile = false;
+    mLoadedConfig = false;
+}
+
+AppletStatus::TAppletStatus LoadConfigApp_::updateApp()
+{
+
+    if (mNoFiles)
+        return AppletStatus::RETURN;
+
+    if (!mStartDialog)
+    {
+        mAnimInputDialogFileList.start("Choose:", &mSelection, {""});
+        mAnimInputDialogFileList.manimPromptList.setText(mvFileList, 0);
+        mStartDialog = true;
+        return AppletStatus::ALIVE;
+    }
+    else if (!mSelectedFile)
+    {
+        if (mAnimInputDialogFileList.updateDialog())
+            return AppletStatus::ALIVE;
+
+        mSelectedFile = true;
+        return AppletStatus::ALIVE;
+    }
+    else if (!mLoadedConfig)
+    {
+        if (mAnimInputDialogFileList.mCancel)
+            return AppletStatus::RETURN;
+
+        Configuration config;
+        if (Configurator.importConfigFile(("/config/" + mvFileList[mSelection]).c_str(), &config) < 0)
+        { // error somewhere
+            mTextSpriteStatic.setText({"Error", "In File"});
+            mTextSpriteStatic.mlife = 50;
+            mpCompositor->registerAnimation(&mTextSpriteStatic, CanvasType::FG);
+            return AppletStatus::RETURN;
+        }
+#ifdef DEADBEEF
+        Serial.printf("config.button after import ");
+        for (int i = 0; i < 12; i++)
+            Serial.printf("%d, ", config.joystick_buttonValueMap[i]);
+        Serial.println();
+#endif
+        Configurator.mConfig = config;
+#ifdef DEADBEEF
+        Serial.printf("configurator.mconfig.button after import ");
+        for (int i = 0; i < 12; i++)
+            Serial.printf("%d, ", Configurator.mConfig.joystick_buttonValueMap[i]);
+        Serial.println();
+#endif
+
+        Configurator.configurate();
+        mTextSpriteStatic.setText({"Config", "Updated"});
+        mTextSpriteStatic.mlife = 50;
+        mpCompositor->registerAnimation(&mTextSpriteStatic, CanvasType::FG);
+        return AppletStatus::RETURN;
+    }
+
+    return AppletStatus::ALIVE;
+}
+
+void LoadConfigApp_::cleanupApp()
+{
+
+    MyJoystickBT.forceDisableCustomMacros(false);
+    MyJoystickBT.toggleJoyTransmit(true);
+}

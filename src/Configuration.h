@@ -6,6 +6,9 @@
 #include <FS.h>
 #include <LittleFS.h>
 
+#define CONFIG_FILE_PATH "/config/"
+#define MACRO_FILE_PATH "/macros/"
+
 namespace MacroMapType
 {
     enum TMacroMapType
@@ -91,59 +94,13 @@ public:
         for (auto it : mvpConfigurables)
             it->configure(&mConfig);
     }
-
+    // config parsing & files
     File openFileWithMessages(const char *filename, const char *mode);
     bool parsableLine(String line, int lineCounter);
     std::vector<uint16_t> buildTokenVector(String *token, String value, int lineCounter);
     int importConfigFile(const char *filename, Configuration *pconfig);
-
     bool saveConfigToFile(const char *filename, Configuration *pconfig);
-
-private:
-    void listFilesToSerialRcrsv(String dirname = "/");
-    void printAllFilesInDirectoryToSerialRcrsv(String dirname = "/");
-    void printFileTreeToSerialRcrsv(String path = "/", String dirName = "/", String treeString = "");
-
-public:
-    void printFileSystemInfoToSerial();
-    void printFileToSerial(const char *name);
-    void printFileToSerial(File f);
-
-    void listFilesToSerial(String dirname = "/")
-    {
-        if (!LittleFS.begin())
-        {
-            Serial.printf("Failed to mount file system\n");
-            return;
-        }
-        listFilesToSerialRcrsv(dirname);
-        LittleFS.end();
-    }
-    void printAllFilesInDirectoryToSerial(String dirname = "/")
-    {
-        if (!LittleFS.begin())
-        {
-            Serial.printf("Failed to mount file system\n");
-            return;
-        }
-        printAllFilesInDirectoryToSerialRcrsv(dirname);
-        LittleFS.end();
-    }
-    void printFileTreeToSerial(String path = "/", String dirName = "/", String treeString = "")
-    {
-        if (!LittleFS.begin())
-        {
-            Serial.printf("Failed to mount file system\n");
-            return;
-        }
-
-        printFileTreeToSerialRcrsv(path, dirName, treeString);
-        LittleFS.end();
-    };
-
-public:
     bool inline saveCurrentConfig(const char *filename) { return saveConfigToFile(filename, &this->mConfig); }
-
     void saveTokenToConfig(String token, String value, Configuration *pconfig)
     {
         auto t = configTokenMap.find(token);
@@ -153,7 +110,6 @@ public:
             return;
         }
     }
-
     void saveTokenToConfig(String token, std::vector<uint16_t> values, Configuration *pconfig)
     {
         auto t = configTokenMap.find(token);
@@ -186,7 +142,6 @@ public:
         }
         Serial.printf("%s, size:%d -- seemed to be successful\n", token.c_str(), values.size());
     }
-
     template <std::size_t N>
     void assignTokenValuesToArray(String token, std::array<uint8_t, N> &arr, std::vector<uint16_t> *values)
     {
@@ -201,6 +156,54 @@ public:
     }
     template <std::size_t N>
     void tokenizeArrayToFile(String name, File f, const std::array<uint8_t, N> &arr);
+
+    // Printing to Serial
+private:
+    void listFilesToSerialRcrsv(String dirname = "/");
+    void printAllFilesInDirectoryToSerialRcrsv(String dirname = "/");
+    void printFileTreeToSerialRcrsv(String path = "/", String dirName = "/", String treeString = "");
+
+public:
+    void printFileSystemInfoToSerial();
+    void printFileToSerial(const char *name);
+    void printFileToSerial(File f);
+    void listFilesToSerial(String dirname = "/")
+    {
+        if (!LittleFS.begin())
+        {
+            Serial.printf("Failed to mount file system\n");
+            return;
+        }
+        listFilesToSerialRcrsv(dirname);
+        LittleFS.end();
+    }
+    void printAllFilesInDirectoryToSerial(String dirname = "/")
+    {
+        if (!LittleFS.begin())
+        {
+            Serial.printf("Failed to mount file system\n");
+            return;
+        }
+        printAllFilesInDirectoryToSerialRcrsv(dirname);
+        LittleFS.end();
+    }
+    void printFileTreeToSerial(String path = "/", String dirName = "/", String treeString = "")
+    {
+        if (!LittleFS.begin())
+        {
+            Serial.printf("Failed to mount file system\n");
+            return;
+        }
+
+        printFileTreeToSerialRcrsv(path, dirName, treeString);
+        LittleFS.end();
+    };
+    std::vector<String> getDirListOnlyFiles(String path);
+    // file manipulation
+    std::vector<String> inline getConfigFileList() {return getDirListOnlyFiles(CONFIG_FILE_PATH);}
+    std::vector<String> inline getMacroFileList() {return getDirListOnlyFiles(MACRO_FILE_PATH);}
+    
+
 };
 
 #endif // CONFIGURATION_H

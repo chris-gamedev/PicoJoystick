@@ -28,8 +28,6 @@ File Configurator_::openFileWithMessages(const char *filename, const char *mode)
 
 bool Configurator_::parsableLine(String line, int lineCounter)
 {
-    if (line.length() == 0 || line.indexOf('#') == 0) // comment & whitespace
-        return false;
 
     if (line.indexOf('<') != 0 || line.indexOf('=') == -1 || line.indexOf('>') != line.length() - 1)
     {
@@ -97,8 +95,15 @@ int Configurator_::importConfigFile(const char *filename, Configuration *pconfig
         String line = f.readStringUntil('\n');
         line.trim();
 
-        if (!parsableLine(line, lineCounter))
+        if (line.length() == 0 || line.indexOf('#') == 0) // comment & whitespace
             continue;
+
+
+        if (!parsableLine(line, lineCounter))
+        {
+            errCode = -1;
+            continue;
+        }
 
         String token = line.substring(line.indexOf('<') + 1, line.indexOf('='));
         String value = line.substring(line.indexOf('=') + 1, line.indexOf('>'));
@@ -113,6 +118,7 @@ int Configurator_::importConfigFile(const char *filename, Configuration *pconfig
             if (value.lastIndexOf('"') != value.length() - 1)
             {
                 Serial.printf("--INVALID STRING-- at line:%d  %s\n", lineCounter, line.c_str());
+                errCode = -1;
                 continue;
             }
             valueIsString = true;
@@ -124,6 +130,7 @@ int Configurator_::importConfigFile(const char *filename, Configuration *pconfig
             if (arrayValues.size() == 0)
             {
                 Serial.printf("Skipping %s\n", token.c_str());
+                errCode = -1;
                 continue;
             }
         }
@@ -243,6 +250,24 @@ void Configurator_::printFileToSerial(File f)
     padsizeL = pad.length() - l / 2;
     padsizeR = pad.length() - (l - l / 2);
     Serial.printf("%.*s%s%.*s\n\n", padsizeL, pad.c_str(), str2.c_str(), padsizeR, pad.c_str());
+}
+
+std::vector<String> Configurator_::getDirListOnlyFiles(String path)
+{
+    if (!LittleFS.begin())
+    {
+        Serial.printf("Unable to mount filesystem.\n");
+    }
+    Dir dir = LittleFS.openDir(path.c_str());
+
+    std::vector<String> filenames;
+    while (dir.next())
+    {
+        if (dir.isFile())
+            filenames.push_back(dir.fileName());
+    }
+    LittleFS.end();
+    return filenames;
 }
 
 void Configurator_::listFilesToSerialRcrsv(String dirname)

@@ -283,7 +283,7 @@ public:
         mvStrings.push_back(s);
     }
     void inline setText(std::initializer_list<String> strings) { mvStrings = strings; };
-    void inline setText(std::vector<String> strings, uint8_t pos)
+    void inline setText(std::vector<String> strings, uint8_t pos = 0)
     {
         mvStrings = strings;
         mposition = pos;

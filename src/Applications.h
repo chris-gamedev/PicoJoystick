@@ -193,7 +193,47 @@ public:
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////                         ///////////////////////////////////////////
+////////////////////////////////////////        LoadConfigApp_        //////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+class LoadConfigApp_ : public Applet_
+{
+    // clang-format off
+public:
+    LoadConfigApp_(Compositor_ *comp)
+        : Applet_(comp)
+        , mTextSpriteStatic(0, 64 - (2 * TEXT_HEIGHT), 128, TEXT_HEIGHT * 4, 99)
+        , mAnimInputDialogFileList(comp, &mSelection, "Title")
+    // clang-format on
+    {
+        mAnimInputDialogFileList.setTitle("Choose:");
+        mTextSpriteStatic.setText({"Configuration", "Successful"});
+        mTextSpriteStatic.mDrawBox = true;
+    }
+
+    // for applet
+    void initApp();
+    void startFromScratch();
+    AppletStatus::TAppletStatus updateApp();
+    void cleanupApp();
+    // for Animation_
+
+    AnimInputDialogList_ mAnimInputDialogFileList;
+    AnimTextPrompt_ mTextSpriteStatic;
+    std::vector<String> mvFileList;
+    uint32_t mAppLastTime;
+    uint16_t const mAppDelay = 300;
+    uint8_t mSelection;
+    bool mNoFiles = false;
+    bool mStartDialog = false;
+    bool mSelectedFile = false;
+    bool mLoadedConfig = false;
+};
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////    Save Configuration     /////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 
 #endif
