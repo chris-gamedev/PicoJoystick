@@ -171,7 +171,7 @@ AppletStatus::TAppletStatus RemapButtonsApp_::updateApp()
             return AppletStatus::ALIVE;
 
         mFoundTheButton = true;
-        mNewButtonValue = MyJoystickBT.getButtonValue(mEditButton);
+        mNewButtonValue = Configurator.mConfig.joystick_buttonValueMap[mEditButton];
 
         mAnimInputDialog.start("New Value", &mNewButtonValue, 1, 32);
         mAppDrawPrompt = false;
@@ -184,7 +184,9 @@ AppletStatus::TAppletStatus RemapButtonsApp_::updateApp()
             return AppletStatus::ALIVE;
 
         mSetTheValue = true;
-        MyJoystickBT.setButtonValue(mEditButton, mNewButtonValue);
+        // MyJoystickBT.setButtonValue(mEditButton, mNewButtonValue);
+        Configurator.mConfig.joystick_buttonValueMap[mEditButton] = mNewButtonValue;
+        Configurator.configurate();
         startFromScratch();
     }
 
@@ -423,6 +425,8 @@ AppletStatus::TAppletStatus AssignMacroApp_::updateApp()
         {
             MyJoystickBT.setToDefaultMacro(mEditButton);
             mFoundTheButton = false;
+            Configurator.mConfig.drawKeypresses_macroMap[mEditButton] = MacroMapType::none;
+            Configurator.configurate();
             return AppletStatus::ALIVE;
         }
 

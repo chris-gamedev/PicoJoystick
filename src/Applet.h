@@ -11,6 +11,7 @@ namespace AppletNames
         ASSIGN_TURBO,
         CREATE_MACRO,
         ASSIGN_MACRO,
+        SAVE_CONFIGURATION,
         BLANK,
         MAX_VALUE
     };
@@ -36,7 +37,7 @@ public:
     Compositor_ *const mpCompositor;
 
     static uint8_t
-    findHeldButton(uint32_t statemap, uint16_t delay)
+    findHeldButton(uint32_t statemap, uint16_t duration)
     {
         static uint32_t sLastStateMap = 0x80000000;
         static bool sFreshData = false;
@@ -71,7 +72,7 @@ public:
             sStartedTheCount = true;
         }
 
-        if (delay + sLastTime > millis())
+        if (duration + sLastTime > millis())
             return foundButton;
 
         for (foundButton = 0; foundButton < 12; foundButton++)

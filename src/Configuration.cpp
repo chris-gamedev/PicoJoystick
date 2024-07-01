@@ -1,6 +1,6 @@
 #include "Configuration.h"
 
-File Configurator_::openConfigFile(const char *filename, const char *mode)
+File Configurator_::openFileWithMessages(const char *filename, const char *mode)
 {
 
     if (!LittleFS.begin())
@@ -88,7 +88,7 @@ int Configurator_::importConfigFile(const char *filename, Configuration *pconfig
 {
     int errCode = 0;
 
-    File f = openConfigFile(filename, "r");
+    File f = openFileWithMessages(filename, "r");
 
     int lineCounter = 0;
     while (f.available())
@@ -118,7 +118,7 @@ int Configurator_::importConfigFile(const char *filename, Configuration *pconfig
             valueIsString = true;
             value = value.substring(value.indexOf('"') + 1, value.lastIndexOf('"'));
         }
-        else  // handle arrays and scalar
+        else // handle arrays and scalar
         {
             arrayValues = buildTokenVector(&token, value, lineCounter);
             if (arrayValues.size() == 0)
@@ -134,7 +134,7 @@ int Configurator_::importConfigFile(const char *filename, Configuration *pconfig
             Serial.printf("%s = String(%s)\n", token.c_str(), value.c_str());
             saveTokenToConfig(token, value, pconfig);
         }
-        else 
+        else
         { // array
             Serial.printf("%s[%d] = { ", token.c_str(), arrayValues.size());
             for (auto it : arrayValues)
@@ -169,10 +169,11 @@ inline void Configurator_::tokenizeArrayToFile(String name, File f, const std::a
 
 bool Configurator_::saveConfigToFile(const char *filename, Configuration *pconfig)
 {
-    File f = openConfigFile(filename, "w"); // littleFS begins here
+    String fullFilename = "/config/" + String(filename);
+    File f = openFileWithMessages(fullFilename.c_str(), "w"); // littleFS begins here
     if (!f)
         return false;
-    f.printf("#Custom Configuration: %s\n", filename);
+    f.printf("#Custom Configuration: %s\n", fullFilename.c_str());
     f.print("#\n");
     f.print("#\n");
     f.printf("<global_menuHotkey_on=%d>\n", pconfig->global_menuHotkey_on);
@@ -183,10 +184,186 @@ bool Configurator_::saveConfigToFile(const char *filename, Configuration *pconfi
     f.printf("<funThings_on=%d>\n", pconfig->funThings_on);
 
     f.close();
-    
-    bool fileCreated = LittleFS.exists(filename);
-    
+    bool fileCreated = LittleFS.exists(fullFilename.c_str());
     LittleFS.end();
-    
+
     return fileCreated;
+}
+
+void Configurator_::printFileSystemInfoToSerial()
+{
+    LittleFS.begin();
+    FSInfo64 fsinfo;
+    LittleFS.info64(fsinfo);
+    Serial.printf("---------<<  FILE SYSTEM INFORMATION  >>---------\n");
+    Serial.printf("           totalBytes\t%d\n", fsinfo.totalBytes);
+    Serial.printf("            usedBytes\t%d\n", fsinfo.usedBytes);
+    Serial.printf("            blockSize\t%d\n", fsinfo.blockSize);
+    Serial.printf("             pageSize\t%d\n", fsinfo.pageSize);
+    Serial.printf("         maxOpenFiles\t%d\n", fsinfo.maxOpenFiles);
+    Serial.printf("        maxPathLength\t%d\n", fsinfo.maxPathLength);
+    Serial.printf("-------------------------------------------------\n");
+    Serial.printf("\n\n");
+    LittleFS.end();
+}
+
+void Configurator_::printFileToSerial(const char *name)
+{
+
+    File f = openFileWithMessages(name, "r");
+    if (!f)
+        return;
+    printFileToSerial(f);
+    f.close();
+    LittleFS.end();
+}
+
+void Configurator_::printFileToSerial(File f)
+{
+
+    String pad = "--------------------------------------------------";
+    String str1 = "--<<   Printing File:  /" + String(f.fullName()) + "   >>--";
+    int l = str1.length();
+    int padsizeL = pad.length() - l / 2;
+    int padsizeR = pad.length() - (l - l / 2);
+    int lineCounter = 0;
+    Serial.printf("\n%.*s%s%.*s\n", padsizeL, pad.c_str(), str1.c_str(), padsizeR, pad.c_str());
+    String line;
+    while (f.available())
+    {
+        // Serial.printf("in the loop\n");
+        lineCounter++;
+        line = f.readStringUntil('\n');
+        // line.trim();
+        Serial.printf("%s\n", line.c_str());
+    }
+
+    String str2 = "--<<   Line Count:" + String(lineCounter) + " - Closing   >>--";
+    l = str2.length();
+    padsizeL = pad.length() - l / 2;
+    padsizeR = pad.length() - (l - l / 2);
+    Serial.printf("%.*s%s%.*s\n\n", padsizeL, pad.c_str(), str2.c_str(), padsizeR, pad.c_str());
+}
+
+void Configurator_::listFilesToSerialRcrsv(String dirname)
+{
+    Dir dir = LittleFS.openDir(dirname);
+    String pad = "-------------------------------";
+    int l = dirname.length();
+    int padsizeL = pad.length() - l / 2;
+    int padsizeR = pad.length() - (l - l / 2);
+    Serial.printf("%.*s--<  %s  >--%.*s\n", padsizeL, pad.c_str(), dirname.c_str(), padsizeR, pad.c_str());
+    Serial.printf("%20s\t%7s\t%9s %9s%s\n", "-<   NAME", "SIZE(B)", "Modified", "Created", "   >-");
+    Serial.printf("    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n");
+    while (dir.next())
+    {
+        Serial.printf("%20s\t", dir.fileName().c_str());
+        if (dir.isDirectory())
+            Serial.printf(" <DIR>  ");
+        else if (dir.fileSize())
+        {
+            File f = dir.openFile("r");
+            Serial.printf("%7d ", f.size());
+        }
+        Serial.printf("%9lld %9lld\n", dir.fileTime(), dir.fileCreationTime());
+    }
+    Serial.printf("\n\n");
+
+    dir.rewind();
+    while (dir.next())
+    {
+        if (dir.isDirectory())
+            listFilesToSerialRcrsv(dirname + dir.fileName() + "/");
+    }
+}
+
+void Configurator_::printAllFilesInDirectoryToSerialRcrsv(String dirname)
+{
+    Dir dir = LittleFS.openDir(dirname);
+    while (dir.next())
+    {
+        Serial.printf("NAME: %20s\t", (dirname + dir.fileName()).c_str());
+        if (dir.fileSize())
+        {
+            File f = dir.openFile("r");
+            Serial.printf("SIZE: %dB\n", f.size());
+            printFileToSerial(f);
+            Serial.printf("\n\n");
+        }
+        else if (dir.isDirectory())
+            Serial.printf("<DIR>\n");
+    }
+    dir.rewind();
+    while (dir.next())
+    {
+        if (dir.isDirectory())
+            printAllFilesInDirectoryToSerialRcrsv(dirname + dir.fileName() + "/");
+    }
+}
+
+void Configurator_::printFileTreeToSerialRcrsv(String path, String dirName, String treeString)
+{
+
+    // 0x2502 │  0x2500 ─   0x251C ├   0x252c ┬   0x2514 └
+    Dir dir = LittleFS.openDir(path);
+    bool firstFile = true;
+    bool dirIsFile;
+    dirName = "─" + dirName + "─";
+
+    if (!dir.next())
+    {
+        Serial.printf("%s──(empty)\n", dirName.c_str());
+        return;
+    }
+
+    Serial.printf("%s", dirName.c_str());
+    for (int i = 0; i < static_cast<int>(dirName.length()) - 4; i++)
+        treeString += " ";
+
+    while (1)
+    {
+        String filename = dir.fileName();
+        String filenameString = filename;
+        int size = dir.fileSize();
+        dirIsFile = dir.isFile();
+        bool lastFile = !dir.next();
+        if (firstFile && lastFile)
+            filenameString = "──" + filenameString;
+        else if (firstFile)
+            filenameString = "┬─" + filenameString;
+        else if (lastFile)
+            filenameString = "└─" + filenameString;
+        else
+            filenameString = "├─" + filenameString;
+        if (!firstFile)
+            Serial.printf("%s", treeString.c_str());
+
+        if (dirIsFile)
+        {
+            Serial.printf("%s  (%dB)\n", filenameString.c_str(), size);
+        }
+        else
+        {
+            String limb = "│";
+            if (firstFile && lastFile)
+            {
+                Serial.printf("─");
+                limb = " ";
+            }
+            else if (firstFile)
+                Serial.printf("┬");
+            else if (lastFile)
+            {
+                Serial.printf("└");
+                limb = " ";
+            }
+            else
+                Serial.printf("├");
+            printFileTreeToSerialRcrsv(path + filename + "/", filename, treeString + limb);
+        }
+
+        firstFile = false;
+        if (lastFile)
+            break;
+    }
 }

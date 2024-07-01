@@ -18,6 +18,7 @@ RemapButtonsApp_ RemapButtons(&Compositor, &DrawKeyPresses);
 AssignTurboApp_ AssignTurbo(&Compositor, &DrawKeyPresses);
 CreateMacroApp_ CreateMacro(&Compositor, &DrawKeyPresses);
 AssignMacroApp_ AssignMacro(&Compositor, &DrawKeyPresses);
+SaveConfigurationApp_ SaveConfigurationApp(&Compositor);
 AppletSwitcher_ AppSwitcher(&Compositor);
 
 // Fun Things!!
@@ -58,6 +59,7 @@ void setup()
     AppSwitcher.addApp(AppletNames::CREATE_MACRO, &CreateMacro);
     AppSwitcher.addApp(AppletNames::ASSIGN_TURBO, &AssignTurbo);
     AppSwitcher.addApp(AppletNames::ASSIGN_MACRO, &AssignMacro);
+    AppSwitcher.addApp(AppletNames::SAVE_CONFIGURATION, &SaveConfigurationApp);
     AppSwitcher.start();
 
 }

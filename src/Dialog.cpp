@@ -74,7 +74,10 @@ void AnimInputDialogString_::start(String title, String *returnString)
     mConfirm = false;
     mCancel = false;
     mpReturnPointer = returnString;
+    
     mEditString = *returnString;
+    if (mEditString.length() == 0)
+        mEditString = " ";
     mH = manimTitle.mH + TEXT_HEIGHT * 2;
 
     manimBGBox.mH = mH;

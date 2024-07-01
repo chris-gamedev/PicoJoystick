@@ -92,13 +92,57 @@ public:
             it->configure(&mConfig);
     }
 
-    File openConfigFile(const char *filename, const char *mode);
+    File openFileWithMessages(const char *filename, const char *mode);
     bool parsableLine(String line, int lineCounter);
     std::vector<uint16_t> buildTokenVector(String *token, String value, int lineCounter);
     int importConfigFile(const char *filename, Configuration *pconfig);
 
     bool saveConfigToFile(const char *filename, Configuration *pconfig);
-    bool inline saveCurrentConfig(const char *filename) { return saveConfigToFile(filename, &this->mConfig);}
+
+private:
+    void listFilesToSerialRcrsv(String dirname = "/");
+    void printAllFilesInDirectoryToSerialRcrsv(String dirname = "/");
+    void printFileTreeToSerialRcrsv(String path = "/", String dirName = "/", String treeString = "");
+
+public:
+    void printFileSystemInfoToSerial();
+    void printFileToSerial(const char *name);
+    void printFileToSerial(File f);
+
+    void listFilesToSerial(String dirname = "/")
+    {
+        if (!LittleFS.begin())
+        {
+            Serial.printf("Failed to mount file system\n");
+            return;
+        }
+        listFilesToSerialRcrsv(dirname);
+        LittleFS.end();
+    }
+    void printAllFilesInDirectoryToSerial(String dirname = "/")
+    {
+        if (!LittleFS.begin())
+        {
+            Serial.printf("Failed to mount file system\n");
+            return;
+        }
+        printAllFilesInDirectoryToSerialRcrsv(dirname);
+        LittleFS.end();
+    }
+    void printFileTreeToSerial(String path = "/", String dirName = "/", String treeString = "")
+    {
+        if (!LittleFS.begin())
+        {
+            Serial.printf("Failed to mount file system\n");
+            return;
+        }
+
+        printFileTreeToSerialRcrsv(path, dirName, treeString);
+        LittleFS.end();
+    };
+
+public:
+    bool inline saveCurrentConfig(const char *filename) { return saveConfigToFile(filename, &this->mConfig); }
 
     void saveTokenToConfig(String token, String value, Configuration *pconfig)
     {
@@ -157,35 +201,6 @@ public:
     }
     template <std::size_t N>
     void tokenizeArrayToFile(String name, File f, const std::array<uint8_t, N> &arr);
-
-    void printFileToSerial(const char *filename)
-    {
-
-        if (!LittleFS.begin())
-        {
-            Serial.printf("--ERROR-- Failed to open file system...\n");
-        }
-        File f = LittleFS.open(filename, "r");
-        if (!f)
-        {
-            Serial.printf("--ERROR-- Failed to open file \"%s\" for \"r\"\n", filename);
-            return;
-        }
-        delay(2000);
-
-        int lineCounter = 0;
-        Serial.printf("starting loop\n");
-        while (f.available())
-        {
-            lineCounter++;
-            String line = f.readStringUntil('\n');
-            line.trim();
-            Serial.printf("%s\n", line.c_str());
-        }
-        Serial.printf("Line Count: %d\n", lineCounter);
-        f.close();
-        LittleFS.end();
-    }
 };
 
 #endif // CONFIGURATION_H

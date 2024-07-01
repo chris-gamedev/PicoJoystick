@@ -12,11 +12,17 @@ void buttonsCreateMacro_callback() { AppSwitcher.switchApp(AppletNames::CREATE_M
 void buttonsAssignMacro_callback() { AppSwitcher.switchApp(AppletNames::ASSIGN_MACRO); }
 void themeJoypad_callback() { AppSwitcher.setDefaultApp(AppletNames::SHOW_BUTTON_PRESSES); }
 void themeBlank_callback() { AppSwitcher.setDefaultApp(AppletNames::BLANK); }
-void themeDoFunThings_callback()
-{
-    Configurator.mConfig.funThings_on = !Configurator.mConfig.funThings_on;
-    Configurator.configurate();
-}
+void themeDoFunThings_callback() {Configurator.mConfig.funThings_on = !Configurator.mConfig.funThings_on; Configurator.configurate();}
+
+// system
+void systemSaveConfiguration_callback() { AppSwitcher.switchApp(AppletNames::SAVE_CONFIGURATION); }
+void systemPrintConfigToSerial() { } // TODO NEED THIS ONE BADLY
+void serialFSInfo_callback() { Configurator.printFileSystemInfoToSerial();}
+void serialFiletree_callback() { Configurator.printFileTreeToSerial();}
+void serialPrintAllFiles_callback() { Configurator.printAllFilesInDirectoryToSerial();}
+void serialListFiles_callback() { Configurator.listFilesToSerial();}
+void advancedFormatFileSystem_callback() {}
+
 void bluetoothToggle_callback()
 {
     // using these causes reconnection to result in IO Error
@@ -147,7 +153,6 @@ void MenuManager_::buildMenu()
             pTheme->addChild(new Leaf_("Joypad", themeJoypad_callback, pTheme));
             pTheme->addChild(new Leaf_("Theme", myCallback, pTheme));
             pTheme->addChild(new Leaf_("Blank", themeBlank_callback, pTheme));
-
             pTheme->addChild(new Leaf_("Fun Stuff ?", themeDoFunThings_callback, pTheme));  // temp to toggle fun stuff
         pDisplay->addChild(new SubMenu_("Brightness", pDisplay));
             Menu_* pBrightness = pDisplay->mChildren[2];
@@ -168,7 +173,19 @@ void MenuManager_::buildMenu()
             mUSBMode->addChild(new Leaf_("Charging", myCallback, mUSBMode));
         pSystem->addChild(new SubMenu_("Config", pSystem));
             Menu_* pSaveConfig = pSystem->mChildren[2];
-            pSaveConfig->addChild(new Leaf_("?", myCallback, pSaveConfig));
+            pSaveConfig->addChild(new Leaf_("Save Config", systemSaveConfiguration_callback, pSaveConfig));
+            pSaveConfig->addChild(new Leaf_("Load Config", myCallback, pSaveConfig));
+            pSaveConfig->addChild(new Leaf_("Print to Serial", myCallback, pSaveConfig));
         pSystem->addChild(new Leaf_("Defaults", myCallback, pSystem));
-    // clang-format on
+        pSystem->addChild(new SubMenu_("Advanced", pSystem));
+            Menu_ *pAdvanced = pSystem->mChildren[4];
+            pAdvanced->addChild(new SubMenu_("Serial Port", pAdvanced));
+                Menu_ *pSerial = pAdvanced->mChildren[0];
+                pSerial->addChild(new Leaf_("FS Info", serialFSInfo_callback, pSerial));
+                pSerial->addChild(new Leaf_("Filetree", serialFiletree_callback, pSerial));
+                pSerial->addChild(new Leaf_("List Files", serialListFiles_callback, pSerial));
+                pSerial->addChild(new Leaf_("Print Files", serialPrintAllFiles_callback, pSerial));
+            
+            pAdvanced->addChild(new Leaf_("Format FS", myCallback, pAdvanced));
+                // clang-format on
 }
