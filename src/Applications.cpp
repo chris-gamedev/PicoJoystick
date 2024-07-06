@@ -198,6 +198,7 @@ void RemapButtonsApp_::cleanupApp()
     mpappDrawKeysApp->cleanupApp();
     mlife = 0;
     mTextSpriteBanner.mlife = 0;
+    mAnimInputDialog.endDialog();
     MyJoystickBT.forceDisableCustomMacros(false);
     MyJoystickBT.toggleJoyTransmit(true);
 }
@@ -331,7 +332,8 @@ void AssignTurboApp_::cleanupApp()
 {
     mpappDrawKeysApp->cleanupApp();
     mTextSpriteBanner.mlife = 0;
-
+    mAnimInputDialogOptions.endDialog();
+    mAnimInputDialogDelay.endDialog();
     MyJoystickBT.forceDisableCustomMacros(false);
     MyJoystickBT.toggleJoyTransmit(true);
 }
@@ -454,7 +456,7 @@ void AssignMacroApp_::cleanupApp()
 {
     mpappDrawKeysApp->cleanupApp();
     mTextSpriteBanner.mlife = 0;
-
+    mAnimInputDialogOptions.endDialog();
     MyJoystickBT.forceDisableCustomMacros(false);
     MyJoystickBT.toggleJoyTransmit(true);
 }
@@ -480,7 +482,7 @@ void SaveConfigurationApp_::startFromScratch()
     mTextSpriteStatic.setLife(50);
     mTextSpriteStatic.setDrawBox(true);
     mTextSpriteStatic.setText({"Enter a", "Filename"});
-    mpCompositor->registerAnimation(&mTextSpriteStatic, CanvasType::TOP);
+    mpCompositor->registerAnimation(&mTextSpriteStatic, CanvasType::FG);
 
     manimInputFilenameDialog.start("Save As:", &mFilename);
 }
@@ -527,6 +529,7 @@ AppletStatus::TAppletStatus SaveConfigurationApp_::updateApp()
 
 void SaveConfigurationApp_::cleanupApp()
 {
+    manimInputFilenameDialog.endDialog();
     MyJoystickBT.forceDisableCustomMacros(false);
     MyJoystickBT.toggleJoyTransmit(true);
 }
@@ -619,7 +622,7 @@ AppletStatus::TAppletStatus LoadConfigApp_::updateApp()
 
 void LoadConfigApp_::cleanupApp()
 {
-
+    mAnimInputDialogFileList.endDialog();
     MyJoystickBT.forceDisableCustomMacros(false);
     MyJoystickBT.toggleJoyTransmit(true);
 }

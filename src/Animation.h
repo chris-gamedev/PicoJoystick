@@ -1,7 +1,7 @@
 #ifndef ANIMATION_H
 #define ANIMATION_H
 #include <Arduino.h>
-#include <stdlib.h>
+#include <vector>
 #include <initializer_list>
 #include "Display.h"
 
@@ -189,9 +189,13 @@ public:
     void updateAnim() {}
     void drawAnim(JoyDisplay_ *pcanvas)
     {
-        pcanvas->fillRoundRect(mX, mY, mW, mH, 10, MENU_BOX_COLOR_BG);
-        pcanvas->drawRoundRect(mX, mY, mW, mH, 10, MENU_BOX_COLOR_FG);
+        if (mDrawBox)
+        {
+            pcanvas->fillRoundRect(mX, mY, mW, mH, 10, MENU_BOX_COLOR_BG);
+            pcanvas->drawRoundRect(mX, mY, mW, mH, 10, MENU_BOX_COLOR_FG);
+        }
     }
+    bool mDrawBox = true;
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -237,7 +241,7 @@ public:
     uint8_t mMaxDisplayLength = 12;
     int8_t mStartChar = 0;
     int8_t mEndChar = mMaxDisplayLength;
-    
+
     String mFullString;
     void moveCursor(int8_t dir)
     {
@@ -252,8 +256,9 @@ public:
             mStartChar = mCursor - mMaxDisplayLength + 1;
         }
     }
-    
-    void setText(String text) {
+
+    void setText(String text)
+    {
         mFullString = text;
         mCursor = (mCursor > mFullString.length() - 1) ? mFullString.length() - 1 : mCursor;
     }

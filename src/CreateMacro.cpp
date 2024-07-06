@@ -183,12 +183,10 @@ std::vector<MacroWord> PhraseTable_::savePhrase()
         std::vector<IRow_ *>::iterator it = mvpRows.begin() + 1;
         while (it != mvpRows.end())
         {
-            Serial.printf("Inside saving.  Word is : %d, %d, %d\n", (*it)->mWord.mButtonStateMap, (*it)->mWord.mJoyState, (*it)->mWord.mDuration);
             phrase.push_back((*it)->mWord);
             it += 2;
         }
     }
-    Serial.printf("phrase size is UGA %d\n", phrase.size());
     return phrase;
 }
 

@@ -1,5 +1,4 @@
 #include <Arduino.h>
-#include <stdlib.h>
 #include "MyJoystick.h"
 #include "Display.h"
 #include "MenuManager.h"

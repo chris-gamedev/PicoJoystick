@@ -2,7 +2,7 @@
 #define COMPOSITOR_H
 
 #include <Arduino.h>
-#include <stdlib.h>
+#include <vector>
 #include <algorithm>
 #include "Display.h"
 #include "Animation.h"

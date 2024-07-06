@@ -52,7 +52,6 @@ public:
 
         sFreshData = true;
 
-        // mLocalButtonStateMap = MyJoystickBT.getPackedKeyPresses();
         if (!statemap || !sLastStateMap)
         {
             sLastStateMap = statemap;
@@ -93,10 +92,8 @@ public:
     AppletSwitcher_(Compositor_ *comp) : mpCompositor(comp), mBlankApplet(comp)
 
     {
-        // WHEN ADDING:  REMEMBER TO EXPAND THE ARRAY IN THE DAMN HEADER!!!
-
         mApplets[AppletNames::BLANK] = &mBlankApplet;
-        mCurrentApp = AppletNames::ASSIGN_MACRO;
+        mCurrentApp = AppletNames::BLANK;
     }
     void inline addApp(AppletNames::TAppletNames name, Applet_ *app) { mApplets[name] = app; }
     void inline setDefaultApp(AppletNames::TAppletNames app) { mDefaultApp = app; }

@@ -1,7 +1,7 @@
 #ifndef APPLICATIONS_H
 #define APPLICATIONS_H
 #include <Arduino.h>
-#include <stdlib.h>
+#include <vector>
 #include <array>
 #include "Compositor.h"
 #include "Dialog.h"
@@ -203,7 +203,7 @@ public:
     LoadConfigApp_(Compositor_ *comp)
         : Applet_(comp)
         , mTextSpriteStatic(0, 64 - (2 * TEXT_HEIGHT), 128, TEXT_HEIGHT * 4, 99)
-        , mAnimInputDialogFileList(comp, &mSelection, "Title")
+        , mAnimInputDialogFileList(comp, &mSelection)
     // clang-format on
     {
         mAnimInputDialogFileList.setTitle("Choose:");
@@ -230,9 +230,6 @@ public:
     bool mLoadedConfig = false;
 };
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////    Save Configuration     /////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 

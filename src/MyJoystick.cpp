@@ -108,7 +108,7 @@ void MacroButtonCommand_ ::executeCommand(uint8_t b, uint8_t value, uint16_t *pS
     }
     *pJoyState = mMacro.phrase[mCurrentWord].mJoyState;
     // Serial.printf("values: ");
-    Serial.printf(BYTE_TO_BINARY_PATTERN, BYTE_TO_BINARY(*pJoyState));
+    // Serial.printf(BYTE_TO_BINARY_PATTERN, BYTE_TO_BINARY(*pJoyState));
     // Serial.printf("\n");
   }
 }

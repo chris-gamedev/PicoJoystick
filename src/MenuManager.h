@@ -1,7 +1,7 @@
 #ifndef MENUMANAGER_H
 #define MENUMANAGER_H
 #include <Arduino.h>
-#include <stdlib.h>
+#include <vector>
 #include <array>
 #include "MyJoystick.h"
 #include "Display.h"
@@ -15,6 +15,7 @@ public:
     Menu_(String name, Menu_ *parent) : mName(name), mpParent(parent) {}
     void inline addChild(Menu_ *child)
     {
+        mChildren.reserve(5);
         mChildren.push_back(child);
         mChildPrompts.push_back(child->mName);
     }

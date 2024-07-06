@@ -1,10 +1,14 @@
 #ifndef CONFIGURATION_H
 #define CONFIGURATION_H
+#ifndef FSTOOLS_LITTLEFS
+#define FSTOOLS_LITTLEFS
+#endif
 #include <vector>
 #include <array>
 #include <map>
-#include <FS.h>
-#include <LittleFS.h>
+// #include <FS.h>
+// #include <LittleFS.h>
+#include "FSTools.h"
 
 #define CONFIG_FILE_PATH "/config/"
 #define MACRO_FILE_PATH "/macros/"
@@ -78,7 +82,7 @@ public:
     }
     // clang-format off
     const std::map<String, ConfigTokens::TConfigTokens> configTokenMap = {
-        {String("GLOBAL_MENUHOTKEY_ON"), ConfigTokens::global_menuHotKey_ON}
+          {String("GLOBAL_MENUHOTKEY_ON"), ConfigTokens::global_menuHotKey_ON}
         , {String("JOYSTICK_JOYVALUEMAP"), ConfigTokens::joystick_joyValueMap}
         , {String("JOYSTICK_BUTTONVALUEMAP"), ConfigTokens::joystick_buttonValueMap}
         , {String("JOYSTICK_TRANSMITTOHOST"), ConfigTokens::joystick_transmitToHost}
@@ -86,124 +90,41 @@ public:
         , {String("FUNTHINGS_ON"), ConfigTokens::funThings_on}
         };
     // clang-format on
-    Configuration mConfig;
-    std::vector<IConfigurable_ *> mvpConfigurables;
     void registerConfigurable(IConfigurable_ *c) { mvpConfigurables.push_back(c); }
-    void configurate()
+    void inline configurate()
     {
         for (auto it : mvpConfigurables)
             it->configure(&mConfig);
     }
     // config parsing & files
-    File openFileWithMessages(const char *filename, const char *mode);
-    bool parsableLine(String line, int lineCounter);
-    std::vector<uint16_t> buildTokenVector(String *token, String value, int lineCounter);
+    // File openFileWithMessages(const char *filename, const char *mode);
+    bool prepParsableLine(String &line, String &token, String &value, int lineCounter);
+    std::vector<uint16_t> buildTokenVector(String &token, String &value, int lineCounter);
     int importConfigFile(const char *filename, Configuration *pconfig);
     bool saveConfigToFile(const char *filename, Configuration *pconfig);
     bool inline saveCurrentConfig(const char *filename) { return saveConfigToFile(filename, &this->mConfig); }
-    void saveTokenToConfig(String token, String value, Configuration *pconfig)
-    {
-        auto t = configTokenMap.find(token);
-        if (t == configTokenMap.end())
-        {
-            Serial.printf("--TOKEN %s NOT FOUND IN CONFIGURATION--\n", token.c_str());
-            return;
-        }
-    }
-    void saveTokenToConfig(String token, std::vector<uint16_t> values, Configuration *pconfig)
-    {
-        auto t = configTokenMap.find(token);
-        if (t == configTokenMap.end())
-        {
-            Serial.printf("--TOKEN %s NOT FOUND IN CONFIGURATION--\n", token.c_str());
-            return;
-        }
-        int i = 0;
-        switch (t->second)
-        {
-        case ConfigTokens::joystick_joyValueMap:
-            assignTokenValuesToArray(token, pconfig->joystick_joyValueMap, &values);
-            break;
-        case ConfigTokens::joystick_buttonValueMap:
-            assignTokenValuesToArray(token, pconfig->joystick_buttonValueMap, &values);
-            break;
-        case ConfigTokens::drawKeyPresses_macroMap:
-            assignTokenValuesToArray(token, pconfig->drawKeypresses_macroMap, &values);
-            break;
-        case ConfigTokens::global_menuHotKey_ON:
-            pconfig->global_menuHotkey_on = static_cast<bool>(values[0]);
-            break;
-        case ConfigTokens::joystick_transmitToHost:
-            pconfig->joystick_transmitToHost = static_cast<bool>(values[0]);
-            break;
-        case ConfigTokens::funThings_on:
-            pconfig->funThings_on = static_cast<bool>(values[0]);
-            break;
-        }
-        Serial.printf("%s, size:%d -- seemed to be successful\n", token.c_str(), values.size());
-    }
+    void saveTokenToConfig(const String &token, const String &value, Configuration *pconfig);
+    void saveTokenToConfig(const String &token, const std::vector<uint16_t>  &values, Configuration *pconfig);
     template <std::size_t N>
-    void assignTokenValuesToArray(String token, std::array<uint8_t, N> &arr, std::vector<uint16_t> *values)
-    {
-        if (values->size() != arr.size())
-        {
-            Serial.printf("%s : --INVALID NUMBER OF VALUES--\n", token.c_str());
-            return;
-        }
-        int i = 0;
-        for (auto it : *values)
-            arr[i++] = static_cast<uint8_t>(it);
-    }
+    void assignTokenValuesToArray(const String &token, std::array<uint8_t, N> &arr, const std::vector<uint16_t> &values);
     template <std::size_t N>
-    void tokenizeArrayToFile(String name, File f, const std::array<uint8_t, N> &arr);
+    void tokenizeContainerToFileInt(String name, File f, const std::array<uint8_t, N> &arr);
 
     // Printing to Serial
-private:
-    void listFilesToSerialRcrsv(String dirname = "/");
-    void printAllFilesInDirectoryToSerialRcrsv(String dirname = "/");
-    void printFileTreeToSerialRcrsv(String path = "/", String dirName = "/", String treeString = "");
-
 public:
-    void printFileSystemInfoToSerial();
-    void printFileToSerial(const char *name);
-    void printFileToSerial(File f);
-    void listFilesToSerial(String dirname = "/")
-    {
-        if (!LittleFS.begin())
-        {
-            Serial.printf("Failed to mount file system\n");
-            return;
-        }
-        listFilesToSerialRcrsv(dirname);
-        LittleFS.end();
-    }
-    void printAllFilesInDirectoryToSerial(String dirname = "/")
-    {
-        if (!LittleFS.begin())
-        {
-            Serial.printf("Failed to mount file system\n");
-            return;
-        }
-        printAllFilesInDirectoryToSerialRcrsv(dirname);
-        LittleFS.end();
-    }
-    void printFileTreeToSerial(String path = "/", String dirName = "/", String treeString = "")
-    {
-        if (!LittleFS.begin())
-        {
-            Serial.printf("Failed to mount file system\n");
-            return;
-        }
+    void inline printFileSystemInfoToSerial() { fstools::printFileSystemInfoToSerial(); }
+    void inline printFileToSerial(const char *name) { fstools::printFileToSerial(name); }
+    void inline printFileToSerial(File f) { fstools::printFileToSerial(f); }
+    void inline listFilesToSerial(String dirname = "/") { fstools::listFilesToSerial(dirname); }
+    void inline printAllFilesInDirectoryToSerial(String dirname = "/") { fstools::printAllFilesInDirectoryToSerial(dirname); }
+    void inline printFileTreeToSerial(String path = "/", String dirName = "/", String treeString = "") { fstools::printFileTreeToSerial(path, dirName, treeString); }
 
-        printFileTreeToSerialRcrsv(path, dirName, treeString);
-        LittleFS.end();
-    };
-    std::vector<String> getDirListOnlyFiles(String path);
     // file manipulation
-    std::vector<String> inline getConfigFileList() {return getDirListOnlyFiles(CONFIG_FILE_PATH);}
-    std::vector<String> inline getMacroFileList() {return getDirListOnlyFiles(MACRO_FILE_PATH);}
-    
+    std::vector<String> inline getConfigFileList() { return fstools::getDirListOnlyFiles(CONFIG_FILE_PATH); }
+    std::vector<String> inline getMacroFileList() { return fstools::getDirListOnlyFiles(MACRO_FILE_PATH); }
 
+    Configuration mConfig;
+    std::vector<IConfigurable_ *> mvpConfigurables;
 };
 
 #endif // CONFIGURATION_H

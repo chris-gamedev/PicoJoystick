@@ -41,9 +41,10 @@ public:
 class AnimInputDialogList_ : public IDialog_
 {
 public:
-    AnimInputDialogList_(Compositor_ *comp, uint8_t *inputVar, String title = "", int16_t x = 0, int16_t y = 64 - (TEXT_HEIGHT * 2) - 5, uint8_t w = 128, uint8_t h = TEXT_HEIGHT * 4 + 10, uint8_t order = 1, int16_t life = -1, int16_t delay = -1, int16_t deltax = 0, int16_t deltay = 0)
+    AnimInputDialogList_(Compositor_ *comp, uint8_t *inputVar, String title = "", int16_t x = 0, int16_t y = 64 - (TEXT_HEIGHT * 2) - 5, uint8_t w = 128, uint8_t h = TEXT_HEIGHT * 4 + 10, uint8_t order = 1)
         : IDialog_(comp, x, y, order)
-        , manimPromptList(x, y + 2 + TEXT_HEIGHT, 128, TEXT_HEIGHT * 2, order), mpReturnPointer(inputVar)
+        , manimPromptList(x, y + 2 + TEXT_HEIGHT, 128, TEXT_HEIGHT * 2, order), 
+        mpReturnPointer(inputVar)
 
     {
         manimTitle.setText(title);
@@ -72,7 +73,7 @@ public:
 class AnimInputDialogString_ : public IDialog_
 {
 public:
-    AnimInputDialogString_(Compositor_ *comp, String *inputVar, String title = "", int16_t x = 0, int16_t y = 64 - (TEXT_HEIGHT * 2) - 5, uint8_t w = 128, uint8_t h = TEXT_HEIGHT * 4 + 10, uint8_t order = 1, int16_t life = -1, int16_t delay = -1, int16_t deltax = 0, int16_t deltay = 0)
+    AnimInputDialogString_(Compositor_ *comp, String *inputVar, String title = "", int16_t x = 0, int16_t y = 64 - (TEXT_HEIGHT * 2) - 5, uint8_t w = 128, uint8_t h = TEXT_HEIGHT * 4 + 10, uint8_t order = 1)
         : IDialog_(comp, x, y, order)
         , manimEditTextBox(x, y + TEXT_HEIGHT + 2)
         , mpReturnPointer(inputVar)
@@ -131,7 +132,7 @@ public:
      * @param order - draw order
      * @param life - number of updates before kill
      */
-    AnimInputDialogInt_(Compositor_ *comp, I *inputVar, I lower, I upper, String prompt = "", int16_t x = 0, int16_t y = 64 - (TEXT_HEIGHT * 2) - 5, uint8_t w = 128, uint8_t h = TEXT_HEIGHT * 4 + 10, uint8_t order = 1, int16_t life = -1)
+    AnimInputDialogInt_(Compositor_ *comp, I *inputVar, I lower, I upper, String prompt = "", int16_t x = 0, int16_t y = 64 - (TEXT_HEIGHT * 2) - 5, uint8_t w = 128, uint8_t h = TEXT_HEIGHT * 4 + 10, uint8_t order = 1)
         : IDialog_(comp, x, y, order), manimValueBox(x, y + TEXT_HEIGHT * 2)
     {
         manimBGBox.mH = TEXT_HEIGHT * 3 + 4;

@@ -4,12 +4,11 @@
 #include <JoystickBT.h>
 #include <HID_Joystick.h>
 #include <forward_list>
+#include "PicoJoystick_types.h"
 #include "Configuration.h"
 
 // clang-format off
 // physical pinout of buttons and Joystick
-#define NUMBER_OF_BUTTONS 12
-#define NUMBER_OF_CUSTOM_MACROS 8
 
 #define BUTTON_00_PIN     0
 #define BUTTON_01_PIN     1
@@ -61,22 +60,7 @@
 #define JOY_LEFT          7 
 #define JOY_UP_LEFT       8 
 
-// Button definitions for applets / menu / etc
-#define APPLET_CANCEL_BUTTON    0
-#define APPLET_CONFIRM_BUTTON   4
-#define APPLET_EXIT_JOYSTATE    7
 
-
-#define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c"
-#define BYTE_TO_BINARY(byte)  \
-  ((byte) & 0x80 ? '1' : '0'), \
-  ((byte) & 0x40 ? '1' : '0'), \
-  ((byte) & 0x20 ? '1' : '0'), \
-  ((byte) & 0x10 ? '1' : '0'), \
-  ((byte) & 0x08 ? '1' : '0'), \
-  ((byte) & 0x04 ? '1' : '0'), \
-  ((byte) & 0x02 ? '1' : '0'), \
-  ((byte) & 0x01 ? '1' : '0')
 // clang-format on
 
 // array of physical button pin numbers on pico
@@ -287,7 +271,7 @@ public:
   MacroButtonCommand_ maMacros[NUMBER_OF_CUSTOM_MACROS];
   Command_ *maAssignedMacros[NUMBER_OF_BUTTONS] = {&mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand, &mDefaultDirectCommand};
   uint8_t maButtonValues[NUMBER_OF_BUTTONS] = {1, 2, 4, 5, 7, 8, 11, 12, 13, 14, 15, 20};
-  uint8_t maJoyValues[9] = {JOY_IDLE, JOY_UP, JOY_UP_RIGHT, JOY_RIGHT, JOY_DOWN_RIGHT, JOY_DOWN, JOY_DOWN_LEFT, JOY_LEFT, JOY_UP_LEFT};
+  uint8_t maJoyValues[NUMBER_OF_JOY_VALUES] = {JOY_IDLE, JOY_UP, JOY_UP_RIGHT, JOY_RIGHT, JOY_DOWN_RIGHT, JOY_DOWN, JOY_DOWN_LEFT, JOY_LEFT, JOY_UP_LEFT};
   bool mJoyTransmit = true;
   uint16_t mPackedButtonStates;
   uint32_t mPackedButtonValues;

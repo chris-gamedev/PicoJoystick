@@ -10,18 +10,25 @@ void buttonsRemap_callback() { AppSwitcher.switchApp(AppletNames::REMAP_BUTTONS)
 void buttonsAssignTurbo_callback() { AppSwitcher.switchApp(AppletNames::ASSIGN_TURBO); }
 void buttonsCreateMacro_callback() { AppSwitcher.switchApp(AppletNames::CREATE_MACRO); }
 void buttonsAssignMacro_callback() { AppSwitcher.switchApp(AppletNames::ASSIGN_MACRO); }
+void joystickInvertX_callback();
+void joystickInvertY_callback();
+void joystickReset_callback();
 void themeJoypad_callback() { AppSwitcher.setDefaultApp(AppletNames::SHOW_BUTTON_PRESSES); }
 void themeBlank_callback() { AppSwitcher.setDefaultApp(AppletNames::BLANK); }
-void themeDoFunThings_callback() {Configurator.mConfig.funThings_on = !Configurator.mConfig.funThings_on; Configurator.configurate();}
+void themeDoFunThings_callback()
+{
+    Configurator.mConfig.funThings_on = !Configurator.mConfig.funThings_on;
+    Configurator.configurate();
+}
 
 // system
 void systemSaveConfiguration_callback() { AppSwitcher.switchApp(AppletNames::SAVE_CONFIGURATION); }
 void systemLoadConfiguration_callback() { AppSwitcher.switchApp(AppletNames::LOAD_CONFIGURATION); }
-void systemPrintConfigToSerial() { } // TODO NEED THIS ONE BADLY
-void serialFSInfo_callback() { Configurator.printFileSystemInfoToSerial();}
-void serialFiletree_callback() { Configurator.printFileTreeToSerial();}
-void serialPrintAllFiles_callback() { Configurator.printAllFilesInDirectoryToSerial();}
-void serialListFiles_callback() { Configurator.listFilesToSerial();}
+void systemPrintConfigToSerial() {} // TODO NEED THIS ONE BADLY
+void serialFSInfo_callback() { Configurator.printFileSystemInfoToSerial(); }
+void serialFiletree_callback() { Configurator.printFileTreeToSerial(); }
+void serialPrintAllFiles_callback() { Configurator.printAllFilesInDirectoryToSerial(); }
+void serialListFiles_callback() { Configurator.listFilesToSerial(); }
 void advancedFormatFileSystem_callback() {}
 
 void bluetoothToggle_callback()
@@ -143,9 +150,9 @@ void MenuManager_::buildMenu()
             pMacros->addChild(new Leaf_("Manual", buttonsCreateMacro_callback, pMacros));
     pRoot->addChild(new SubMenu_("Joystick", &mMenuRoot));
         Menu_* pJoystick = pRoot->mChildren[1];
-        pJoystick->addChild(new Leaf_("Orient", myCallback, pJoystick));
-        pJoystick->addChild(new Leaf_("Invert X", myCallback, pJoystick));
-        pJoystick->addChild(new Leaf_("Invert Y", myCallback, pJoystick));
+        pJoystick->addChild(new Leaf_("Reset", joystickReset_callback, pJoystick));
+        pJoystick->addChild(new Leaf_("Invert X", joystickInvertX_callback, pJoystick));
+        pJoystick->addChild(new Leaf_("Invert Y", joystickInvertY_callback, pJoystick));
     pRoot->addChild(new SubMenu_("Display", &mMenuRoot));
         Menu_* pDisplay = pRoot->mChildren[2];
         pDisplay->addChild(new Leaf_("On - Off", myCallback, pDisplay));
@@ -176,7 +183,6 @@ void MenuManager_::buildMenu()
             Menu_* pSaveConfig = pSystem->mChildren[2];
             pSaveConfig->addChild(new Leaf_("Save Config", systemSaveConfiguration_callback, pSaveConfig));
             pSaveConfig->addChild(new Leaf_("Load Config", systemLoadConfiguration_callback, pSaveConfig));
-            pSaveConfig->addChild(new Leaf_("Print to Serial", myCallback, pSaveConfig));
         pSystem->addChild(new Leaf_("Defaults", myCallback, pSystem));
         pSystem->addChild(new SubMenu_("Advanced", pSystem));
             Menu_ *pAdvanced = pSystem->mChildren[4];
@@ -188,5 +194,43 @@ void MenuManager_::buildMenu()
                 pSerial->addChild(new Leaf_("Print Files", serialPrintAllFiles_callback, pSerial));
             
             pAdvanced->addChild(new Leaf_("Format FS", myCallback, pAdvanced));
-                // clang-format on
+    // clang-format on
+}
+
+template <typename T>
+void swap(T &a, T &b)
+{
+    T temp;
+    temp = a;
+    a = b;
+    b = temp;
+}
+
+void joystickInvertX_callback()
+{
+    swap<uint8_t>(Configurator.mConfig.joystick_joyValueMap[JOY_LEFT], Configurator.mConfig.joystick_joyValueMap[JOY_RIGHT]);
+    swap<uint8_t>(Configurator.mConfig.joystick_joyValueMap[JOY_UP_LEFT], Configurator.mConfig.joystick_joyValueMap[JOY_UP_RIGHT]);
+    swap<uint8_t>(Configurator.mConfig.joystick_joyValueMap[JOY_DOWN_LEFT], Configurator.mConfig.joystick_joyValueMap[JOY_DOWN_RIGHT]);
+    Configurator.configurate();
+}
+
+void joystickInvertY_callback()
+{
+    swap<uint8_t>(Configurator.mConfig.joystick_joyValueMap[JOY_UP], Configurator.mConfig.joystick_joyValueMap[JOY_DOWN]);
+    swap<uint8_t>(Configurator.mConfig.joystick_joyValueMap[JOY_UP_LEFT], Configurator.mConfig.joystick_joyValueMap[JOY_DOWN_LEFT]);
+    swap<uint8_t>(Configurator.mConfig.joystick_joyValueMap[JOY_UP_RIGHT], Configurator.mConfig.joystick_joyValueMap[JOY_DOWN_RIGHT]);
+    Configurator.configurate();
+}
+
+void joystickReset_callback() {
+    Configurator.mConfig.joystick_joyValueMap[JOY_IDLE] = JOY_IDLE;
+    Configurator.mConfig.joystick_joyValueMap[JOY_UP] = JOY_UP;
+    Configurator.mConfig.joystick_joyValueMap[JOY_UP_RIGHT] = JOY_UP_RIGHT;
+    Configurator.mConfig.joystick_joyValueMap[JOY_RIGHT] = JOY_RIGHT;
+    Configurator.mConfig.joystick_joyValueMap[JOY_DOWN_RIGHT] = JOY_DOWN_RIGHT;
+    Configurator.mConfig.joystick_joyValueMap[JOY_DOWN] = JOY_DOWN;
+    Configurator.mConfig.joystick_joyValueMap[JOY_DOWN_LEFT] = JOY_DOWN_LEFT;
+    Configurator.mConfig.joystick_joyValueMap[JOY_LEFT] = JOY_LEFT;
+    Configurator.mConfig.joystick_joyValueMap[JOY_UP_LEFT] = JOY_UP_LEFT;
+    Configurator.configurate();    
 }

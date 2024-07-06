@@ -10,7 +10,7 @@ void AnimInputDialogList_::start(String title, uint8_t *selection, std::initiali
     mCancel = false;
     mpReturnPointer = selection;
     mPosition = 0;
-    mH = (TEXT_HEIGHT * 3) + (prompts.size() / 2.0F * TEXT_HEIGHT) + 4;
+    mH = (TEXT_HEIGHT * 5);
     manimBGBox.mH = mH;
     mpCompositor->registerAnimation(&manimBGBox, CanvasType::TOP);
 
@@ -81,17 +81,18 @@ void AnimInputDialogString_::start(String title, String *returnString)
     mH = manimTitle.mH + TEXT_HEIGHT * 2;
 
     manimBGBox.mH = mH;
+    manimBGBox.mlife=-1;
     mpCompositor->registerAnimation(&manimBGBox, CanvasType::TOP);
 
     manimTitle.mlife = -1;
     manimTitle.setText(title);
-    mpCompositor->registerAnimation(&manimTitle, CanvasType::FG);
+    mpCompositor->registerAnimation(&manimTitle, CanvasType::TOP);
 
     manimEditTextBox.mlife = -1;
     manimEditTextBox.setText(mEditString);
     manimEditTextBox.mCursor = 0;
     mCursor = 0;
-    mpCompositor->registerAnimation(&manimEditTextBox, CanvasType::FG);
+    mpCompositor->registerAnimation(&manimEditTextBox, CanvasType::TOP);
 }
 
 bool AnimInputDialogString_::updateDialog()
@@ -148,9 +149,12 @@ bool AnimInputDialogString_::updateDialog()
 
 void AnimInputDialogString_::endDialog()
 {
-    mpCompositor->killAnimation(&manimBGBox, CanvasType::TOP);
-    mpCompositor->killAnimation(&manimTitle, CanvasType::FG);
-    mpCompositor->killAnimation(&manimEditTextBox, CanvasType::FG);
+    manimBGBox.mlife = 0;
+    manimTitle.mlife = 0;
+    manimEditTextBox.mlife = 0;
+    // mpCompositor->killAnimation(&manimBGBox, CanvasType::TOP);
+    // mpCompositor->killAnimation(&manimTitle, CanvasType::FG);
+    // mpCompositor->killAnimation(&manimEditTextBox, CanvasType::FG);
 }
 
 void AnimInputDialogString_::moveCursor(int8_t dir)
