@@ -5,11 +5,25 @@
 #include <initializer_list>
 #include "Display.h"
 
-class Behavior_
+class Behavior_;
+
+class IScreenObject_
 {
 public:
-    Behavior_() {}
-    virtual void update() = 0;
+    IScreenObject_(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t order, int16_t life = -1)
+        : mX(x), mY(y), mW(w), mH(h), mdrawOrder(order), mlife(life)
+    {
+    }
+    virtual void updateAnim() = 0;
+    virtual void drawAnim(JoyDisplay_ *) = 0;
+    bool operator<(const IScreenObject_ &rhs) const { return mdrawOrder < rhs.mdrawOrder; }
+    int16_t mX = 0;
+    int16_t mY = 0;
+    uint8_t mW;
+    uint8_t mH;
+    uint8_t mdrawOrder;
+    int16_t mlife = -1;
+    uint8_t mColor = 0xF;
 };
 
 class Animation_
@@ -78,25 +92,14 @@ public:
     uint8_t mW;
     uint8_t mH;
     uint8_t mdrawOrder;
+    bool mFaceR = true;
+    bool mFaceUp = true;
 };
-
-/*********************************************************************/
 
 /// @brief 1 bit Animation.  Registered with compositor
 class AnimSprite1_ : public Animation_
 {
 public:
-    /**
-     * @param x - relative to canvas passed to draw
-     * @param y - relative to canvas passed to draw
-     * @param w - width
-     * @param h - height
-     * @param order - draw order
-     * @param life - number of updates before kill
-     * @param delay - compositor clock ticks per update
-     * @param dx - delta X to move per tick
-     * @param dy - delta Y to move per tick
-     */
     AnimSprite1_(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t order, int16_t life, int16_t delay, int8_t dx, int8_t dy)
         : Animation_(x, y, w, h, order, life, delay, dx, dy) {}
     // (x, y, *bmp, w, h, order, life, delay)
@@ -108,23 +111,12 @@ public:
     void drawAnim(JoyDisplay_ *pcanvas);
 };
 
-/// @brief 8 bit Animation.  Registered with compositor
-class AnimSprite8_ : public Animation_
+/// @brief 4 bit Animation.  Registered with compositor
+class AnimSprite4_ : public Animation_
 {
-    /**
-     * @param x - relative to canvas passed to draw
-     * @param y - relative to canvas passed to draw
-     * @param w - width
-     * @param h - height
-     * @param order - draw order
-     * @param life - number of updates before kill
-     * @param delay - compositor clock ticks per update
-     * @param dx - delta X to move per tick
-     * @param dy - delta Y to move per tick
-     */
+
 public:
-    // (x, y, *bmp, w, h, order, life, delay, deltax, deltay)
-    AnimSprite8_(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t order = 1, int16_t life = -1, int16_t delay = -1, int8_t dx = 0, int8_t dy = 0, int8_t framedelay = -1)
+    AnimSprite4_(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t order = 1, int16_t life = -1, int16_t delay = -1, int8_t dx = 0, int8_t dy = 0, int8_t framedelay = -1)
         : Animation_(x, y, w, h, order, life, delay, dx, dy, framedelay) {}
 
     void inline setBitmap(const unsigned char *bmp) { mbitmap = bmp; }
@@ -133,22 +125,29 @@ public:
     void drawAnim(JoyDisplay_ *pcanvas);
 };
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+class PacManSprite_ : public AnimSprite4_
+{
+
+public:
+    // (x, y, *bmp, w, h, order, life, delay, deltax, deltay)
+    PacManSprite_(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t order = 1, int16_t life = -1, int16_t delay = -1, int8_t dx = 0, int8_t dy = 0, int8_t framedelay = -1)
+        : AnimSprite4_(x, y, w, h, order, life, delay, dx, dy, framedelay) {}
+
+    void drawAnim(JoyDisplay_ *pcanvas);
+    int8_t mLastDeltaX;
+    bool mFacingRight = true;
+};
+
 //////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////   Static   ///////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////
 
-/// @brief 1 bit Static Sprite.  No Moving, No Animation. Registered with compositor
+/// @brief 1 bit Static Sprite.  No Moving, No Animation.
 class AnimStatic1_ : public Animation_
 {
 public:
-    /**
-     * @param y - relative to canvas passed to draw
-     * @param x - relative to canvas passed to draw
-     * @param w - width
-     * @param h - height
-     * @param order - draw order
-     * @param life - number of updates before kill
-     */
     AnimStatic1_(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t order, int16_t life)
         : Animation_(x, y, w, h, order, life, 0, 0, 0) {}
 
@@ -158,19 +157,10 @@ public:
     void drawAnim(JoyDisplay_ *pcanvas);
 };
 
-/// @brief 8 bit Static Sprite.  No Moving, No Animation. Registered with compositor
-
+/// @brief 4 bit Static Sprite.  No Moving, No Animation.
 class AnimStatic4_ : public Animation_
 {
 public:
-    /**
-     * @param x - relative to canvas passed to draw
-     * @param y - relative to canvas passed to draw
-     * @param w - width
-     * @param h - height
-     * @param order - draw order
-     * @param life - number of updates before kill
-     */
     AnimStatic4_(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t order, int16_t life)
         : Animation_(x, y, w, h, order, life) {}
 
@@ -208,7 +198,7 @@ public:
         : Animation_(x, y, w, h, order, life, -1, 0, 0) {}
 
     // void inline setBitmap(const unsigned char *bmp) { mbitmap = bmp; }
-    void inline setText(String t) { mText = t; }
+    void inline setText(const String &t) { mText = t; }
     void inline setDrawBox(bool drawBox) { mDrawBox = drawBox; }
     void updateAnim();
     void drawAnim(JoyDisplay_ *pcanvas);
@@ -235,42 +225,20 @@ public:
         mCenterText = false;
         mXOffset = 5;
     }
+    void moveCursor(int8_t dir);
+    void inline setText(const String &text)
+    {
+        mFullString = text;
+        mCursor = (mCursor > mFullString.length() - 1) ? mFullString.length() - 1 : mCursor;
+    }
+    void drawAnim(JoyDisplay_ *pcanvas);
 
+    String mFullString;
     int8_t mCursor = 0;
     uint8_t mMaxStringLength = 20;
     uint8_t mMaxDisplayLength = 12;
     int8_t mStartChar = 0;
     int8_t mEndChar = mMaxDisplayLength;
-
-    String mFullString;
-    void moveCursor(int8_t dir)
-    {
-        mCursor += dir;
-        mCursor = (mCursor < 0) ? 0 : mCursor;
-        mCursor = (mCursor > mFullString.length() - 1) ? mFullString.length() - 1 : mCursor;
-        if (mCursor < mStartChar)
-            // feedText(-1);
-            mStartChar = mCursor;
-        else if (mCursor > mStartChar + mMaxDisplayLength - 1 && mStartChar + mMaxDisplayLength < mFullString.length())
-        {
-            mStartChar = mCursor - mMaxDisplayLength + 1;
-        }
-    }
-
-    void setText(String text)
-    {
-        mFullString = text;
-        mCursor = (mCursor > mFullString.length() - 1) ? mFullString.length() - 1 : mCursor;
-    }
-    void drawAnim(JoyDisplay_ *pcanvas)
-    {
-        int8_t cursorX = (mCursor - mStartChar) * mFontWidth;
-        int8_t cursorY = 0;
-        mText = mFullString.substring(mStartChar, mStartChar + mMaxDisplayLength);
-
-        pcanvas->fillRect(cursorX + mX + mXOffset - 2, cursorY + mY + mYOffset, mFontWidth + 3, mFontHeight + 5, 0xB);
-        AnimTextStatic1Line_::drawAnim(pcanvas);
-    }
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -282,13 +250,13 @@ public:
         : Animation_(x, y, w, h, order, life, delay, deltax, deltay) {}
 
     void inline setBitmap(const unsigned char *bmp) { mbitmap = bmp; }
-    void inline setText(String s)
+    void inline setText(const String &s)
     {
         mvStrings.clear();
         mvStrings.push_back(s);
     }
     void inline setText(std::initializer_list<String> strings) { mvStrings = strings; };
-    void inline setText(std::vector<String> strings, uint8_t pos = 0)
+    void inline setText(const std::vector<String> &strings, uint8_t pos = 0)
     {
         mvStrings = strings;
         mposition = pos;
@@ -308,6 +276,26 @@ public:
     bool mDrawBox = false;
     uint8_t mTextOffsetX = 0;
     uint8_t mTextOffsetY = 0;
+};
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////    Behaviors    /////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+class Behavior_
+{
+public:
+    Behavior_() {}
+    virtual void update(Animation_ *parent) = 0;
+};
+
+class UDLRRandom : public Behavior_
+{
+public:
+    UDLRRandom(int8_t threshold = 10) : mthreshold(threshold) {}
+    void update (Animation_ *parent);
+
+    int8_t mthreshold;
 };
 
 #endif

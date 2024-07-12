@@ -1,4 +1,6 @@
 #include <Arduino.h>
+#include <pico/mutex.h>
+#include <pico/util/queue.h>
 #include "MyJoystick.h"
 #include "Display.h"
 #include "MenuManager.h"
@@ -7,6 +9,8 @@
 #include "CreateMacro.h"
 #include "Configuration.h"
 #include "FunThings.h"
+
+
 
 Compositor_ Compositor(&JoyDisplay);
 
@@ -33,14 +37,15 @@ uint32_t timeMenuHotkeyLast;
 
 bool menuHotkeyPressed();
 
+
 void setup()
 
 {
     Serial.begin(115200);
     Serial.println("use BOOTSEL to toggle joystick on / off");
 
+    
     MyJoystickBT.begin("ChrisJoystick Test 2");
-
     if (!JoyDisplay.begin(0x3D))
     {
         Serial.println("Unable to initialize OLED");
@@ -65,9 +70,17 @@ void setup()
 
 }
 
+void setup1() 
+{
+
+    delay(3000);
+    // while (!MyJoystickBT.isReadyPoll());
+}
+
 void loop()
 {
-    MyJoystickBT.pollJoystick();
+    // MyJoystickBT.pollJoystick();
+    MyJoystickBT.getStateSnapshot();
     if (menuHotkeyPressed())
         AppSwitcher.switchApp(AppletNames::MENU);
     AppSwitcher.update();
@@ -101,6 +114,11 @@ void loop()
         Serial.println("------------- discrete press-JOY-UP-RIGHT--------------");
 #endif        
 }
+
+void loop1() {
+    MyJoystickBT.pollJoystick();
+}
+
 
 // todo: rewrite efficiently
 bool menuHotkeyPressed()

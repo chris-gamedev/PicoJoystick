@@ -101,14 +101,14 @@ public:
     bool prepParsableLine(String &line, String &token, String &value, int lineCounter);
     std::vector<uint16_t> buildTokenVector(String &token, String &value, int lineCounter);
     int importConfigFile(const char *filename, Configuration *pconfig);
-    bool saveConfigToFile(const char *filename, Configuration *pconfig);
-    bool inline saveCurrentConfig(const char *filename) { return saveConfigToFile(filename, &this->mConfig); }
+    bool saveConfigToFile(const char *filename, const Configuration &pconfig);
+    bool inline saveCurrentConfig(const char *filename) { return saveConfigToFile(filename, this->mConfig); }
     void saveTokenToConfig(const String &token, const String &value, Configuration *pconfig);
     void saveTokenToConfig(const String &token, const std::vector<uint16_t>  &values, Configuration *pconfig);
     template <std::size_t N>
     void assignTokenValuesToArray(const String &token, std::array<uint8_t, N> &arr, const std::vector<uint16_t> &values);
     template <std::size_t N>
-    void tokenizeContainerToFileInt(String name, File f, const std::array<uint8_t, N> &arr);
+    void tokenizeContainerToFileInt(const char * name, File f, const std::array<uint8_t, N> &arr);
 
     // Printing to Serial
 public:

@@ -80,6 +80,7 @@ void Compositor_::update()
     if (mclock + mclockdelay >= millis())
         return;
     mclock += mclockdelay;
+    mRedraw = true;
 
     updateVectors(&mvFG);
     updateVectors(&mvBG);
@@ -102,6 +103,9 @@ void Compositor_::updateVectors(std::vector<Animation_ *> *v)
 void Compositor_::draw()
 {
     // TODO Sort out these canvases!
+    if (!mRedraw)
+        return;
+
     mpDisplay->clearDisplay();
 
     for (auto &it : mvBG)
@@ -114,4 +118,5 @@ void Compositor_::draw()
         it->drawAnim(mpDisplay);
 
     mpDisplay->display();
+    mRedraw = false;
 }

@@ -1,8 +1,12 @@
 #include "MyJoystick.h"
+#include <pico/mutex.h>
+#include <PicoBluetoothHID.h>
 
+queue_t joyStateQueue;
 MyJoystickBT_ MyJoystickBT;
 uint16_t Command_::sEnabledButtonsMask = 0xFFFF;
 uint8_t Command_::sEnabledJoystickMask = 0xFF;
+// extern PicoBluetoothHID_ PicoBluetoothHID;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////   Commands & Macros   //////////////////////////////////////////////////////////
@@ -26,17 +30,19 @@ void DirectButtonCommand_::executeCommand(uint8_t b, uint8_t value, uint16_t *pS
     *pStateMap |= MAKE_BUTTON_BITMASK_16(b);
     Command_::addButtonToValues(b, value, mButtonsMask, pValueMap, pJoyState);
   }
+  
 }
 
 //---------------------------------------------------------------------------------------
 
 void TurboButtonCommand_::executeCommand(uint8_t b, uint8_t value, uint16_t *pStateMap, uint32_t *pValueMap, uint8_t *pJoyState)
 {
+  static bool sLastState = 0;
   bool state = !digitalRead(ButtonPins[b]);
   if (state)
   {
     *pStateMap |= MAKE_BUTTON_BITMASK_16(b);
-    if (MyJoystickBT.buttonJustPressed(b))
+    if (state && !sLastState)
     {
       mLastTime = 0;
       if (mIsLatchingButton)
@@ -48,7 +54,7 @@ void TurboButtonCommand_::executeCommand(uint8_t b, uint8_t value, uint16_t *pSt
       }
     }
   }
-
+  sLastState = state;
   if ((mIsLatchingButton && mLatchedOn) || (!mIsLatchingButton && state))
   {
     mActive = true;
@@ -123,6 +129,7 @@ MyJoystickBT_::MyJoystickBT_()
 {
   this->use8bit(true);
   this->useManualSend(true);
+  queue_init(&joyStateQueue, sizeof(joyStateMessage), 2);
 
   for (int i = 0; i < sizeof(ButtonPins) / sizeof(int); i++)
   {
@@ -144,17 +151,16 @@ MyJoystickBT_::MyJoystickBT_()
       {0b0000000000010000, 5, 20},
       {0b0000000000100000, 6, 20},
       {0b0000000001000000, 7, 20},
-      {0b0000000010000000, 8, 20}}; 
-  
+      {0b0000000010000000, 8, 20}};
+
   maMacros[1].mMacro.name = "Fireball R";
   maMacros[1].mButtonsMask = 0x0000;
   maMacros[1].mJoyMask = 0;
   maMacros[1].mMacro.phrase = {
       {0b0000000000000000, 5, 50},
       {0b0000000000000000, 4, 50},
-      {0b0000000000100000, 3, 50}}; 
+      {0b0000000000100000, 3, 50}};
 
-  
   maMacros[2].mMacro.name = "Fireball L";
   maMacros[2].mButtonsMask = 0x0000;
   maMacros[2].mJoyMask = 0;
@@ -163,22 +169,20 @@ MyJoystickBT_::MyJoystickBT_()
       {0b0000000000000000, 6, 50},
       {0b0000000000100000, 7, 50}};
 
+  // maMacros[0].mMacro.enabledJoystickState = 0;
+  // maMacros[0].mMacro.enabledButtonsMap = 0b1111111111111011;
 
+  maMacros[0].mJoyMask = 0;
+  maMacros[0].mButtonsMask = 0b1111111111111011;
 
-      // maMacros[0].mMacro.enabledJoystickState = 0;
-      // maMacros[0].mMacro.enabledButtonsMap = 0b1111111111111011;
-
-      maMacros[0].mJoyMask = 0;
-      maMacros[0].mButtonsMask = 0b1111111111111011;
+  // signal for CORE1 to begin polling;
+  mReadyToPoll = true;
 }
 
-/***************************************************************/
-/**
- * Read values from all buttons and joystick directions.  After
- * Polling, manually send.
- */
 void MyJoystickBT_::pollJoystick()
 {
+ static unsigned long sLastTime = 0;
+ sLastTime = micros();
   // BOOTSEL toggles flag to transmit input to host
   if (BOOTSEL)
   {
@@ -190,17 +194,18 @@ void MyJoystickBT_::pollJoystick()
     }
   }
 
-  mLastPackedButtonStates = mPackedButtonStates;
-  mLastJoyState = mJoyState;
-  mPackedButtonStates = 0;
+  mRealTimeButtonMap = 0;
   mPackedButtonValues = 0;
   Command_::resetGlobalMasks();
 
-  // assemble the button state & value masks
+  mutex_enter_blocking(&mtxJoyConfigData);
+  // assemble the enabled button mask
   for (int i = 0; i < sizeof(ButtonPins) / sizeof(ButtonPins[0]); i++)
     maAssignedMacros[i]->updateMasks();
+  // assemble values to send to host based upon button state & disallowed buttons
   for (int i = 0; i < sizeof(ButtonPins) / sizeof(ButtonPins[0]); i++)
-    maAssignedMacros[i]->executeCommand(i, maButtonValues[i], &mPackedButtonStates, &mPackedButtonValues, &mJoyState);
+    maAssignedMacros[i]->executeCommand(i, maButtonValues[i], &mRealTimeButtonMap, &mPackedButtonValues, &mRealTimeJoyState);
+  mutex_exit(&mtxJoyConfigData);
 
   this->data.buttons = mPackedButtonValues;
 
@@ -210,29 +215,59 @@ void MyJoystickBT_::pollJoystick()
   {
     if (digitalRead(BUTTON_UP_PIN) == LOW) // read NORTH
     {                                      // read UP and combinations
-      mJoyState = maJoyValues[JOY_UP];
+      mRealTimeJoyState = maJoyValues[JOY_UP];
       if (digitalRead(BUTTON_RIGHT_PIN) == LOW)
-        mJoyState = maJoyValues[JOY_UP_RIGHT];
+        mRealTimeJoyState = maJoyValues[JOY_UP_RIGHT];
       else if (digitalRead(BUTTON_LEFT_PIN) == LOW)
-        mJoyState = maJoyValues[JOY_UP_LEFT];
+        mRealTimeJoyState = maJoyValues[JOY_UP_LEFT];
     }
     else if (digitalRead(BUTTON_DOWN_PIN) == LOW) // read SOUTH
     {                                             // read DOWN and combinations
-      mJoyState = maJoyValues[JOY_DOWN];
+      mRealTimeJoyState = maJoyValues[JOY_DOWN];
       if (digitalRead(BUTTON_RIGHT_PIN) == LOW)
-        mJoyState = maJoyValues[JOY_DOWN_RIGHT];
+        mRealTimeJoyState = maJoyValues[JOY_DOWN_RIGHT];
       else if (digitalRead(BUTTON_LEFT_PIN) == LOW)
-        mJoyState = maJoyValues[JOY_DOWN_LEFT];
+        mRealTimeJoyState = maJoyValues[JOY_DOWN_LEFT];
     }
     else if (digitalRead(BUTTON_RIGHT_PIN) == LOW) // read solo RIGHT
-      mJoyState = maJoyValues[JOY_RIGHT];
+      mRealTimeJoyState = maJoyValues[JOY_RIGHT];
     else if (digitalRead(BUTTON_LEFT_PIN) == LOW) // read solo LEFT
-      mJoyState = maJoyValues[JOY_LEFT];
+      mRealTimeJoyState = maJoyValues[JOY_LEFT];
     else
-      mJoyState = maJoyValues[JOY_IDLE];
+      mRealTimeJoyState = maJoyValues[JOY_IDLE];
   }
-  this->data.hat = mJoyState;
+  this->data.hat = mRealTimeJoyState;
 
-  if (mJoyTransmit)
+  joyStateMessage jmsg{mRealTimeButtonMap, mRealTimeJoyState};
+  queue_try_add(&joyStateQueue, &jmsg);
+  uint16_t delay = mPollDelay;
+  if (mJoyTransmit && PicoBluetoothHID.connected())
     this->send_now();
+  else 
+    delay+=500;
+
+    long int d = delay - (micros() - sLastTime);
+    delayMicroseconds((d > 0) ? d : 0);
+    // delay(1);
+}
+
+void MyJoystickBT_::getStateSnapshot()
+{
+  joyStateMessage stateMsg;
+    queue_remove_blocking(&joyStateQueue, &stateMsg);
+    mLastPackedButtonStates = mPackedButtonStates;
+    mLastJoyState = mJoyState;
+    mPackedButtonStates = stateMsg.buttonMap;
+    mJoyState = stateMsg.joyState;
+}
+
+void MyJoystickBT_::configure(Configuration *config)
+{
+  mutex_enter_blocking(&mtxJoyConfigData);
+  mJoyTransmit = config->joystick_transmitToHost;
+  for (int i = 0; i < 9; i++)
+    maJoyValues[i] = config->joystick_joyValueMap[i];
+  for (int i = 0; i < 12; i++)
+    maButtonValues[i] = config->joystick_buttonValueMap[i];
+  mutex_exit(&mtxJoyConfigData);
 }

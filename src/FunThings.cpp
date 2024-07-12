@@ -4,20 +4,24 @@
 FunThings_::FunThings_(Compositor_ *comp)
     // clang-format off
         : mpComp(comp)
-        , aSprite8_1(0, 20, 16, 16, 5, 200, 1, 3, 0, 1)
-        , aSprite8_2(0, 45, 16, 16, 4, 200, 4, 2, 0, 1)
+        , aPacMan_1(0, 20, 16, 16, 5, 200, 1, 3, 0, 0)
+        , aPacMan_2(0, 45, 16, 16, 4, 200, 4, 2, 0, 0)
         , aSprite8_blinky(0, 55, 16, 16, 5, 80, 4, 3, 0, 2)
         , aSprite8_pinky(0, 60, 16, 16, 4, 200, 4, 3, 0, 2)
         , aScardey8_1(0, 115, 16, 16, 5, 125, 4, 1, 0, 2)
         , aScardey8_2(0, 60, 16, 16, 4, 150, 4, 1, 0, 2)
+        , mBehavior(30)
 // clang-format on
 {
-    aSprite8_1.setBitmapArray(msPacMan_spritesheetR, msPacMan_spritesheet_size);
-    aSprite8_2.setBitmapArray(msPacMan_spritesheetR, msPacMan_spritesheet_size);
+    aPacMan_1.setBitmapArray(msPacMan_spritesheetR, msPacMan_spritesheet_size);
+    aPacMan_1.mpbehavior = &mBehavior;
+    aPacMan_2.setBitmapArray(msPacMan_spritesheetR, msPacMan_spritesheet_size);
     aSprite8_blinky.setBitmapArray(blinky_spritesheet, blinky_spritesheet_size);
     aSprite8_pinky.setBitmapArray(pinky_spritesheet, pinky_spritesheetR_size);
     aScardey8_1.setBitmapArray(scaredy_spritesheet, scaredy_spritesheet_size);
     aScardey8_2.setBitmapArray(scaredy_spritesheet, scaredy_spritesheet_size);
+    
+ 
 }
 
 void FunThings_::doTheFunThings()
@@ -63,11 +67,14 @@ void FunThings_::doTheFunThings()
         int y = random(100) + 10;
         useMe->mX = -20;
         useMe->mY = y;
+        useMe->mFaceR = true;
+        useMe->mFaceUp = true;
         useMe->mdrawOrder = deltax;
         // useMe->mlife = 800 * (1 / deltax) + random(200) + 100;
         useMe->mdelay = -1;
         useMe->mdelaycounter = useMe->mdelay;
         useMe->mdeltaX = deltax;
+        useMe->mdeltaY = 0;
         useMe->mlife = 168 / deltax + random(50);
         CanvasType::TCanvasType layer = (random(6) + 1 > 4) ? CanvasType::FG : CanvasType::BG;
 

@@ -35,14 +35,15 @@ public:
     void draw();
 
     uint32_t mclock;
-    uint32_t mclockdelay = 1;
-
+    uint32_t mclockdelay = 50;
+    bool mRedraw = true;
     std::vector<Animation_ *> mvFG;
     std::vector<Animation_ *> mvBG;
     std::vector<Animation_ *> mvTop;
     std::vector<Animation_ *> mvBottom;
 
     std::vector<Animation_ *> *apvAllCanvases[4] = {&mvBG, &mvBottom, &mvTop, &mvFG};
+    
 
 protected:
     void inline updateVectors(std::vector<Animation_ *> *v);

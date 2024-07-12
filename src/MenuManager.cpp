@@ -61,6 +61,7 @@ void MenuManager_::initApp()
     mpCompositor->registerAnimation(&mUpperTextSpriteStatic, CanvasType::TOP);
     mpCompositor->registerAnimation(this, CanvasType::BG);
     MyJoystickBT.toggleJoyTransmit(false);
+    MyJoystickBT.setPollDelay(1000);
     MyJoystickBT.forceDisableCustomMacros(true);
 }
 
@@ -70,6 +71,7 @@ void MenuManager_::cleanupApp()
     mLowerTextSpriteStatic.mlife = 0;
     this->mlife = 0;
     MyJoystickBT.toggleJoyTransmit(true);
+    MyJoystickBT.setPollDelay(20);
     MyJoystickBT.forceDisableCustomMacros(false);
 }
 

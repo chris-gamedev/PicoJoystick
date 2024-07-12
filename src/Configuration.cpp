@@ -154,10 +154,10 @@ void Configurator_::assignTokenValuesToArray(const String &token, std::array<uin
 }
 
 template <std::size_t N>
-inline void Configurator_::tokenizeContainerToFileInt(String name, File f, const std::array<uint8_t, N> &arr)
+inline void Configurator_::tokenizeContainerToFileInt(const char * name, File f, const std::array<uint8_t, N> &arr)
 {
     int size = arr.size();
-    f.printf("<%s:%d=", name.c_str(), size);
+    f.printf("<%s:%d=", name, size);
     for (int i = 0; i < size; i++)
     {
         f.printf("%d", arr[i]);
@@ -168,24 +168,25 @@ inline void Configurator_::tokenizeContainerToFileInt(String name, File f, const
     }
 }
 
-bool Configurator_::saveConfigToFile(const char *filename, Configuration *pconfig)
+bool Configurator_::saveConfigToFile(const char *filename, const Configuration &config)
 {
-    String fullFilename = "/config/" + String(filename);
-    File f = fstools::openFileWithMessages(fullFilename.c_str(), "w"); // littleFS begins here
+    char fullFilename[strlen("/config/") + strlen(filename) + 1];
+    sprintf(fullFilename, "%s%s", "/config/", filename);
+    File f = fstools::openFileWithMessages(fullFilename, "w"); // littleFS begins here
     if (!f)
         return false;
-    f.printf("#Custom Configuration: %s\n", fullFilename.c_str());
+    f.printf("#Custom Configuration: %s\n", fullFilename);
     f.print("#\n");
     f.print("#\n");
-    f.printf("<global_menuHotkey_on=%d>\n", pconfig->global_menuHotkey_on);
-    tokenizeContainerToFileInt("joystick_joyValueMap", f, pconfig->joystick_joyValueMap);
-    tokenizeContainerToFileInt("joystick_buttonValueMap", f, pconfig->joystick_buttonValueMap);
-    f.printf("<joystick_transmitToHost=%d>\n", pconfig->joystick_transmitToHost);
-    tokenizeContainerToFileInt("drawKeyPresses_macroMap", f, pconfig->drawKeypresses_macroMap);
-    f.printf("<funThings_on=%d>\n", pconfig->funThings_on);
+    f.printf("<global_menuHotkey_on=%d>\n", config.global_menuHotkey_on);
+    tokenizeContainerToFileInt("joystick_joyValueMap", f, config.joystick_joyValueMap);
+    tokenizeContainerToFileInt("joystick_buttonValueMap", f, config.joystick_buttonValueMap);
+    f.printf("<joystick_transmitToHost=%d>\n", config.joystick_transmitToHost);
+    tokenizeContainerToFileInt("drawKeyPresses_macroMap", f, config.drawKeypresses_macroMap);
+    f.printf("<funThings_on=%d>\n", config.funThings_on);
 
     f.close();
-    bool fileCreated = LittleFS.exists(fullFilename.c_str());
+    bool fileCreated = LittleFS.exists(fullFilename);
     LittleFS.end();
 
     return fileCreated;

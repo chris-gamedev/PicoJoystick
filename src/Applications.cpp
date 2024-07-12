@@ -400,14 +400,14 @@ AppletStatus::TAppletStatus AssignMacroApp_::updateApp()
         mFoundTheButton = true;
         // clang-format off
         mAnimInputDialogOptions.start("Macro:", &mSelection, {
-                        MyJoystickBT.maMacros[0].mMacro.name
-                      , MyJoystickBT.maMacros[1].mMacro.name
-                      , MyJoystickBT.maMacros[2].mMacro.name
-                      , MyJoystickBT.maMacros[3].mMacro.name
-                      , MyJoystickBT.maMacros[4].mMacro.name
-                      , MyJoystickBT.maMacros[5].mMacro.name
-                      , MyJoystickBT.maMacros[6].mMacro.name
-                      , MyJoystickBT.maMacros[7].mMacro.name
+                        MyJoystickBT.getMacroName(0)
+                      , MyJoystickBT.getMacroName(1)
+                      , MyJoystickBT.getMacroName(2)
+                      , MyJoystickBT.getMacroName(3)
+                      , MyJoystickBT.getMacroName(4)
+                      , MyJoystickBT.getMacroName(5)
+                      , MyJoystickBT.getMacroName(6)
+                      , MyJoystickBT.getMacroName(7)
                       , "None"});
 
         // clang-format on
@@ -432,7 +432,7 @@ AppletStatus::TAppletStatus AssignMacroApp_::updateApp()
             return AppletStatus::ALIVE;
         }
 
-        if (MyJoystickBT.maMacros[mSelection].mMacro.phrase.size() == 0)
+        if (MyJoystickBT.macroIsEmpty(mSelection))
         {
             mTextSpriteStatic.setText({"Empty Macro", "Try Again"});
             mTextSpriteStatic.mlife = 50;

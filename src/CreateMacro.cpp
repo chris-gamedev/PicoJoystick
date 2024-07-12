@@ -374,12 +374,15 @@ AppletStatus::TAppletStatus CreateMacroApp_::updateApp()
         switch (mSave)
         {
         case 0:
-            MyJoystickBT.maMacros[0].mMacro.phrase = this->mMacro.phrase;
-            Serial.print("saving. output is: \n");
-            for (auto& it : MyJoystickBT.maMacros[0].mMacro.phrase){
-                Serial.printf("size of returned phrase is %d\n", MyJoystickBT.maMacros[0].mMacro.phrase.size());
-                Serial.printf("word:  b= %d, j=%d, dur=%d\n", it.mButtonStateMap, it.mJoyState, it.mDuration);
-            }
+            mutex_enter_blocking(&mtxJoyConfigData);
+            // TODO: SETUP MACRO SAVING TO FILE
+            // MyJoystickBT.maMacros[0].mMacro.phrase = this->mMacro.phrase;
+            // Serial.print("saving. output is: \n");
+            // for (auto& it : MyJoystickBT.maMacros[0].mMacro.phrase){
+            //     Serial.printf("size of returned phrase is %d\n", MyJoystickBT.maMacros[0].mMacro.phrase.size());
+            //     Serial.printf("word:  b= %d, j=%d, dur=%d\n", it.mButtonStateMap, it.mJoyState, it.mDuration);
+            // }
+            mutex_exit(&mtxJoyConfigData);
             break;
         case 1:
             break;

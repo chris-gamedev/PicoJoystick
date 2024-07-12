@@ -58,6 +58,10 @@ public:
     {
     }
     void drawBitmap4Bit(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h);
+    void drawBitmap4Bit(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, bool mirrorY);
+    void drawBitmap4BitRotate90(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, bool mirrorY);
+    void drawBitmap4BitRotate180(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, bool mirrorY);
+    void drawBitmap4BitRotate270(int16_t x, int16_t y, const uint8_t *bitmap, int16_t w, int16_t h, bool mirrorY);
 };
 
 extern JoyDisplay_ JoyDisplay;
