@@ -127,21 +127,6 @@ public:
 ///////////////////////////////////////////////   COMMANDS AND MACROS   ///////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-struct MacroWord
-{
-  uint16_t mButtonStateMap = 0;
-  uint8_t mJoyState = 0;
-  uint16_t mDuration = 50;
-};
-
-struct Macro
-{
-  std::vector<MacroWord> phrase;
-  String name = "-blank-";
-  uint16_t enabledButtonsMap = 0xFFFF;
-  uint8_t enabledJoystickState = 0xFF;
-};
-
 class Command_
 {
 public:
@@ -201,6 +186,7 @@ class MacroButtonCommand_ : public Command_
 {
 public:
   void executeCommand(uint8_t b, uint8_t value, uint16_t *pStateMap, uint32_t *pValueMap, uint8_t *pJoyState);
+  void inline assignMacro(Macro &macro) {mMacro = macro; mButtonsMask = macro.enabledButtonsMap; mJoyMask = macro.enabledJoystickState;}
   struct Macro mMacro;
   uint8_t mCurrentWord = 0;
   bool mForceDisableLock = false;
@@ -253,7 +239,7 @@ public:
   // Macro Stuff
   inline const char *getMacroName(uint8_t macroNumber)
   {
-    if (macroNumber < NUMBER_OF_CUSTOM_MACROS && macroNumber > 0)
+    if (macroNumber < NUMBER_OF_CUSTOM_MACROS && macroNumber >= 0)
       return maMacros[macroNumber].mMacro.name.c_str();
     else
       return "ERROR-OOB";
@@ -265,14 +251,48 @@ public:
   inline void setTurboMacroLatching(uint8_t button, bool latch) { maTurboMacros[button].mIsLatchingButton = latch; }
   inline uint16_t getTurboMacroDelay(uint8_t button) { return maTurboMacros[button].mDelay; }
   inline void setToCustomMacro(uint8_t button, uint8_t macro) { maAssignedMacros[button] = &maMacros[macro]; }
+  inline void importMacro(Macro &macro, uint8_t slot)
+  {
+    if (slot >= 0 && slot < NUMBER_OF_CUSTOM_MACROS)
+    {
+      Serial.printf("ARGUMENT.phrase:  Macro phrase contents BEFORE:\n");
+      Serial.printf("name = %s, enabledBut = %d, enabJoy = %d\n", macro.name.c_str(), macro.enabledButtonsMap, macro.enabledJoystickState);
+      for (auto it : macro.phrase)
+      {
+        Serial.printf("\tb=%d, j=%d, dur=%d\n", it.mButtonStateMap, it.mJoyState, it.mDuration);
+      }
+      Serial.printf("\n\n");
+      
+      mutex_enter_blocking(&mtxJoyConfigData);
+      Serial.printf("--BEFORE--MyJoystick maMacros.phrase:  Macro phrase contents:\n");
+      Serial.printf("name = %s, enabledBut = %d, enabJoy = %d\n", maMacros[slot].mMacro.name.c_str(), maMacros[slot].mMacro.enabledButtonsMap, maMacros[slot].mMacro.enabledJoystickState);
+      for (auto it : maMacros[slot].mMacro.phrase)
+      {
+        Serial.printf("\tb=%d, j=%d, dur=%d\n", it.mButtonStateMap, it.mJoyState, it.mDuration);
+      }
+      Serial.printf("\n\n");
+      maMacros[slot].assignMacro(macro);
+      Serial.printf("--AFTER--MyJoystick maMacros.phrase:  Macro phrase contents :\n");
+      Serial.printf("name = %s, enabledBut = %d, enabJoy = %d\n", maMacros[slot].mMacro.name.c_str(), maMacros[slot].mMacro.enabledButtonsMap, maMacros[slot].mMacro.enabledJoystickState);
+
+      for (auto it : maMacros[slot].mMacro.phrase)
+      {
+        Serial.printf("\tb=%d, j=%d, dur=%d\n", it.mButtonStateMap, it.mJoyState, it.mDuration);
+      }
+      Serial.printf("\n\n");
+      mutex_exit(&mtxJoyConfigData);
+    }
+  }
 
   void forceDisableCustomMacros(bool disable)
   {
+    mutex_enter_blocking(&mtxJoyConfigData);
     for (int i = 0; i < NUMBER_OF_CUSTOM_MACROS; i++)
     {
       maMacros[i].mActive = false;
       maMacros[i].mForceDisableLock = disable;
     }
+    mutex_exit(&mtxJoyConfigData);
   }
 
   void inline setButtonValue(uint8_t b, uint8_t v)
@@ -281,7 +301,7 @@ public:
       maButtonValues[b] = v;
   }
   uint8_t inline getButtonValue(uint8_t b) { return ((b >= 0) && (b < 12)) ? maButtonValues[b] : -1; }
-  void configure(Configuration *config);
+  void configure(const Configuration &config);
 
   // multicore stuff?
   inline void setPollDelay(uint16_t d) { mPollDelay = d; }

@@ -86,6 +86,7 @@ public:
     void drawAnim(JoyDisplay_ *pcanvas);
     std::vector<MacroWord> savePhrase();
     void deleteTable();
+    void endDialog();
 
     std::vector<IRow_ *> mvpRows;
     int8_t mcursorX = 0;
@@ -242,7 +243,12 @@ class CreateMacroApp_ : public Applet_
 {
 public:
     CreateMacroApp_(Compositor_ *comp, Applet_ *drawkeyapp)
-        : Applet_(comp), mPhraseTable(0, 18, {}), mpappDrawKeysApp(drawkeyapp), manimBottom(0, 112, 128, 15), manimInputDialogSave(comp, &mSave, "Save?")
+            : Applet_(comp)
+            , mPhraseTable(0, 18, {})
+            , mpappDrawKeysApp(drawkeyapp)
+            , manimBottom(0, 112, 128, 15)
+            , manimInputDialogSave(comp, &mSave, "Save?")
+            , manimInputMacroName(comp, &mFilename)
 
     {
         manimBottom.setText("Edit Macro");
@@ -260,15 +266,18 @@ public:
     void cleanupApp();
     // for Animation {}_
 
+    String mFilename;
     Applet_ *mpappDrawKeysApp;
     AnimTextStatic1Line_ manimBottom;
     PhraseTable_ mPhraseTable;
     AnimInputDialogList_ manimInputDialogSave;
+    AnimInputDialogString_ manimInputMacroName;
     Macro mMacro;
     uint32_t mAppLastTime;
     uint16_t mAppDelay;
     uint8_t mSave;
     bool mEditingPhrase = false;
-    bool mSavingMacro = false;
+    bool mConfirmingSave = false;
+    bool mNamingMacro = false;
 };
 #endif

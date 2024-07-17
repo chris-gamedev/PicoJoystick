@@ -14,9 +14,9 @@ public:
     FunThings_(Compositor_ *comp);
 
     void doTheFunThings();
-    void configure(Configuration *config)
+    void configure(const Configuration &config)
     {
-        mFunTime = config->funThings_on;
+        mFunTime = config.funThings_on;
     }
 
     Compositor_ *mpComp;

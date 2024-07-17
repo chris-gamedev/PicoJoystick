@@ -23,6 +23,8 @@ CreateMacroApp_ CreateMacro(&Compositor, &DrawKeyPresses);
 AssignMacroApp_ AssignMacro(&Compositor, &DrawKeyPresses);
 SaveConfigurationApp_ SaveConfigurationApp(&Compositor);
 LoadConfigApp_ LoadConfigApp(&Compositor);
+LoadMacroApp_ LoadMacroApp(&Compositor);
+FormatFSApp_ FormatFSApp(&Compositor);
 AppletSwitcher_ AppSwitcher(&Compositor);
 
 // Fun Things!!
@@ -66,6 +68,8 @@ void setup()
     AppSwitcher.addApp(AppletNames::ASSIGN_MACRO, &AssignMacro);
     AppSwitcher.addApp(AppletNames::SAVE_CONFIGURATION, &SaveConfigurationApp);
     AppSwitcher.addApp(AppletNames::LOAD_CONFIGURATION, &LoadConfigApp);
+    AppSwitcher.addApp(AppletNames::LOAD_MACRO, &LoadMacroApp);
+    AppSwitcher.addApp(AppletNames::FORMAT_FS, &FormatFSApp);
     AppSwitcher.start();
 
 }

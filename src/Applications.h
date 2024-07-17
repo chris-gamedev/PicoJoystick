@@ -23,7 +23,7 @@ public:
     // for Animation_
     void updateAnim();
     void drawAnim(JoyDisplay_ *pcanvas);
-    void configure(Configuration *pconfig);
+    void configure(const Configuration &config);
 
     uint8_t maMacroMap[12] = {0};
 };
@@ -228,6 +228,84 @@ public:
     bool mStartDialog = false;
     bool mSelectedFile = false;
     bool mLoadedConfig = false;
+};
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////        LoadMacroApp_        //////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+class LoadMacroApp_ : public Applet_
+{
+    // clang-format off
+public:
+    LoadMacroApp_(Compositor_ *comp)
+        : Applet_(comp)
+        , mTextSpriteStatic(0, 64 - (2 * TEXT_HEIGHT), 128, TEXT_HEIGHT * 4, 99)
+        , mAnimInputDialogFileList(comp, &mSelection)
+    // clang-format on
+    {
+        mAnimInputDialogFileList.setTitle("Choose:");
+        mTextSpriteStatic.setText({"Configuration", "Successful"});
+        mTextSpriteStatic.mDrawBox = true;
+    }
+
+    // for applet
+    void initApp();
+    void startFromScratch();
+    AppletStatus::TAppletStatus updateApp();
+    void cleanupApp();
+    // for Animation_
+
+    AnimInputDialogList_ mAnimInputDialogFileList;
+    AnimTextPrompt_ mTextSpriteStatic;
+    std::vector<String> mvFileList;
+    Macro mMacro;
+    uint32_t mAppLastTime;
+    uint16_t const mAppDelay = 300;
+    uint8_t mSelection;
+    bool mNoFiles = false;
+    bool mStartDialog = false;
+    bool mSelectedFile = false;
+    bool mLoadedMacro = false;
+    bool mSelectedSlot = false;
+    bool mSentToJoystick = false;
+};
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////          FormatFSApp_         /////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+class FormatFSApp_ : public Applet_
+{
+    // clang-format off
+public:
+    FormatFSApp_(Compositor_ *comp)
+        : Applet_(comp)
+        , mTextSpriteStatic(0, 64 - (2 * TEXT_HEIGHT), 128, TEXT_HEIGHT * 4, 99)
+        , mAnimInputDialogConfirm(comp, &mSelection)
+    // clang-format on
+    {
+        mAnimInputDialogConfirm.setTitle("Format?");
+        mTextSpriteStatic.setText({"Configuration", "Successful"});
+        mTextSpriteStatic.mDrawBox = true;
+    }
+
+    // for applet
+    void initApp();
+    void startFromScratch();
+    AppletStatus::TAppletStatus updateApp();
+    void cleanupApp();
+    // for Animation_
+
+    AnimInputDialogList_ mAnimInputDialogConfirm;
+    AnimTextPrompt_ mTextSpriteStatic;
+    uint32_t mAppLastTime;
+    uint16_t const mAppDelay = 300;
+    uint8_t mSelection;
+    bool mStartDialog = false;
+    bool mConfirming1 = false;
+    bool mConfirming2 = false;
+    bool mDidIt = false;
 };
 
 

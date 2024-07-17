@@ -10,6 +10,7 @@ void buttonsRemap_callback() { AppSwitcher.switchApp(AppletNames::REMAP_BUTTONS)
 void buttonsAssignTurbo_callback() { AppSwitcher.switchApp(AppletNames::ASSIGN_TURBO); }
 void buttonsCreateMacro_callback() { AppSwitcher.switchApp(AppletNames::CREATE_MACRO); }
 void buttonsAssignMacro_callback() { AppSwitcher.switchApp(AppletNames::ASSIGN_MACRO); }
+void buttonsLoadMacro_callback() { AppSwitcher.switchApp(AppletNames::LOAD_MACRO); }
 void joystickInvertX_callback();
 void joystickInvertY_callback();
 void joystickReset_callback();
@@ -29,7 +30,7 @@ void serialFSInfo_callback() { Configurator.printFileSystemInfoToSerial(); }
 void serialFiletree_callback() { Configurator.printFileTreeToSerial(); }
 void serialPrintAllFiles_callback() { Configurator.printAllFilesInDirectoryToSerial(); }
 void serialListFiles_callback() { Configurator.listFilesToSerial(); }
-void advancedFormatFileSystem_callback() {}
+void advancedFormatFileSystem_callback() {AppSwitcher.switchApp(AppletNames::FORMAT_FS);}
 
 void bluetoothToggle_callback()
 {
@@ -147,9 +148,9 @@ void MenuManager_::buildMenu()
         pButtons->addChild(new SubMenu_("Macros", mMenuRoot.mChildren[0]));
             Menu_* pMacros = pButtons->mChildren[2];
             pMacros->addChild(new Leaf_("Assign", buttonsAssignMacro_callback, pMacros));
-            pMacros->addChild(new Leaf_("Edit", myCallback, pMacros));
+            pMacros->addChild(new Leaf_("Create", buttonsCreateMacro_callback, pMacros));
+            pMacros->addChild(new Leaf_("Load", buttonsLoadMacro_callback, pMacros));
             pMacros->addChild(new Leaf_("Wizard", myCallback, pMacros));
-            pMacros->addChild(new Leaf_("Manual", buttonsCreateMacro_callback, pMacros));
     pRoot->addChild(new SubMenu_("Joystick", &mMenuRoot));
         Menu_* pJoystick = pRoot->mChildren[1];
         pJoystick->addChild(new Leaf_("Reset", joystickReset_callback, pJoystick));
@@ -195,7 +196,7 @@ void MenuManager_::buildMenu()
                 pSerial->addChild(new Leaf_("List Files", serialListFiles_callback, pSerial));
                 pSerial->addChild(new Leaf_("Print Files", serialPrintAllFiles_callback, pSerial));
             
-            pAdvanced->addChild(new Leaf_("Format FS", myCallback, pAdvanced));
+            pAdvanced->addChild(new Leaf_("Format FS", advancedFormatFileSystem_callback, pAdvanced));
     // clang-format on
 }
 

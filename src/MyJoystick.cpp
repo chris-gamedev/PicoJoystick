@@ -141,39 +141,39 @@ MyJoystickBT_::MyJoystickBT_()
   pinMode(BUTTON_RIGHT_PIN, INPUT_PULLUP);
   pinMode(BUTTON_LEFT_PIN, INPUT_PULLUP);
 
-  // testing
-  maMacros[0].mMacro.name = "testMacro";
-  maMacros[0].mMacro.phrase = {
-      {0b0000000000000001, 1, 20},
-      {0b0000000000000010, 2, 20},
-      {0b0000000000000100, 3, 20},
-      {0b0000000000001000, 4, 20},
-      {0b0000000000010000, 5, 20},
-      {0b0000000000100000, 6, 20},
-      {0b0000000001000000, 7, 20},
-      {0b0000000010000000, 8, 20}};
+  // // testing
+  // maMacros[0].mMacro.name = "testMacro";
+  // maMacros[0].mMacro.phrase = {
+  //     {0b0000000000000001, 1, 20},
+  //     {0b0000000000000010, 2, 20},
+  //     {0b0000000000000100, 3, 20},
+  //     {0b0000000000001000, 4, 20},
+  //     {0b0000000000010000, 5, 20},
+  //     {0b0000000000100000, 6, 20},
+  //     {0b0000000001000000, 7, 20},
+  //     {0b0000000010000000, 8, 20}};
 
-  maMacros[1].mMacro.name = "Fireball R";
-  maMacros[1].mButtonsMask = 0x0000;
-  maMacros[1].mJoyMask = 0;
-  maMacros[1].mMacro.phrase = {
-      {0b0000000000000000, 5, 50},
-      {0b0000000000000000, 4, 50},
-      {0b0000000000100000, 3, 50}};
+  // maMacros[1].mMacro.name = "Fireball R";
+  // maMacros[1].mButtonsMask = 0x0000;
+  // maMacros[1].mJoyMask = 0;
+  // maMacros[1].mMacro.phrase = {
+  //     {0b0000000000000000, 5, 50},
+  //     {0b0000000000000000, 4, 50},
+  //     {0b0000000000100000, 3, 50}};
 
-  maMacros[2].mMacro.name = "Fireball L";
-  maMacros[2].mButtonsMask = 0x0000;
-  maMacros[2].mJoyMask = 0;
-  maMacros[2].mMacro.phrase = {
-      {0b0000000000000000, 5, 50},
-      {0b0000000000000000, 6, 50},
-      {0b0000000000100000, 7, 50}};
+  // maMacros[2].mMacro.name = "Fireball L";
+  // maMacros[2].mButtonsMask = 0x0000;
+  // maMacros[2].mJoyMask = 0;
+  // maMacros[2].mMacro.phrase = {
+  //     {0b0000000000000000, 5, 50},
+  //     {0b0000000000000000, 6, 50},
+  //     {0b0000000000100000, 7, 50}};
 
   // maMacros[0].mMacro.enabledJoystickState = 0;
   // maMacros[0].mMacro.enabledButtonsMap = 0b1111111111111011;
 
-  maMacros[0].mJoyMask = 0;
-  maMacros[0].mButtonsMask = 0b1111111111111011;
+  // maMacros[0].mJoyMask = 0;
+  // maMacros[0].mButtonsMask = 0b1111111111111011;
 
   // signal for CORE1 to begin polling;
   mReadyToPoll = true;
@@ -261,13 +261,12 @@ void MyJoystickBT_::getStateSnapshot()
     mJoyState = stateMsg.joyState;
 }
 
-void MyJoystickBT_::configure(Configuration *config)
+void MyJoystickBT_::configure(const Configuration &config)
 {
   mutex_enter_blocking(&mtxJoyConfigData);
-  mJoyTransmit = config->joystick_transmitToHost;
   for (int i = 0; i < 9; i++)
-    maJoyValues[i] = config->joystick_joyValueMap[i];
+    maJoyValues[i] = config.joystick_joyValueMap[i];
   for (int i = 0; i < 12; i++)
-    maButtonValues[i] = config->joystick_buttonValueMap[i];
+    maButtonValues[i] = config.joystick_buttonValueMap[i];
   mutex_exit(&mtxJoyConfigData);
 }

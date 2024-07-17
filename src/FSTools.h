@@ -63,19 +63,19 @@ namespace fstools
     /// @param treeString ongoing left-padding of filetree.
     void printFileTreeToSerial(String path = "/", String dirName = "/", String treeString = "");
     template <std::size_t N>
-    inline void tokenizeContainerToFileInt(File f, const std::array<uint8_t, N> &arr, int size = -1, const char *head = "",  const char *tail = "")
-{
-    size = arr.size();
-    f.printf("<%s:%d=", head, size);
-    for (int i = 0; i < size; i++)
+    inline void tokenizeContainerToFileInt(File f, const std::array<uint8_t, N> &arr, int size = -1, const char *head = "", const char *tail = "")
     {
-        f.printf("%d", arr[i]);
-        if (i != size - 1)
-            f.printf(",");
-        else
-            f.printf(">\n");
+        size = arr.size();
+        f.printf("<%s:%d=", head, size);
+        for (int i = 0; i < size; i++)
+        {
+            f.printf("%d", arr[i]);
+            if (i != size - 1)
+                f.printf(",");
+            else
+                f.printf(">\n");
+        }
     }
-}
 }
 
 #endif // FSTOOLS_H

@@ -1,6 +1,7 @@
 #include "CreateMacro.h"
 
 extern MyJoystickBT_ MyJoystickBT;
+extern Configurator_ Configurator;
 
 PhraseTable_::PhraseTable_(uint8_t x, uint8_t y, std::vector<MacroWord> phrase)
     : Animation_(x, y, 128, 100, 10), manimTopMessage(x, 1, 128, 15, 10)
@@ -30,6 +31,7 @@ void PhraseTable_::initTable(std::vector<MacroWord> phrase)
         deleteTable();
     mcursorX = 0;
     mcursorY = 0;
+    mTableHead = 0; //new
     IRow_ *plastTemp = new AddRow_(mX, mY);
     IRow_ *ptemp;
     mvpRows.push_back(plastTemp);
@@ -99,13 +101,16 @@ void PhraseTable_::makeRowCoordinates()
 
 bool PhraseTable_::update()
 {
+    Serial.printf("point 3 \t");
     if (mEditingStateMap)
     {
+        Serial.printf("point 4 \t");
         mEditingStateMap = editStatemap();
         return true;
     }
     if (mEditingWordDuration)
     {
+        Serial.printf("point 5 \t");
         mEditingWordDuration = editWordDuration();
         return true;
     }
@@ -114,6 +119,7 @@ bool PhraseTable_::update()
         return false;
     if (MyJoystickBT.buttonJustPressed(4))
     {
+        Serial.printf("point 6 \t");
         tableCommand c = mvpRows[mcursorY]->maCells[mcursorX]->onSelect();
         (*this.*c)();
     }
@@ -132,6 +138,7 @@ bool PhraseTable_::update()
     case JOY_RIGHT:
         moveCursor(1, 0);
     }
+    Serial.printf("point 7 \t");
     return true;
 }
 
@@ -201,6 +208,7 @@ void PhraseTable_::deleteTable()
     mvpRows.clear();
     mcursorX = 0;
     mcursorY = 0;
+    mTableHead = 0; // new
 }
 
 void PhraseTable_::addRowBefore()
@@ -344,13 +352,15 @@ void CreateMacroApp_::initApp()
 void CreateMacroApp_::startFromScratch()
 {
     mEditingPhrase = true;
-    mSavingMacro = false;
+    mNamingMacro = false;
+    mConfirmingSave = false;
     mSave = 0;
-    mPhraseTable.initTable({});
+    mPhraseTable.initTable({}); // TODO: init with mMacro to let someone cancel filename.
 }
 
 AppletStatus::TAppletStatus CreateMacroApp_::updateApp()
 {
+    
     if (mEditingPhrase)
     {
         if (mPhraseTable.update())
@@ -360,13 +370,37 @@ AppletStatus::TAppletStatus CreateMacroApp_::updateApp()
 
         // mPhraseTable.mMaxEditRows = 1;
         // manimBottom.mText = "Disabled Keys";
-
-        manimInputDialogSave.start("Save?", &mSave, {"Yes", "No"});
+        manimInputMacroName.start("Name:", &mFilename);
+        bool joyEnable = true;
+        for (auto it : mMacro.phrase) {
+            joyEnable = joyEnable && !(bool)it.mJoyState;
+        }
+        mMacro.enabledJoystickState = joyEnable;
+        mMacro.enabledButtonsMap = 0; // TODO: Custom Enabled Buttons.
         mEditingPhrase = false;
-        mSavingMacro = true;
+        mNamingMacro = true;
         return AppletStatus::ALIVE;
     }
-    if (mSavingMacro)
+    else if (mNamingMacro)
+    {
+        if (manimInputMacroName.updateDialog())
+            return AppletStatus::ALIVE;
+
+        if (manimInputMacroName.mCancel)
+            return AppletStatus::RETURN;
+
+        if (mFilename.length() > 0)
+        {
+            mMacro.name = mFilename;
+            mNamingMacro = false;
+            mConfirmingSave = true;
+            manimInputDialogSave.start("Save?", &mSave, {"Yes", "No"});
+            return AppletStatus::ALIVE;
+        }
+        else
+            startFromScratch();
+    }
+    else if (mConfirmingSave)
     {
         if (manimInputDialogSave.updateDialog())
             return AppletStatus::ALIVE;
@@ -374,30 +408,21 @@ AppletStatus::TAppletStatus CreateMacroApp_::updateApp()
         switch (mSave)
         {
         case 0:
-            mutex_enter_blocking(&mtxJoyConfigData);
-            // TODO: SETUP MACRO SAVING TO FILE
-            // MyJoystickBT.maMacros[0].mMacro.phrase = this->mMacro.phrase;
-            // Serial.print("saving. output is: \n");
-            // for (auto& it : MyJoystickBT.maMacros[0].mMacro.phrase){
-            //     Serial.printf("size of returned phrase is %d\n", MyJoystickBT.maMacros[0].mMacro.phrase.size());
-            //     Serial.printf("word:  b= %d, j=%d, dur=%d\n", it.mButtonStateMap, it.mJoyState, it.mDuration);
-            // }
-            mutex_exit(&mtxJoyConfigData);
+            Configurator.saveMacroToFile(mMacro);
             break;
         case 1:
+            return AppletStatus::RETURN;
             break;
         }
         startFromScratch();
-
-        return AppletStatus::RETURN;
-        // mPhraseTable.deleteTable();
+        return AppletStatus::ALIVE;
     }
     return AppletStatus::ALIVE;
 }
 
 void CreateMacroApp_::cleanupApp()
 {
-
+    // need to deregister compositor shit before it is deleted.
     mPhraseTable.deleteTable();
     mPhraseTable.mlife = 0;
     manimBottom.mlife = 0;

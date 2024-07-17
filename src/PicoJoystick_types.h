@@ -1,5 +1,6 @@
 #ifndef PICOJOYSTICK_TYPES_H
 #define PICOJOYSTICK_TYPES_H
+#include <Arduino.h>
 
 // clang-format off
 #define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c"
@@ -22,6 +23,24 @@
 #define NUMBER_OF_JOY_VALUES 9
 #define NUMBER_OF_BUTTONS 12
 #define NUMBER_OF_CUSTOM_MACROS 8
+
+
+struct MacroWord
+{
+  uint16_t mButtonStateMap = 0;
+  uint8_t mJoyState = 0;
+  uint16_t mDuration = 50;
+};
+
+struct Macro
+{
+  std::vector<MacroWord> phrase;
+  String name = "-blank-";
+  uint16_t enabledButtonsMap = 0xFFFF;
+  uint8_t enabledJoystickState = 0xFF;
+  
+};
+
 
   
 //clang-format on

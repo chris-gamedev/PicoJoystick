@@ -6,8 +6,8 @@
 #include <vector>
 #include <array>
 #include <map>
-// #include <FS.h>
-// #include <LittleFS.h>
+#include "PicoJoystick_types.h"
+#include "ParseConfig.h"
 #include "FSTools.h"
 
 #define CONFIG_FILE_PATH "/config/"
@@ -35,12 +35,13 @@ namespace ConfigTokens
 {
     enum TConfigTokens
     {
-        global_menuHotKey_ON,
-        joystick_joyValueMap,
-        joystick_buttonValueMap,
-        joystick_transmitToHost,
-        drawKeyPresses_macroMap,
-        funThings_on
+        global_menuHotKey_ON
+        , joystick_joyValueMap
+        , joystick_buttonValueMap
+        , drawKeyPresses_macroMap
+        , funThings_on
+        // macro stuff
+        
 
     };
 }
@@ -51,7 +52,6 @@ typedef struct Configuration
     bool global_menuHotkey_on = true;
     std::array<uint8_t, 9> joystick_joyValueMap = {0, 1, 2, 3, 4, 5, 6, 7, 8};
     std::array<uint8_t, 12> joystick_buttonValueMap = {1, 2, 4, 5, 7, 8, 11, 12, 13, 14, 15, 20};
-    bool joystick_transmitToHost = true;
     std::array<uint8_t, 12> drawKeypresses_macroMap = {MacroMapType::none};
     bool funThings_on = true;
 
@@ -61,7 +61,6 @@ typedef struct Configuration
         return this->global_menuHotkey_on == rhs.global_menuHotkey_on &&
                this->joystick_joyValueMap == rhs.joystick_joyValueMap &&
                this->joystick_buttonValueMap == rhs.joystick_buttonValueMap &&
-               this->joystick_transmitToHost == rhs.joystick_transmitToHost &&
                this->drawKeypresses_macroMap == rhs.drawKeypresses_macroMap &&
                this->funThings_on == rhs.funThings_on;
     }
@@ -70,7 +69,7 @@ typedef struct Configuration
 class IConfigurable_
 {
 public:
-    virtual void configure(Configuration *pconfig) = 0;
+    virtual void configure(const Configuration &config) = 0;
 };
 
 class Configurator_
@@ -85,19 +84,19 @@ public:
           {String("GLOBAL_MENUHOTKEY_ON"), ConfigTokens::global_menuHotKey_ON}
         , {String("JOYSTICK_JOYVALUEMAP"), ConfigTokens::joystick_joyValueMap}
         , {String("JOYSTICK_BUTTONVALUEMAP"), ConfigTokens::joystick_buttonValueMap}
-        , {String("JOYSTICK_TRANSMITTOHOST"), ConfigTokens::joystick_transmitToHost}
         , {String("DRAWKEYPRESSES_MACROMAP"), ConfigTokens::drawKeyPresses_macroMap}
         , {String("FUNTHINGS_ON"), ConfigTokens::funThings_on}
+        // macro stuff
+        
         };
     // clang-format on
     void registerConfigurable(IConfigurable_ *c) { mvpConfigurables.push_back(c); }
     void inline configurate()
     {
         for (auto it : mvpConfigurables)
-            it->configure(&mConfig);
+            it->configure(mConfig);
     }
     // config parsing & files
-    // File openFileWithMessages(const char *filename, const char *mode);
     bool prepParsableLine(String &line, String &token, String &value, int lineCounter);
     std::vector<uint16_t> buildTokenVector(String &token, String &value, int lineCounter);
     int importConfigFile(const char *filename, Configuration *pconfig);
@@ -109,6 +108,12 @@ public:
     void assignTokenValuesToArray(const String &token, std::array<uint8_t, N> &arr, const std::vector<uint16_t> &values);
     template <std::size_t N>
     void tokenizeContainerToFileInt(const char * name, File f, const std::array<uint8_t, N> &arr);
+
+    // macro parsing & files
+    bool importMacroFile(const char *filename, Macro &macro);
+    bool saveMacroToFile(const Macro &macro);
+    
+    
 
     // Printing to Serial
 public:
@@ -122,6 +127,7 @@ public:
     // file manipulation
     std::vector<String> inline getConfigFileList() { return fstools::getDirListOnlyFiles(CONFIG_FILE_PATH); }
     std::vector<String> inline getMacroFileList() { return fstools::getDirListOnlyFiles(MACRO_FILE_PATH); }
+    bool formatFS();
 
     Configuration mConfig;
     std::vector<IConfigurable_ *> mvpConfigurables;

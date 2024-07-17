@@ -99,10 +99,10 @@ void DrawKeyPressesApp_::drawAnim(JoyDisplay_ *pcanvas)
     }
 }
 
-void DrawKeyPressesApp_::configure(Configuration *pconfig)
+void DrawKeyPressesApp_::configure(const Configuration &config)
 {
     for (int i = 0; i < 12; i++)
-        maMacroMap[i] = pconfig->drawKeypresses_macroMap[i];
+        maMacroMap[i] = config.drawKeypresses_macroMap[i];
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -589,7 +589,7 @@ AppletStatus::TAppletStatus LoadConfigApp_::updateApp()
             return AppletStatus::RETURN;
 
         Configuration config;
-        if (Configurator.importConfigFile(("/config/" + mvFileList[mSelection]).c_str(), &config) < 0)
+        if (Configurator.importConfigFile((CONFIG_FILE_PATH + mvFileList[mSelection]).c_str(), &config) < 0)
         { // error somewhere
             mTextSpriteStatic.setText({"Error", "In File"});
             mTextSpriteStatic.mlife = 50;
@@ -623,6 +623,193 @@ AppletStatus::TAppletStatus LoadConfigApp_::updateApp()
 void LoadConfigApp_::cleanupApp()
 {
     mAnimInputDialogFileList.endDialog();
+    MyJoystickBT.forceDisableCustomMacros(false);
+    MyJoystickBT.toggleJoyTransmit(true);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////        LoadMacroApp_         //////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void LoadMacroApp_::initApp()
+{
+    MyJoystickBT.forceDisableCustomMacros(true);
+    MyJoystickBT.toggleJoyTransmit(false);
+    mNoFiles = false;
+
+    mvFileList = Configurator.getMacroFileList();
+    if (mvFileList.size() == 0)
+    {
+        mNoFiles = true;
+        mTextSpriteStatic.setText({"No Saved", "Macros"});
+        mTextSpriteStatic.mlife = 50;
+        mpCompositor->registerAnimation(&mTextSpriteStatic, CanvasType::FG);
+    }
+    startFromScratch();
+}
+
+void LoadMacroApp_::startFromScratch()
+{
+    mStartDialog = false;
+    mSelectedFile = false;
+    mLoadedMacro = false;
+    mSelectedSlot = false;
+    mSentToJoystick = false;
+}
+
+AppletStatus::TAppletStatus LoadMacroApp_::updateApp()
+{
+
+    if (mNoFiles)
+        return AppletStatus::RETURN;
+
+    if (!mStartDialog)
+    {
+        mAnimInputDialogFileList.start("Choose:", &mSelection, {""});
+        mAnimInputDialogFileList.manimPromptList.setText(mvFileList, 0);
+        mStartDialog = true;
+        return AppletStatus::ALIVE;
+    }
+    else if (!mSelectedFile)
+    {
+        if (mAnimInputDialogFileList.updateDialog())
+            return AppletStatus::ALIVE;
+
+        mSelectedFile = true;
+        return AppletStatus::ALIVE;
+    }
+    else if (!mLoadedMacro)
+    {
+        if (mAnimInputDialogFileList.mCancel)
+            return AppletStatus::RETURN;
+
+        if (!Configurator.importMacroFile((mvFileList[mSelection]).c_str(), mMacro))
+        { // error somewhere
+            mTextSpriteStatic.setText({"Error", "In File"});
+            mTextSpriteStatic.mlife = 50;
+            mpCompositor->registerAnimation(&mTextSpriteStatic, CanvasType::FG);
+            return AppletStatus::RETURN;
+        }
+        mLoadedMacro = true;
+        // clang-format off
+        mAnimInputDialogFileList.start("Slot:", &mSelection, {
+                MyJoystickBT.getMacroName(0)
+                , MyJoystickBT.getMacroName(1)
+                , MyJoystickBT.getMacroName(2)
+                , MyJoystickBT.getMacroName(3)
+                , MyJoystickBT.getMacroName(4)
+                , MyJoystickBT.getMacroName(5)
+                , MyJoystickBT.getMacroName(6)
+                , MyJoystickBT.getMacroName(7)
+                });
+        // clang-format on
+        return AppletStatus::ALIVE;
+    }
+    else if (!mSelectedSlot)
+    {
+        if (mAnimInputDialogFileList.updateDialog())
+            return AppletStatus::ALIVE;
+
+        if (mAnimInputDialogFileList.mCancel)
+            return AppletStatus::RETURN;
+
+        Serial.printf("APP:  Macro phrase contents:\n");
+              Serial.printf("name = %s, enabledBut = %d, enabJoy = %d\n", mMacro.name.c_str(), mMacro.enabledButtonsMap, mMacro.enabledJoystickState);
+
+        for (auto it : mMacro.phrase) {
+            Serial.printf("\tb=%d, j=%d, dur=%d\n", it.mButtonStateMap, it.mJoyState, it.mDuration);
+        }
+        Serial.printf("\n\n");
+        MyJoystickBT.importMacro(mMacro, mSelection);
+        mTextSpriteStatic.setText({"Macro", "Imported"});
+        mTextSpriteStatic.mlife = 50;
+        mpCompositor->registerAnimation(&mTextSpriteStatic, CanvasType::FG);
+        startFromScratch();
+        return AppletStatus::ALIVE;
+    }
+
+    return AppletStatus::ALIVE;
+}
+
+void LoadMacroApp_::cleanupApp()
+{
+    mAnimInputDialogFileList.endDialog();
+    MyJoystickBT.forceDisableCustomMacros(false);
+    MyJoystickBT.toggleJoyTransmit(true);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////        FormatFSApp_        ////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void FormatFSApp_::initApp()
+{
+    MyJoystickBT.forceDisableCustomMacros(true);
+    MyJoystickBT.toggleJoyTransmit(false);
+
+    startFromScratch();
+}
+
+void FormatFSApp_::startFromScratch()
+{
+    mStartDialog = false;
+    mConfirming1 = false;
+    mConfirming2 = false;
+    mDidIt = false;
+    mSelection = 0;
+}
+
+AppletStatus::TAppletStatus FormatFSApp_::updateApp()
+{
+
+    if (!mStartDialog)
+    {
+        mAnimInputDialogConfirm.start("Format?", &mSelection, {"NO!!", "Yes"});
+        mStartDialog = true;
+        return AppletStatus::ALIVE;
+    }
+    else if (!mConfirming1)
+    {
+        if (mAnimInputDialogConfirm.updateDialog())
+            return AppletStatus::ALIVE;
+
+        if (mSelection == 0 || mAnimInputDialogConfirm.mCancel)
+            return AppletStatus::RETURN;
+
+        mSelection = 0;
+        mConfirming1 = true;
+        mAnimInputDialogConfirm.start("R U Sure?", &mSelection, {"NOO! OOPS!", "Yes"});
+        return AppletStatus::ALIVE;
+    }
+    else if (!mConfirming2)
+    {
+        if (mAnimInputDialogConfirm.updateDialog())
+            return AppletStatus::ALIVE;
+
+        if (mSelection == 0 || mAnimInputDialogConfirm.mCancel)
+            return AppletStatus::RETURN;
+
+        mConfirming2 = true;
+        return AppletStatus::ALIVE;
+    }
+    else if (!mDidIt)
+    {
+        bool success = Configurator.formatFS();
+        if (success)
+            mTextSpriteStatic.setText({"Format", "Complete"});
+        else
+            mTextSpriteStatic.setText({"Format", "Failed"});
+        mTextSpriteStatic.mlife = 50;
+        mpCompositor->registerAnimation(&mTextSpriteStatic, CanvasType::FG);
+        return AppletStatus::RETURN;
+    }
+
+    return AppletStatus::ALIVE;
+}
+
+void FormatFSApp_::cleanupApp()
+{
+    mAnimInputDialogConfirm.endDialog();
     MyJoystickBT.forceDisableCustomMacros(false);
     MyJoystickBT.toggleJoyTransmit(true);
 }
