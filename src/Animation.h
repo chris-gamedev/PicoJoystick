@@ -10,6 +10,14 @@ class Behavior_;
 class IScreenObject_
 {
 public:
+        /**
+         * @param x - relative to canvas passed to draw
+         * @param y - relative to canvas passed to draw
+         * @param w - width
+         * @param h - height
+         * @param order - draw order 
+         * @param life - number of updates before kill. -1 for no kill
+         **/
     IScreenObject_(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t order, int16_t life = -1)
         : mX(x), mY(y), mW(w), mH(h), mdrawOrder(order), mlife(life)
     {
@@ -72,28 +80,30 @@ public:
     }
 
     bool operator<(const Animation_ &rhs) const { return mdrawOrder < rhs.mdrawOrder; }
-    Behavior_ *mpbehavior = nullptr;
-    const unsigned char *mbitmap = nullptr;
-    const unsigned char **mframearray;
-    uint8_t mframecount = 1;
-    uint8_t mframeDelay = 0;
-    uint8_t mframeDelayCounter = 0;
-    int16_t mlife = -1;
-    int16_t mdelay = -1;
-    int16_t mdelaycounter = -1;
-    uint8_t mframe = 0;
     int16_t mX = 0;
     int16_t mY = 0;
-    int8_t mdeltaX = 0;
-    int8_t mdeltaY = 0;
-    int8_t mdeltaDelay = -1;
-    int8_t mdeltaDelayCounter;
-    uint8_t mColor = 0xF;
     uint8_t mW;
     uint8_t mH;
     uint8_t mdrawOrder;
+    int16_t mlife = -1;
+    uint8_t mColor = 0xF;
+    
+    int16_t mdelay = -1;
+    int16_t mdelaycounter = -1;
+    int8_t mdeltaDelayCounter;
+    int8_t mdeltaX = 0;
+    int8_t mdeltaY = 0;
+    int8_t mdeltaDelay = -1;
+    uint8_t mframe = 0;
+    uint8_t mframecount = 1;
+    uint8_t mframeDelay = 0;
+    uint8_t mframeDelayCounter = 0;
+    const unsigned char *mbitmap = nullptr;
+    const unsigned char **mframearray;
     bool mFaceR = true;
     bool mFaceUp = true;
+    
+    Behavior_ *mpbehavior = nullptr;
 };
 
 /// @brief 1 bit Animation.  Registered with compositor
@@ -250,13 +260,13 @@ public:
         : Animation_(x, y, w, h, order, life, delay, deltax, deltay) {}
 
     void inline setBitmap(const unsigned char *bmp) { mbitmap = bmp; }
-    void inline setText(const String &s)
+    void inline setText(const char *s)
     {
         mvStrings.clear();
         mvStrings.push_back(s);
     }
-    void inline setText(std::initializer_list<String> strings) { mvStrings = strings; };
-    void inline setText(const std::vector<String> &strings, uint8_t pos = 0)
+    void inline setText(std::initializer_list<const char *> strings) { mvStrings = strings; };
+    void inline setText(const std::vector<const char *> strings, uint8_t pos = 0)
     {
         mvStrings = strings;
         mposition = pos;
@@ -271,7 +281,7 @@ public:
         mdelay = delay;
     }
 
-    std::vector<String> mvStrings;
+    std::vector<const char *> mvStrings;
     uint8_t mposition = 0;
     bool mDrawBox = false;
     uint8_t mTextOffsetX = 0;
@@ -293,7 +303,7 @@ class UDLRRandom : public Behavior_
 {
 public:
     UDLRRandom(int8_t threshold = 10) : mthreshold(threshold) {}
-    void update (Animation_ *parent);
+    void update(Animation_ *parent);
 
     int8_t mthreshold;
 };

@@ -391,7 +391,7 @@ AppletStatus::TAppletStatus CreateMacroApp_::updateApp()
 
         if (mFilename.length() > 0)
         {
-            mMacro.name = mFilename;
+            strcpy(mMacro.name, mFilename.c_str());
             mNamingMacro = false;
             mConfirmingSave = true;
             manimInputDialogSave.start("Save?", &mSave, {"Yes", "No"});

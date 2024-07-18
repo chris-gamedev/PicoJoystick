@@ -10,16 +10,14 @@ class IDialog_
 {
 public:
     // clang-format off
-    IDialog_(Compositor_ *comp, int16_t x, int16_t y, uint8_t order) 
+    inline IDialog_(Compositor_ *comp, int16_t x, int16_t y, uint8_t order) 
         : manimBGBox(x, y, 128, TEXT_HEIGHT * 4 + 4, order)
         , manimTitle(x, y + 2, 128, TEXT_HEIGHT, 5)
         , mpCompositor(comp)
         , mX(x)
         , mY(y)
         , mOrder(order)
-    {
-        
-    }
+    {}
     // clang-format on
     Compositor_ *const mpCompositor;
     AnimTextStatic1Line_ manimTitle;
@@ -41,10 +39,9 @@ public:
 class AnimInputDialogList_ : public IDialog_
 {
 public:
-    AnimInputDialogList_(Compositor_ *comp, uint8_t *inputVar, String title = "", int16_t x = 0, int16_t y = 64 - (TEXT_HEIGHT * 2) - 5, uint8_t w = 128, uint8_t h = TEXT_HEIGHT * 4 + 10, uint8_t order = 1)
-        : IDialog_(comp, x, y, order)
-        , manimPromptList(x, y + 2 + TEXT_HEIGHT, 128, TEXT_HEIGHT * 2, order), 
-        mpReturnPointer(inputVar)
+    inline AnimInputDialogList_(Compositor_ *comp, uint8_t *inputVar, const char *title = "", int16_t x = 0, int16_t y = 64 - (TEXT_HEIGHT * 2) - 5, uint8_t w = 128, uint8_t h = TEXT_HEIGHT * 4 + 10, uint8_t order = 1)
+        : IDialog_(comp, x, y, order), manimPromptList(x, y + 2 + TEXT_HEIGHT, 128, TEXT_HEIGHT * 2, order),
+          mpReturnPointer(inputVar)
 
     {
         manimTitle.setText(title);
@@ -53,15 +50,15 @@ public:
     }
 
     AnimTextPrompt_ manimPromptList;
-    void start(String title, uint8_t *selection, std::initializer_list<String> prompts = {});
+    void start(const char *title, uint8_t *selection, std::initializer_list<const char *> prompts = {});
     // void updateAnim();
     // void drawAnim(JoyDisplay_ *pcanvas);
     bool updateDialog();
     void endDialog();
     bool finished() { return mConfirm || mCancel; }
-    void setTitle(String title) { manimTitle.setText(title); }
+    void setTitle(const char *title) { manimTitle.setText(title); }
 
-    String mTitle;
+    const char *mTitle;
     uint8_t *mpReturnPointer;
     uint8_t mPosition = 0;
 };
@@ -72,12 +69,13 @@ public:
 
 class AnimInputDialogString_ : public IDialog_
 {
+    constexpr static uint8_t mMaxStringLength = JOYSTICK_FILENAME_MAX_LENGTH;
+    constexpr static uint8_t mMaxDisplayLength = 10;
+
 public:
-    AnimInputDialogString_(Compositor_ *comp, String *inputVar, String title = "", int16_t x = 0, int16_t y = 64 - (TEXT_HEIGHT * 2) - 5, uint8_t w = 128, uint8_t h = TEXT_HEIGHT * 4 + 10, uint8_t order = 1)
-        : IDialog_(comp, x, y, order)
-        , manimEditTextBox(x, y + TEXT_HEIGHT + 2)
-        , mpReturnPointer(inputVar)
-        
+    inline AnimInputDialogString_(Compositor_ *comp, String *inputVar, const char *title = "", int16_t x = 0, int16_t y = 64 - (TEXT_HEIGHT * 2) - 5, uint8_t w = 128, uint8_t h = TEXT_HEIGHT * 4 + 10, uint8_t order = 1)
+        : IDialog_(comp, x, y, order), manimEditTextBox(x, y + TEXT_HEIGHT + 2), mpReturnPointer(inputVar)
+
     {
         manimTitle.setText(title);
         manimTitle.mDrawBox = false;
@@ -85,26 +83,23 @@ public:
         manimEditTextBox.mCenterText = false;
         manimEditTextBox.mXOffset = 5;
         manimEditTextBox.mYOffset = 0;
-        
-        if (inputVar != nullptr) 
-            manimEditTextBox.setText(*inputVar);
 
+        if (inputVar != nullptr)
+            manimEditTextBox.setText(*inputVar);
     }
 
-    void start(String title, String *selection);
+    void start(const char *title, String *selection);
     bool updateDialog();
     void endDialog();
     void moveCursor(int8_t dir);
     void changeCharacter(int8_t dir);
     void deleteCharacter();
     bool finished() { return mConfirm || mCancel; }
-    void setTitle(String title) { manimTitle.setText(title); }
+    void setTitle(const char *title) { manimTitle.setText(title); }
 
     AnimTextCursor1Line_ manimEditTextBox;
-    String mTitle;
+    // String mTitle;
     String *mpReturnPointer;
-    uint8_t const mMaxStringLength = 20;
-    uint8_t const mMaxDisplayLength = 10;
     int8_t mStartChar = 0;
     int8_t mEndChar = mMaxDisplayLength;
     int8_t mCursor = 0;
@@ -114,8 +109,6 @@ public:
     // bool mCancel;
 };
 
-
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////      Input Dialog Integer - Template         //////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -123,29 +116,23 @@ public:
 template <typename I>
 class AnimInputDialogInt_ : public IDialog_
 {
+    static_assert(std::is_integral_v<I>, "Type I must be integral");
+    constexpr static uint8_t mcU64Int_stringWidth = 20;
+
 public:
-    /**
-     * @param x - relative to canvas passed to draw
-     * @param y - relative to canvas passed to draw
-     * @param w - width
-     * @param h - height
-     * @param order - draw order
-     * @param life - number of updates before kill
-     */
-    AnimInputDialogInt_(Compositor_ *comp, I *inputVar, I lower, I upper, String prompt = "", int16_t x = 0, int16_t y = 64 - (TEXT_HEIGHT * 2) - 5, uint8_t w = 128, uint8_t h = TEXT_HEIGHT * 4 + 10, uint8_t order = 1)
+    AnimInputDialogInt_(Compositor_ *comp, I *inputVar, I lower, I upper, int16_t x = 0, int16_t y = 64 - (TEXT_HEIGHT * 2), uint8_t w = 128, uint8_t h = TEXT_HEIGHT * 4, uint8_t order = 6)
         : IDialog_(comp, x, y, order), manimValueBox(x, y + TEXT_HEIGHT * 2)
     {
         manimBGBox.mH = TEXT_HEIGHT * 3 + 4;
-        // start(prompt, inputVar, lower, upper);
     }
     bool updateDialog();
-    void endDialog()
+    inline void endDialog()
     {
-        mpCompositor->killAnimation(&manimBGBox, CanvasType::TOP);
-        mpCompositor->killAnimation(&manimTitle, CanvasType::FG);
-        mpCompositor->killAnimation(&manimValueBox, CanvasType::FG);
+        manimBGBox.mlife = 0;
+        manimTitle.mlife = 0;
+        manimValueBox.mlife = 0;
     }
-    void start(String prompt, I *inputVar, I lower, I upper)
+    void start(const char *prompt, I *inputVar, I lower, I upper)
     {
 
         mCancel = false;
@@ -156,21 +143,20 @@ public:
         mLowerBound = lower;
         mUpperBound = upper;
         mRange = upper - lower + 1;
-        mZeroPad = String(mUpperBound).length();
+        char buf[mcU64Int_stringWidth];
+        sprintf(buf, "%d", mUpperBound);
+        mZeroPad = strlen(buf);
 
         mpCompositor->registerAnimation(&manimBGBox, CanvasType::TOP);
 
         manimTitle.setText(prompt);
         mpCompositor->registerAnimation(&manimTitle, CanvasType::FG);
 
-        mValueString = String(mNewValue);
-        while (mValueString.length() < String(mUpperBound).length())
-            mValueString = "0" + mValueString;
-
-        manimValueBox.setText(String(mValueString));
+        sprintf(mValueString, "%0*d", mZeroPad, mNewValue);
+        manimValueBox.setText(mValueString);
         mpCompositor->registerAnimation(&manimValueBox, CanvasType::FG);
     }
-    void setReturnPointer(I *pReturn)
+    inline void setReturnPointer(I *pReturn)
     {
         if (pReturn != nullptr)
         {
@@ -178,13 +164,13 @@ public:
             mNewValue = *pReturn;
         }
     }
-    bool finished() { return mConfirm || mCancel; }
+    inline bool finished() { return mConfirm || mCancel; }
 
     AnimTextStatic1Line_ manimValueBox;
 
     I *mpReturnPointer = nullptr;
     I mNewValue;
-    String mValueString;
+    char mValueString[mcU64Int_stringWidth];
     I mUpperBound;
     I mLowerBound;
     I mRange;
@@ -232,9 +218,7 @@ bool AnimInputDialogInt_<I>::updateDialog()
             mNewValue = (mNewValue - mLowerBound + 1) % mRange + mLowerBound;
     }
 
-    mValueString = String(mNewValue);
-    while (mValueString.length() < String(mUpperBound).length())
-        mValueString = "0" + mValueString;
+    sprintf(mValueString, "%0*d", mZeroPad, mNewValue);
     manimValueBox.setText(mValueString);
 
     return true;

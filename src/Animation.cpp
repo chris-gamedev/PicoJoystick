@@ -125,7 +125,7 @@ void AnimTextStatic1Line_::drawAnim(JoyDisplay_ *pcanvas)
     pcanvas->setTextColor(mColor);
     int8_t x = mXOffset;
     if (mCenterText)
-        x = (mW / 2) - ((float)mText.length() / 2 * mFontWidth) + mXOffset;
+        x = (mW / 2) - (mText.length() * mFontWidth) / 2 + mXOffset;
     pcanvas->setCursor(x, mY + TEXT_HEIGHT + mYOffset);
     pcanvas->print(mText);
 }
@@ -191,14 +191,15 @@ void AnimTextPrompt_::drawAnim(JoyDisplay_ *pcanvas)
     // only display 3 prompts at a time, and adjust screen center
     int count = (promptCount > 3) ? 3 : promptCount;
     if (count == 2)
-        y += (TEXT_HEIGHT / 2.0F);
+        y += (TEXT_HEIGHT / 2);
     if (count == 1)
         y += TEXT_HEIGHT;
 
     for (int i = 0; i < count; i++, y += TEXT_HEIGHT)
     {
         j = (mposition + i) % promptCount;
-        x = (mW / 2) - ((float)mvStrings[j].length() / 2 * TEXT_WIDTH);
+        x = (mW / 2) - (strlen(mvStrings[j]) * TEXT_WIDTH) / 2;
+        
         pcanvas->setCursor(x + mX + mTextOffsetX, y + mTextOffsetY);
         pcanvas->println(mvStrings[j]);
     }

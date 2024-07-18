@@ -240,7 +240,7 @@ public:
   inline const char *getMacroName(uint8_t macroNumber)
   {
     if (macroNumber < NUMBER_OF_CUSTOM_MACROS && macroNumber >= 0)
-      return maMacros[macroNumber].mMacro.name.c_str();
+      return maMacros[macroNumber].mMacro.name;
     else
       return "ERROR-OOB";
   }
@@ -256,7 +256,7 @@ public:
     if (slot >= 0 && slot < NUMBER_OF_CUSTOM_MACROS)
     {
       Serial.printf("ARGUMENT.phrase:  Macro phrase contents BEFORE:\n");
-      Serial.printf("name = %s, enabledBut = %d, enabJoy = %d\n", macro.name.c_str(), macro.enabledButtonsMap, macro.enabledJoystickState);
+      Serial.printf("name = %s, enabledBut = %d, enabJoy = %d\n", macro.name, macro.enabledButtonsMap, macro.enabledJoystickState);
       for (auto it : macro.phrase)
       {
         Serial.printf("\tb=%d, j=%d, dur=%d\n", it.mButtonStateMap, it.mJoyState, it.mDuration);
@@ -265,7 +265,7 @@ public:
       
       mutex_enter_blocking(&mtxJoyConfigData);
       Serial.printf("--BEFORE--MyJoystick maMacros.phrase:  Macro phrase contents:\n");
-      Serial.printf("name = %s, enabledBut = %d, enabJoy = %d\n", maMacros[slot].mMacro.name.c_str(), maMacros[slot].mMacro.enabledButtonsMap, maMacros[slot].mMacro.enabledJoystickState);
+      Serial.printf("name = %s, enabledBut = %d, enabJoy = %d\n", maMacros[slot].mMacro.name, maMacros[slot].mMacro.enabledButtonsMap, maMacros[slot].mMacro.enabledJoystickState);
       for (auto it : maMacros[slot].mMacro.phrase)
       {
         Serial.printf("\tb=%d, j=%d, dur=%d\n", it.mButtonStateMap, it.mJoyState, it.mDuration);
@@ -273,7 +273,7 @@ public:
       Serial.printf("\n\n");
       maMacros[slot].assignMacro(macro);
       Serial.printf("--AFTER--MyJoystick maMacros.phrase:  Macro phrase contents :\n");
-      Serial.printf("name = %s, enabledBut = %d, enabJoy = %d\n", maMacros[slot].mMacro.name.c_str(), maMacros[slot].mMacro.enabledButtonsMap, maMacros[slot].mMacro.enabledJoystickState);
+      Serial.printf("name = %s, enabledBut = %d, enabJoy = %d\n", maMacros[slot].mMacro.name, maMacros[slot].mMacro.enabledButtonsMap, maMacros[slot].mMacro.enabledJoystickState);
 
       for (auto it : maMacros[slot].mMacro.phrase)
       {

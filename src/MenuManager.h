@@ -12,7 +12,7 @@
 class Menu_
 {
 public:
-    Menu_(String name, Menu_ *parent) : mName(name), mpParent(parent) {}
+    Menu_(const char * name, Menu_ *parent) : mName(name), mpParent(parent) {}
     void inline addChild(Menu_ *child)
     {
         mChildren.reserve(5);
@@ -25,22 +25,22 @@ public:
         return nullptr;
     }
 
-    String mName;
+    const char * mName;
     // parent node.
     Menu_ *const mpParent;
     std::vector<Menu_ *> mChildren;
     static AnimTextPrompt_ *mUpperText;
     static AnimTextPrompt_ *mLowerText;
     static uint32_t mLastTime;
-    std::vector<String> mChildPrompts;
+    std::vector<const char *> mChildPrompts;
 };
 
-/// @brief Concrete class for menu entries.  Contains vector of Menu_ entries
+/// @brief Concrete class for menu entries. 
 class SubMenu_ : public Menu_
 {
 public:
     int8_t selection = 0;
-    SubMenu_(String name, Menu_ *parent) : Menu_(name, parent) {}
+    SubMenu_(const char *name, Menu_ *parent) : Menu_(name, parent) {}
     virtual Menu_ *action() override;
 };
 
@@ -48,10 +48,7 @@ public:
 class Leaf_ : public Menu_
 {
 public:
-    /// @brief Terminal menu entry containing an action
-    /// @param name String name of node
-    /// @param cb callback function pointer of type (void)(*)(void)
-    Leaf_(String name, void (*cb)(), Menu_ *parent) : Menu_(name, parent), pCallBack{cb} {}
+    Leaf_(const char *name, void (*cb)(), Menu_ *parent) : Menu_(name, parent), pCallBack{cb} {}
     /// @brief Call the callback function and return the parent menu
     virtual Menu_ *action() override
     {

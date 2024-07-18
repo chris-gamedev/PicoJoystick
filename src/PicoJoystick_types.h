@@ -19,11 +19,16 @@
 #define APPLET_CANCEL_BUTTON    0
 #define APPLET_CONFIRM_BUTTON   4
 #define APPLET_EXIT_JOYSTATE    7
+#define APPLET_POPUP_DURATION   20
 
 #define NUMBER_OF_JOY_VALUES 9
 #define NUMBER_OF_BUTTONS 12
 #define NUMBER_OF_CUSTOM_MACROS 8
 
+#define JOYSTICK_FILENAME_MAX_LENGTH 20
+#define CONFIG_FILE_PATH "/config/"
+#define MACRO_FILE_PATH "/macros/"
+#define JOYSTICK_MACRO_NAME_MAX_LENGTH  JOYSTICK_FILENAME_MAX_LENGTH
 
 struct MacroWord
 {
@@ -35,7 +40,7 @@ struct MacroWord
 struct Macro
 {
   std::vector<MacroWord> phrase;
-  String name = "-blank-";
+  char name[JOYSTICK_MACRO_NAME_MAX_LENGTH] = "-blank-";
   uint16_t enabledButtonsMap = 0xFFFF;
   uint8_t enabledJoystickState = 0xFF;
   

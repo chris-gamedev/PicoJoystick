@@ -32,19 +32,19 @@ public:
 ////////////////////////////////////////////    RemapButtonsApp_     ///////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-class RemapButtonsApp_ : public Applet_, public Animation_
+class RemapButtonsApp_ : public Applet_
 {
 public:
+    // clang-format off
     RemapButtonsApp_(Compositor_ *comp, Applet_ *drawkeyapp)
-        // clang-format off
-        : Applet_(comp), Animation_(0, 44, 128, 40, 6, -1, -1, 0, 0)
-        , mTextSpriteStatic(0, 64 - (2 * TEXT_HEIGHT), 128, TEXT_HEIGHT * 4, 5)
-        , mAnimInputDialog(comp, &mNewButtonValue, 1, 32, "New Value", 0, 64 - (2 * TEXT_HEIGHT), 128, TEXT_HEIGHT * 4, 6)
+        : Applet_(comp)
+        , mPopUpMessage(0, 64 - (2 * TEXT_HEIGHT), 128, TEXT_HEIGHT * 4, 5)
+        , mAnimInputDialog(comp, &mNewButtonValue, 1, 32)
         , mTextSpriteBanner(0, 128 - TEXT_HEIGHT - 1, 128, TEXT_HEIGHT, 1)
         , mpappDrawKeysApp(drawkeyapp)
     // clang-format on
     {
-        mTextSpriteStatic.setText({"Hold Button", "<- to exit"});
+        mPopUpMessage.setText({"Hold Button", "<- to exit"});
         mTextSpriteBanner.setDrawBox(true);
         mTextSpriteBanner.setText("Map Buttons");
     }
@@ -53,13 +53,10 @@ public:
     void initApp();
     AppletStatus::TAppletStatus updateApp();
     void cleanupApp();
-    // for Animation_
-    void updateAnim();
-    void drawAnim(JoyDisplay_ *pcanvas);
 
     Applet_ *mpappDrawKeysApp;
     AnimInputDialogInt_<uint8_t> mAnimInputDialog;
-    AnimTextPrompt_ mTextSpriteStatic;
+    AnimTextPrompt_ mPopUpMessage;
     AnimTextStatic1Line_ mTextSpriteBanner;
     uint32_t mLocalButtonStateMap;
     uint32_t mLastLocalButtonStateMap;
@@ -84,14 +81,14 @@ class AssignTurboApp_ : public Applet_
 public:
     AssignTurboApp_(Compositor_ *comp, Applet_ *drawkeyapp)
         : Applet_(comp)
-        , mTextSpriteStatic(0, 64 - (2 * TEXT_HEIGHT), 128, TEXT_HEIGHT * 4, 5)
+        , mPopUpMessage(0, 64 - (2 * TEXT_HEIGHT), 128, TEXT_HEIGHT * 4, 5)
         , mTextSpriteBanner(0, 128 - TEXT_HEIGHT - 1, 128, TEXT_HEIGHT, 1)
-        , mAnimInputDialogDelay(comp, &mTurboDelayValue, 10, 4000, "New Value", 0, 64 - (2 * TEXT_HEIGHT), 128, TEXT_HEIGHT * 4, 6)
+        , mAnimInputDialogDelay(comp, &mTurboDelayValue, 10, 4000)
         , mAnimInputDialogOptions(comp, &mSelection, "Title")
         , mpappDrawKeysApp(drawkeyapp)
     // clang-format on
     {
-        mTextSpriteStatic.setText({"Hold Button", "<- to exit"});
+        mPopUpMessage.setText({"Hold Button", "<- to exit"});
         mTextSpriteBanner.setText("Edit Turbo");
         mTextSpriteBanner.setDrawBox(true);
     }
@@ -102,12 +99,11 @@ public:
     AppletStatus::TAppletStatus updateApp();
     bool exitApp();
     void cleanupApp();
-    // for Animation_
 
     Applet_ *const mpappDrawKeysApp;
     AnimInputDialogInt_<uint16_t> mAnimInputDialogDelay;
     AnimInputDialogList_ mAnimInputDialogOptions;
-    AnimTextPrompt_ mTextSpriteStatic;
+    AnimTextPrompt_ mPopUpMessage;
     AnimTextStatic1Line_ mTextSpriteBanner;
 
     uint16_t mTurboDelayValue;
@@ -131,13 +127,13 @@ class AssignMacroApp_ : public Applet_
 public:
     AssignMacroApp_(Compositor_ *comp, Applet_ *drawkeyapp)
         : Applet_(comp)
-        , mTextSpriteStatic(0, 64 - (2 * TEXT_HEIGHT), 128, TEXT_HEIGHT * 4, 5)
+        , mPopUpMessage(0, 64 - (2 * TEXT_HEIGHT), 128, TEXT_HEIGHT * 4, 5)
         , mTextSpriteBanner(0, 128 - TEXT_HEIGHT - 1, 128, TEXT_HEIGHT, 1)
         , mAnimInputDialogOptions(comp, &mSelection, "Title")
         , mpappDrawKeysApp(drawkeyapp)
     // clang-format on
     {
-        mTextSpriteStatic.setText({"Hold Button", "<- to exit"});
+        mPopUpMessage.setText({"Hold Button", "<- to exit"});
         mTextSpriteBanner.setText("Assign Macro");
         mTextSpriteBanner.setDrawBox(true);
     }
@@ -148,11 +144,10 @@ public:
     AppletStatus::TAppletStatus updateApp();
     bool exitApp();
     void cleanupApp();
-    // for Animation_
 
     Applet_ *const mpappDrawKeysApp;
     AnimInputDialogList_ mAnimInputDialogOptions;
-    AnimTextPrompt_ mTextSpriteStatic;
+    AnimTextPrompt_ mPopUpMessage;
     AnimTextStatic1Line_ mTextSpriteBanner;
 
     uint32_t mAppLastTime;
@@ -171,22 +166,20 @@ class SaveConfigurationApp_ : public Applet_
 {
 public:
     SaveConfigurationApp_(Compositor_ *comp)
-        : Applet_(comp)
-        , manimInputFilenameDialog(comp, &mFilename)
-        , mTextSpriteStatic(0, 64 - (2 * TEXT_HEIGHT), 128, TEXT_HEIGHT * 4, 5)
+        : Applet_(comp), manimInputFilenameDialog(comp, &mFilename), mPopUpMessage(0, 64 - (2 * TEXT_HEIGHT), 128, TEXT_HEIGHT * 4, 5)
     {
-        mTextSpriteStatic.setText({"Line 1", "Line 2"});
-        mTextSpriteStatic.mDrawBox = true;
+        mPopUpMessage.setText({"Line 1", "Line 2"});
+        mPopUpMessage.mDrawBox = true;
     }
     void initApp();
-    
+
     AppletStatus::TAppletStatus updateApp();
     void cleanupApp();
     void startFromScratch();
 
     String mFilename = "";
     AnimInputDialogString_ manimInputFilenameDialog;
-    AnimTextPrompt_ mTextSpriteStatic;
+    AnimTextPrompt_ mPopUpMessage;
     bool mEnteredFilename = false;
     bool mSavedFile = false;
     bool mShowConfirmation = false;
@@ -202,13 +195,13 @@ class LoadConfigApp_ : public Applet_
 public:
     LoadConfigApp_(Compositor_ *comp)
         : Applet_(comp)
-        , mTextSpriteStatic(0, 64 - (2 * TEXT_HEIGHT), 128, TEXT_HEIGHT * 4, 99)
+        , mPopUpMessage(0, 64 - (2 * TEXT_HEIGHT), 128, TEXT_HEIGHT * 4, 99)
         , mAnimInputDialogFileList(comp, &mSelection)
     // clang-format on
     {
         mAnimInputDialogFileList.setTitle("Choose:");
-        mTextSpriteStatic.setText({"Configuration", "Successful"});
-        mTextSpriteStatic.mDrawBox = true;
+        mPopUpMessage.setText({"Configuration", "Successful"});
+        mPopUpMessage.mDrawBox = true;
     }
 
     // for applet
@@ -216,11 +209,10 @@ public:
     void startFromScratch();
     AppletStatus::TAppletStatus updateApp();
     void cleanupApp();
-    // for Animation_
 
     AnimInputDialogList_ mAnimInputDialogFileList;
-    AnimTextPrompt_ mTextSpriteStatic;
-    std::vector<String> mvFileList;
+    AnimTextPrompt_ mPopUpMessage;
+    std::vector<const char *> mvFileList;
     uint32_t mAppLastTime;
     uint16_t const mAppDelay = 300;
     uint8_t mSelection;
@@ -240,13 +232,13 @@ class LoadMacroApp_ : public Applet_
 public:
     LoadMacroApp_(Compositor_ *comp)
         : Applet_(comp)
-        , mTextSpriteStatic(0, 64 - (2 * TEXT_HEIGHT), 128, TEXT_HEIGHT * 4, 99)
+        , mPopUpMessage(0, 64 - (2 * TEXT_HEIGHT), 128, TEXT_HEIGHT * 4, 99)
         , mAnimInputDialogFileList(comp, &mSelection)
     // clang-format on
     {
         mAnimInputDialogFileList.setTitle("Choose:");
-        mTextSpriteStatic.setText({"Configuration", "Successful"});
-        mTextSpriteStatic.mDrawBox = true;
+        mPopUpMessage.setText({"Configuration", "Successful"});
+        mPopUpMessage.mDrawBox = true;
     }
 
     // for applet
@@ -254,11 +246,10 @@ public:
     void startFromScratch();
     AppletStatus::TAppletStatus updateApp();
     void cleanupApp();
-    // for Animation_
 
     AnimInputDialogList_ mAnimInputDialogFileList;
-    AnimTextPrompt_ mTextSpriteStatic;
-    std::vector<String> mvFileList;
+    AnimTextPrompt_ mPopUpMessage;
+    std::vector<const char *> mvFileList;
     Macro mMacro;
     uint32_t mAppLastTime;
     uint16_t const mAppDelay = 300;
@@ -281,13 +272,13 @@ class FormatFSApp_ : public Applet_
 public:
     FormatFSApp_(Compositor_ *comp)
         : Applet_(comp)
-        , mTextSpriteStatic(0, 64 - (2 * TEXT_HEIGHT), 128, TEXT_HEIGHT * 4, 99)
+        , mPopUpMessage(0, 64 - (2 * TEXT_HEIGHT), 128, TEXT_HEIGHT * 4, 99)
         , mAnimInputDialogConfirm(comp, &mSelection)
     // clang-format on
     {
         mAnimInputDialogConfirm.setTitle("Format?");
-        mTextSpriteStatic.setText({"Configuration", "Successful"});
-        mTextSpriteStatic.mDrawBox = true;
+        mPopUpMessage.setText({"Format", "Successful"});
+        mPopUpMessage.mDrawBox = true;
     }
 
     // for applet
@@ -295,10 +286,9 @@ public:
     void startFromScratch();
     AppletStatus::TAppletStatus updateApp();
     void cleanupApp();
-    // for Animation_
 
     AnimInputDialogList_ mAnimInputDialogConfirm;
-    AnimTextPrompt_ mTextSpriteStatic;
+    AnimTextPrompt_ mPopUpMessage;
     uint32_t mAppLastTime;
     uint16_t const mAppDelay = 300;
     uint8_t mSelection;
@@ -307,8 +297,5 @@ public:
     bool mConfirming2 = false;
     bool mDidIt = false;
 };
-
-
-
 
 #endif

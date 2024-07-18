@@ -239,9 +239,15 @@ bool Configurator_::importMacroFile(const char *filename, Macro &macro)
     if (!f)
         return false;
 
+    // Need this for testing & development.  I might make a filename bigger manually. woops.
+    if (strlen(filename) > JOYSTICK_MACRO_NAME_MAX_LENGTH){
+        Serial.printf("-ERROR-  -  filename \"%s\" is over %d characters\n", filename, JOYSTICK_MACRO_NAME_MAX_LENGTH);
+        return false;
+    }
+    
     macro = Macro();
     macro.phrase.clear();
-    macro.name = filename;
+    strcpy(macro.name, filename);
     uint16_t lineCounter = 0;
     char *property;
     char *valueStr;
@@ -342,8 +348,8 @@ bool Configurator_::importMacroFile(const char *filename, Macro &macro)
 
 bool Configurator_::saveMacroToFile(const Macro &macro)
 {
-    char fullFilename[strlen(MACRO_FILE_PATH) + macro.name.length() + 1];
-    sprintf(fullFilename, "%s%s", MACRO_FILE_PATH, macro.name.c_str());
+    char fullFilename[strlen(MACRO_FILE_PATH) + strlen(macro.name) + 1];
+    sprintf(fullFilename, "%s%s", MACRO_FILE_PATH, macro.name);
 
     File f = fstools::openFileWithMessages(fullFilename, "w");
     if (!f) {

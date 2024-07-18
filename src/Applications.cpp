@@ -113,13 +113,11 @@ void RemapButtonsApp_::initApp()
 {
     mpappDrawKeysApp->initApp();
 
-    this->mlife = -1;
-    mpCompositor->registerAnimation(this, CanvasType::BOTTOM);
     mAppLastTime = millis();
 
-    mTextSpriteStatic.setLife(50);
-    mTextSpriteStatic.setDrawBox(true);
-    mpCompositor->registerAnimation(&mTextSpriteStatic, CanvasType::TOP);
+    mPopUpMessage.mlife = APPLET_POPUP_DURATION;
+    mPopUpMessage.setDrawBox(true);
+    mpCompositor->registerAnimation(&mPopUpMessage, CanvasType::TOP);
 
     mTextSpriteBanner.mlife = -1;
     mpCompositor->registerAnimation(&mTextSpriteBanner, CanvasType::BG);
@@ -130,6 +128,7 @@ void RemapButtonsApp_::initApp()
 }
 
 void RemapButtonsApp_::startFromScratch()
+
 {
     mFoundTheButton = false;
     mSetTheValue = false;
@@ -155,7 +154,7 @@ AppletStatus::TAppletStatus RemapButtonsApp_::updateApp()
             return AppletStatus::ALIVE;
         else
         {
-            mTextSpriteStatic.mlife = 0;
+            mPopUpMessage.mlife = 0;
             return AppletStatus::RETURN;
         }
 
@@ -196,25 +195,12 @@ AppletStatus::TAppletStatus RemapButtonsApp_::updateApp()
 void RemapButtonsApp_::cleanupApp()
 {
     mpappDrawKeysApp->cleanupApp();
-    mlife = 0;
     mTextSpriteBanner.mlife = 0;
     mAnimInputDialog.endDialog();
     MyJoystickBT.forceDisableCustomMacros(false);
     MyJoystickBT.toggleJoyTransmit(true);
 }
 
-void RemapButtonsApp_::updateAnim()
-{
-}
-
-void RemapButtonsApp_::drawAnim(JoyDisplay_ *pcanvas)
-{
-
-    if (!mAppDrawPrompt)
-    {
-        mTextSpriteStatic.mlife = 0;
-    }
-}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////     Assign Turbo        ///////////////////////////////////////////
@@ -226,9 +212,9 @@ void AssignTurboApp_::initApp()
 
     mAppLastTime = millis();
 
-    mTextSpriteStatic.setLife(50);
-    mTextSpriteStatic.setDrawBox(true);
-    mpCompositor->registerAnimation(&mTextSpriteStatic, CanvasType::TOP);
+    mPopUpMessage.mlife = APPLET_POPUP_DURATION;
+    mPopUpMessage.setDrawBox(true);
+    mpCompositor->registerAnimation(&mPopUpMessage, CanvasType::TOP);
 
     mTextSpriteBanner.mlife = -1;
     mpCompositor->registerAnimation(&mTextSpriteBanner, CanvasType::BG);
@@ -348,10 +334,10 @@ void AssignMacroApp_::initApp()
 
     mAppLastTime = millis();
 
-    mTextSpriteStatic.mlife = 50;
-    mTextSpriteStatic.mDrawBox = true;
-    mTextSpriteStatic.setText({"Hold Button", "<- to exit"});
-    mpCompositor->registerAnimation(&mTextSpriteStatic, CanvasType::TOP);
+    mPopUpMessage.mlife = APPLET_POPUP_DURATION;
+    mPopUpMessage.mDrawBox = true;
+    mPopUpMessage.setText({"Hold Button", "<- to exit"});
+    mpCompositor->registerAnimation(&mPopUpMessage, CanvasType::TOP);
 
     mTextSpriteBanner.mlife = -1;
     mpCompositor->registerAnimation(&mTextSpriteBanner, CanvasType::BG);
@@ -434,9 +420,9 @@ AppletStatus::TAppletStatus AssignMacroApp_::updateApp()
 
         if (MyJoystickBT.macroIsEmpty(mSelection))
         {
-            mTextSpriteStatic.setText({"Empty Macro", "Try Again"});
-            mTextSpriteStatic.mlife = 50;
-            mpCompositor->registerAnimation(&mTextSpriteStatic, CanvasType::FG);
+            mPopUpMessage.setText({"Empty Macro", "Try Again"});
+            mPopUpMessage.mlife = APPLET_POPUP_DURATION;
+            mpCompositor->registerAnimation(&mPopUpMessage, CanvasType::FG);
             mFoundTheButton = false;
             return AppletStatus::ALIVE;
         }
@@ -479,10 +465,10 @@ void SaveConfigurationApp_::startFromScratch()
     mEnteredFilename = false;
     mSavedFile = false;
     mShowConfirmation = false;
-    mTextSpriteStatic.setLife(50);
-    mTextSpriteStatic.setDrawBox(true);
-    mTextSpriteStatic.setText({"Enter a", "Filename"});
-    mpCompositor->registerAnimation(&mTextSpriteStatic, CanvasType::FG);
+    mPopUpMessage.mlife = APPLET_POPUP_DURATION;
+    mPopUpMessage.setDrawBox(true);
+    mPopUpMessage.setText({"Enter a", "Filename"});
+    mpCompositor->registerAnimation(&mPopUpMessage, CanvasType::FG);
 
     manimInputFilenameDialog.start("Save As:", &mFilename);
 }
@@ -510,18 +496,18 @@ AppletStatus::TAppletStatus SaveConfigurationApp_::updateApp()
         mSavedFile = Configurator.saveCurrentConfig(mFilename.c_str());
         if (!mSavedFile)
         {
-            mTextSpriteStatic.setText({"ERROR:", "Could Not Save"});
-            mTextSpriteStatic.setLife(80);
-            mpCompositor->registerAnimation(&mTextSpriteStatic, CanvasType::TOP);
+            mPopUpMessage.setText({"ERROR:", "Could Not Save"});
+            mPopUpMessage.mlife = APPLET_POPUP_DURATION;
+            mpCompositor->registerAnimation(&mPopUpMessage, CanvasType::TOP);
             return AppletStatus::RETURN;
         }
     }
     else if (!mShowConfirmation)
     {
         mShowConfirmation = true;
-        mTextSpriteStatic.setText({"Config Saved as", mFilename.c_str()});
-        mTextSpriteStatic.setLife(100);
-        mpCompositor->registerAnimation(&mTextSpriteStatic, CanvasType::TOP);
+        mPopUpMessage.setText({"Config Saved as", mFilename.c_str()});
+        mPopUpMessage.mlife = APPLET_POPUP_DURATION;
+        mpCompositor->registerAnimation(&mPopUpMessage, CanvasType::TOP);
         return AppletStatus::RETURN;
     }
     return AppletStatus::ALIVE;
@@ -548,9 +534,9 @@ void LoadConfigApp_::initApp()
     if (mvFileList.size() == 0)
     {
         mNoFiles = true;
-        mTextSpriteStatic.setText({"No Saved", "Configs."});
-        mTextSpriteStatic.mlife = 50;
-        mpCompositor->registerAnimation(&mTextSpriteStatic, CanvasType::FG);
+        mPopUpMessage.setText({"No Saved", "Configs."});
+        mPopUpMessage.mlife = 50;
+        mpCompositor->registerAnimation(&mPopUpMessage, CanvasType::FG);
     }
     startFromScratch();
 }
@@ -589,11 +575,14 @@ AppletStatus::TAppletStatus LoadConfigApp_::updateApp()
             return AppletStatus::RETURN;
 
         Configuration config;
-        if (Configurator.importConfigFile((CONFIG_FILE_PATH + mvFileList[mSelection]).c_str(), &config) < 0)
+        char fullFilename[strlen(CONFIG_FILE_PATH) + strlen(mvFileList[mSelection]) + 1];
+        strcpy(fullFilename, CONFIG_FILE_PATH);
+        strcat(fullFilename, mvFileList[mSelection]);
+        if (Configurator.importConfigFile(fullFilename, &config) < 0)
         { // error somewhere
-            mTextSpriteStatic.setText({"Error", "In File"});
-            mTextSpriteStatic.mlife = 50;
-            mpCompositor->registerAnimation(&mTextSpriteStatic, CanvasType::FG);
+            mPopUpMessage.setText({"Error", "In File"});
+            mPopUpMessage.mlife = 50;
+            mpCompositor->registerAnimation(&mPopUpMessage, CanvasType::FG);
             return AppletStatus::RETURN;
         }
 #ifdef DEADBEEF
@@ -611,9 +600,9 @@ AppletStatus::TAppletStatus LoadConfigApp_::updateApp()
 #endif
 
         Configurator.configurate();
-        mTextSpriteStatic.setText({"Config", "Updated"});
-        mTextSpriteStatic.mlife = 50;
-        mpCompositor->registerAnimation(&mTextSpriteStatic, CanvasType::FG);
+        mPopUpMessage.setText({"Config", "Updated"});
+        mPopUpMessage.mlife = 50;
+        mpCompositor->registerAnimation(&mPopUpMessage, CanvasType::FG);
         return AppletStatus::RETURN;
     }
 
@@ -641,9 +630,9 @@ void LoadMacroApp_::initApp()
     if (mvFileList.size() == 0)
     {
         mNoFiles = true;
-        mTextSpriteStatic.setText({"No Saved", "Macros"});
-        mTextSpriteStatic.mlife = 50;
-        mpCompositor->registerAnimation(&mTextSpriteStatic, CanvasType::FG);
+        mPopUpMessage.setText({"No Saved", "Macros"});
+        mPopUpMessage.mlife = 50;
+        mpCompositor->registerAnimation(&mPopUpMessage, CanvasType::FG);
     }
     startFromScratch();
 }
@@ -683,11 +672,11 @@ AppletStatus::TAppletStatus LoadMacroApp_::updateApp()
         if (mAnimInputDialogFileList.mCancel)
             return AppletStatus::RETURN;
 
-        if (!Configurator.importMacroFile((mvFileList[mSelection]).c_str(), mMacro))
+        if (!Configurator.importMacroFile(mvFileList[mSelection], mMacro))
         { // error somewhere
-            mTextSpriteStatic.setText({"Error", "In File"});
-            mTextSpriteStatic.mlife = 50;
-            mpCompositor->registerAnimation(&mTextSpriteStatic, CanvasType::FG);
+            mPopUpMessage.setText({"Error", "In File"});
+            mPopUpMessage.mlife = 50;
+            mpCompositor->registerAnimation(&mPopUpMessage, CanvasType::FG);
             return AppletStatus::RETURN;
         }
         mLoadedMacro = true;
@@ -714,16 +703,16 @@ AppletStatus::TAppletStatus LoadMacroApp_::updateApp()
             return AppletStatus::RETURN;
 
         Serial.printf("APP:  Macro phrase contents:\n");
-              Serial.printf("name = %s, enabledBut = %d, enabJoy = %d\n", mMacro.name.c_str(), mMacro.enabledButtonsMap, mMacro.enabledJoystickState);
+              Serial.printf("name = %s, enabledBut = %d, enabJoy = %d\n", mMacro.name, mMacro.enabledButtonsMap, mMacro.enabledJoystickState);
 
         for (auto it : mMacro.phrase) {
             Serial.printf("\tb=%d, j=%d, dur=%d\n", it.mButtonStateMap, it.mJoyState, it.mDuration);
         }
         Serial.printf("\n\n");
         MyJoystickBT.importMacro(mMacro, mSelection);
-        mTextSpriteStatic.setText({"Macro", "Imported"});
-        mTextSpriteStatic.mlife = 50;
-        mpCompositor->registerAnimation(&mTextSpriteStatic, CanvasType::FG);
+        mPopUpMessage.setText({"Macro", "Imported"});
+        mPopUpMessage.mlife = 50;
+        mpCompositor->registerAnimation(&mPopUpMessage, CanvasType::FG);
         startFromScratch();
         return AppletStatus::ALIVE;
     }
@@ -796,11 +785,11 @@ AppletStatus::TAppletStatus FormatFSApp_::updateApp()
     {
         bool success = Configurator.formatFS();
         if (success)
-            mTextSpriteStatic.setText({"Format", "Complete"});
+            mPopUpMessage.setText({"Format", "Complete"});
         else
-            mTextSpriteStatic.setText({"Format", "Failed"});
-        mTextSpriteStatic.mlife = 50;
-        mpCompositor->registerAnimation(&mTextSpriteStatic, CanvasType::FG);
+            mPopUpMessage.setText({"Format", "Failed"});
+        mPopUpMessage.mlife = 50;
+        mpCompositor->registerAnimation(&mPopUpMessage, CanvasType::FG);
         return AppletStatus::RETURN;
     }
 

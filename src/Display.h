@@ -21,8 +21,8 @@
 
 // Used for text characteristics
 #define MENU_FONT_FACE &manifold8pt7b
-#define TEXT_HEIGHT 14.0F
-#define TEXT_WIDTH 10.0F
+#define TEXT_HEIGHT 14
+#define TEXT_WIDTH 10
 #define FONT_HANG 0
 
 // Decoration Sizes

@@ -175,13 +175,12 @@ public:
     }
     void draw(JoyDisplay_ *pcanvas, uint8_t x, uint8_t y)
     {
-        String sDuration(mpWord->mDuration);
-        while (sDuration.length() < 4)
-            sDuration = " " + sDuration;
+        char duration[5];
+        sprintf(duration, "%04d", mpWord->mDuration);
         pcanvas->setFont(&manifold6pt7b);
         pcanvas->setCursor(x + xOffset, y + yOffset);
         pcanvas->setTextWrap(false);
-        pcanvas->print(sDuration);
+        pcanvas->print(duration);
     }
     struct MacroWord *mpWord;
     int8_t const xOffset = 96;

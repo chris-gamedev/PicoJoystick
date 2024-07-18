@@ -6,15 +6,15 @@ extern Configurator_ Configurator;
 ////////////////////////////////////////////////////    CALLBACKS    ///////////////////////////////////////////////////////
 // placeholder callback pointers
 void myCallback() { Serial.println("inside myCallback"); }
-void buttonsRemap_callback() { AppSwitcher.switchApp(AppletNames::REMAP_BUTTONS); }
-void buttonsAssignTurbo_callback() { AppSwitcher.switchApp(AppletNames::ASSIGN_TURBO); }
-void buttonsCreateMacro_callback() { AppSwitcher.switchApp(AppletNames::CREATE_MACRO); }
-void buttonsAssignMacro_callback() { AppSwitcher.switchApp(AppletNames::ASSIGN_MACRO); }
-void buttonsLoadMacro_callback() { AppSwitcher.switchApp(AppletNames::LOAD_MACRO); }
+void buttonsRemap_callback() { AppSwitcher.switchApp(AppletNames::remapButtons); }
+void buttonsAssignTurbo_callback() { AppSwitcher.switchApp(AppletNames::assignTurbo); }
+void buttonsCreateMacro_callback() { AppSwitcher.switchApp(AppletNames::createMacro); }
+void buttonsAssignMacro_callback() { AppSwitcher.switchApp(AppletNames::assignMacro); }
+void buttonsLoadMacro_callback() { AppSwitcher.switchApp(AppletNames::loadMacro); }
 void joystickInvertX_callback();
 void joystickInvertY_callback();
 void joystickReset_callback();
-void themeJoypad_callback() { AppSwitcher.setDefaultApp(AppletNames::SHOW_BUTTON_PRESSES); }
+void themeJoypad_callback() { AppSwitcher.setDefaultApp(AppletNames::drawKeyPresses); }
 void themeBlank_callback() { AppSwitcher.setDefaultApp(AppletNames::BLANK); }
 void themeDoFunThings_callback()
 {
@@ -23,14 +23,14 @@ void themeDoFunThings_callback()
 }
 
 // system
-void systemSaveConfiguration_callback() { AppSwitcher.switchApp(AppletNames::SAVE_CONFIGURATION); }
-void systemLoadConfiguration_callback() { AppSwitcher.switchApp(AppletNames::LOAD_CONFIGURATION); }
+void systemSaveConfiguration_callback() { AppSwitcher.switchApp(AppletNames::saveConfiguration); }
+void systemLoadConfiguration_callback() { AppSwitcher.switchApp(AppletNames::loadConfiguration); }
 void systemPrintConfigToSerial() {} // TODO NEED THIS ONE BADLY
 void serialFSInfo_callback() { Configurator.printFileSystemInfoToSerial(); }
 void serialFiletree_callback() { Configurator.printFileTreeToSerial(); }
 void serialPrintAllFiles_callback() { Configurator.printAllFilesInDirectoryToSerial(); }
 void serialListFiles_callback() { Configurator.listFilesToSerial(); }
-void advancedFormatFileSystem_callback() {AppSwitcher.switchApp(AppletNames::FORMAT_FS);}
+void advancedFormatFileSystem_callback() {AppSwitcher.switchApp(AppletNames::formatFS);}
 
 void bluetoothToggle_callback()
 {
@@ -62,7 +62,7 @@ void MenuManager_::initApp()
     mpCompositor->registerAnimation(&mUpperTextSpriteStatic, CanvasType::TOP);
     mpCompositor->registerAnimation(this, CanvasType::BG);
     MyJoystickBT.toggleJoyTransmit(false);
-    MyJoystickBT.setPollDelay(1000);
+    // MyJoystickBT.setPollDelay(1000);
     MyJoystickBT.forceDisableCustomMacros(true);
 }
 
@@ -72,7 +72,7 @@ void MenuManager_::cleanupApp()
     mLowerTextSpriteStatic.mlife = 0;
     this->mlife = 0;
     MyJoystickBT.toggleJoyTransmit(true);
-    MyJoystickBT.setPollDelay(20);
+    // MyJoystickBT.setPollDelay(20);
     MyJoystickBT.forceDisableCustomMacros(false);
 }
 

@@ -3,7 +3,7 @@
 extern MyJoystickBT_ MyJoystickBT;
 
 
-void AnimInputDialogList_::start(String title, uint8_t *selection, std::initializer_list<String> prompts)
+void AnimInputDialogList_::start(const char * title, uint8_t *selection, std::initializer_list<const char*> prompts)
 {
 
     mConfirm = false;
@@ -60,16 +60,20 @@ bool AnimInputDialogList_::updateDialog()
 
 void AnimInputDialogList_::endDialog()
 {
-    mpCompositor->killAnimation(&manimBGBox, CanvasType::TOP);
-    mpCompositor->killAnimation(&manimPromptList, CanvasType::FG);
-    mpCompositor->killAnimation(&manimTitle, CanvasType::FG);
+    
+    manimBGBox.mlife = 0;
+    manimPromptList.mlife = 0;
+    manimTitle.mlife = 0;
+    // mpCompositor->killAnimation(&manimBGBox, CanvasType::TOP);
+    // mpCompositor->killAnimation(&manimPromptList, CanvasType::FG);
+    // mpCompositor->killAnimation(&manimTitle, CanvasType::FG);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////    Input Dialog - String     ///////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void AnimInputDialogString_::start(String title, String *returnString)
+void AnimInputDialogString_::start(const char *title, String *returnString)
 {
 
     mConfirm = false;
@@ -228,8 +232,6 @@ void AnimInputDialogString_::changeCharacter(int8_t dir)
 
 void AnimInputDialogString_::deleteCharacter()
 {
-    // if (mEditString.length() > 0 && mCursor == mEditString.length() - 1)
-    //     return;
     mEditString = mEditString.substring(0, mCursor) + mEditString.substring(mCursor + 1);
     manimEditTextBox.setText(mEditString);
     mCursor = manimEditTextBox.mCursor;

@@ -10,8 +10,6 @@
 #include "Configuration.h"
 #include "FunThings.h"
 
-
-
 Compositor_ Compositor(&JoyDisplay);
 
 // Applets
@@ -39,15 +37,12 @@ uint32_t timeMenuHotkeyLast;
 
 bool menuHotkeyPressed();
 
-
 void setup()
-
 {
     Serial.begin(115200);
     Serial.println("use BOOTSEL to toggle joystick on / off");
 
-    
-    MyJoystickBT.begin("ChrisJoystick Test 2");
+    MyJoystickBT.begin("Chris Joystick");
     if (!JoyDisplay.begin(0x3D))
     {
         Serial.println("Unable to initialize OLED");
@@ -59,26 +54,24 @@ void setup()
     JoyDisplay.display();
 
     Configurator.configurate();
-    
-    AppSwitcher.addApp(AppletNames::MENU, &MenuManager);
-    AppSwitcher.addApp(AppletNames::SHOW_BUTTON_PRESSES, &DrawKeyPresses);
-    AppSwitcher.addApp(AppletNames::REMAP_BUTTONS, &RemapButtons);
-    AppSwitcher.addApp(AppletNames::CREATE_MACRO, &CreateMacro);
-    AppSwitcher.addApp(AppletNames::ASSIGN_TURBO, &AssignTurbo);
-    AppSwitcher.addApp(AppletNames::ASSIGN_MACRO, &AssignMacro);
-    AppSwitcher.addApp(AppletNames::SAVE_CONFIGURATION, &SaveConfigurationApp);
-    AppSwitcher.addApp(AppletNames::LOAD_CONFIGURATION, &LoadConfigApp);
-    AppSwitcher.addApp(AppletNames::LOAD_MACRO, &LoadMacroApp);
-    AppSwitcher.addApp(AppletNames::FORMAT_FS, &FormatFSApp);
-    AppSwitcher.start();
 
+    AppSwitcher.addApp(AppletNames::menu, &MenuManager);
+    AppSwitcher.addApp(AppletNames::drawKeyPresses, &DrawKeyPresses);
+    AppSwitcher.addApp(AppletNames::remapButtons, &RemapButtons);
+    AppSwitcher.addApp(AppletNames::createMacro, &CreateMacro);
+    AppSwitcher.addApp(AppletNames::assignTurbo, &AssignTurbo);
+    AppSwitcher.addApp(AppletNames::assignMacro, &AssignMacro);
+    AppSwitcher.addApp(AppletNames::loadMacro, &LoadMacroApp);
+    AppSwitcher.addApp(AppletNames::saveConfiguration, &SaveConfigurationApp);
+    AppSwitcher.addApp(AppletNames::loadConfiguration, &LoadConfigApp);
+    AppSwitcher.addApp(AppletNames::formatFS, &FormatFSApp);
+    AppSwitcher.start();
 }
 
-void setup1() 
+void setup1()
 {
-
-    delay(3000);
-    // while (!MyJoystickBT.isReadyPoll());
+    while (!MyJoystickBT.isReadyPoll())
+        delay(300);
 }
 
 void loop()
@@ -86,43 +79,17 @@ void loop()
     // MyJoystickBT.pollJoystick();
     MyJoystickBT.getStateSnapshot();
     if (menuHotkeyPressed())
-        AppSwitcher.switchApp(AppletNames::MENU);
+        AppSwitcher.switchApp(AppletNames::menu);
     AppSwitcher.update();
     Fun.doTheFunThings();
     Compositor.update();
     Compositor.draw();
-
-    
-
-#ifdef DEADBEEF
-    if (MyJoystickBT.buttonJustPressed(0))
-        Serial.println("------------- discrete press-0--------------");
-    if (MyJoystickBT.buttonJustPressed(1))
-        Serial.println("------------- discrete press-1--------------");
-    if (MyJoystickBT.buttonJustPressed(2))
-        Serial.println("------------- discrete press-2--------------");
-    if (MyJoystickBT.buttonJustPressed(3))
-        Serial.println("------------- discrete press-3--------------");
-    if (MyJoystickBT.buttonJustPressed(4))
-        Serial.println("------------- discrete press-4--------------");
-
-    if (MyJoystickBT.joyJustPressed(JOY_UP))
-        Serial.println("------------- discrete press-JOY-UP--------------");
-    if (MyJoystickBT.joyJustPressed(JOY_DOWN))
-        Serial.println("------------- discrete press-JOY-DOWN--------------");
-    if (MyJoystickBT.joyJustPressed(JOY_LEFT))
-        Serial.println("------------- discrete press-JOY-LEFT--------------");
-    if (MyJoystickBT.joyJustPressed(JOY_RIGHT))
-        Serial.println("------------- discrete press-JOY-RIGHT--------------");
-    if (MyJoystickBT.joyJustPressed(JOY_UP_RIGHT))
-        Serial.println("------------- discrete press-JOY-UP-RIGHT--------------");
-#endif        
 }
 
-void loop1() {
+void loop1()
+{
     MyJoystickBT.pollJoystick();
 }
-
 
 // todo: rewrite efficiently
 bool menuHotkeyPressed()

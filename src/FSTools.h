@@ -39,29 +39,32 @@ namespace fstools
     /// @brief gather filenames within a given directory as strings.  Non-recursive.  omits directory names.
     /// @param path full path to directory
     /// @return vector of string filenames.
-    std::vector<String> getDirListOnlyFiles(String path = "/");
+    std::vector<const char *> getDirListOnlyFiles(const char *path = "/");
     /// @brief List all files and file details recursively beginning at a path.  Assumes mounted filesystem.
     /// @param path full path to starting directory.
-    void listFilesToSerialRcrsv(String path = "/");
+    void listFilesToSerialRcrsv(const char *path = "/");
     /// @brief List all files and details recursively beginning at a path.  Mounts filesystem and reports error
     /// @param path path to begin
-    void listFilesToSerial(String path = "/");
+    void listFilesToSerial(const char *path = "/");
     /// @brief print all file contents to Serial starting at path recursively. mounts FS and reports error
     /// @param path full path to start directory
-    void printAllFilesInDirectoryToSerial(String path = "/");
+    void printAllFilesInDirectoryToSerial(const char *path = "/");
     /// @brief print all file contents to Serial starting at path recursively.  Assumes mounted filesystem.
     /// @param path full path to start directory
-    void printAllFilesInDirectoryToSerialRcrsv(String path = "/");
+    void printAllFilesInDirectoryToSerialRcrsv(const char * path = "/");
     /// @brief Draw filetree to Serial output as graphical text.  recursive.  Assumes mounted filesystem.
     /// @param path starting path. default is "/"
     /// @param dirName directory name for printing.  required due to limitatations on viewing current filename from Dir object.
     /// @param treeString ongoing left-padding of filetree.
-    void printFileTreeToSerialRcrsv(String path = "/", String dirName = "/", String treeString = "");
+    void printFileTreeToSerialRcrsv(const char *path = "/", const char * dirName = "/", const char * treeString = "");
+    void printFileTreeToSerialRcrsv(String path, String dirName, String treeString); // OLD
     /// @brief Draw filetree to Serial output as graphical text. Mounts FS and gives error message.
     /// @param path starting path. default is "/"
     /// @param dirName directory name for printing.  required due to limitatations on viewing current filename from Dir object.
     /// @param treeString ongoing left-padding of filetree.
-    void printFileTreeToSerial(String path = "/", String dirName = "/", String treeString = "");
+    void printFileTreeToSerial(String path, String dirName, String treeString); // OLD
+    void printFileTreeToSerial(const char *path = "/", const char *dirName = "/", const char *treeString = "");
+
     template <std::size_t N>
     inline void tokenizeContainerToFileInt(File f, const std::array<uint8_t, N> &arr, int size = -1, const char *head = "", const char *tail = "")
     {

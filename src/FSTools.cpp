@@ -1,12 +1,10 @@
 #include "FSTools.h"
 
-
-//TODO
-//TODO  Convert all to C Strings
+// TODO
+// TODO  Convert all to C Strings
 
 File fstools::openFileWithMessages(const char *filename, const char *mode)
 {
-
     if (!FSTOOLS_FS.begin())
     {
         Serial.printf("--COULD NOT OPEN FILE SYSTEM--\n");
@@ -51,28 +49,33 @@ void fstools::printFileSystemInfoToSerial()
 void fstools::printFileToSerial(File f)
 {
 
-    String pad = "--------------------------------------------------";
-    String str1 = "--<<   Printing File:  /" + String(f.fullName()) + "   >>--";
-    int l = str1.length();
-    int padsizeL = pad.length() - l / 2;
-    int padsizeR = pad.length() - (l - l / 2);
+    const char *pad = "--------------------------------------------------";
+    const char *head = "--<<   Printing File:  /";
+    const char *tail = "   >>--";
+    char Str1[strlen(head) + strlen(tail) + strlen(f.fullName()) + 1];
+    sprintf(Str1, "%s%s%s", head, f.fullName(), tail);
+    int l = strlen(Str1);
+    int padsizeL = strlen(pad) - l / 2;
+    int padsizeR = strlen(pad) - (l - l / 2);
     int lineCounter = 0;
-    Serial.printf("\n%.*s%s%.*s\n", padsizeL, pad.c_str(), str1.c_str(), padsizeR, pad.c_str());
+    Serial.printf("\n%.*s%s%.*s\n", padsizeL, pad, Str1, padsizeR, pad);
     String line;
     while (f.available())
     {
-        // Serial.printf("in the loop\n");
         lineCounter++;
-        line = f.readStringUntil('\n');
-        // line.trim();
-        Serial.printf("%s\n", line.c_str());
+        Serial.printf("%s\n", f.readStringUntil('\n').c_str());
     }
+    head = "--<<   Line Count:";
+    tail = " - Closing   >>--";
+    char buff[7];
+    itoa(lineCounter, buff, 10);
+    char Str2[strlen(head) + strlen(tail) + strlen(buff) + 1];
+    sprintf(Str2, "%s%s%s", head, buff, tail);
 
-    String str2 = "--<<   Line Count:" + String(lineCounter) + " - Closing   >>--";
-    l = str2.length();
-    padsizeL = pad.length() - l / 2;
-    padsizeR = pad.length() - (l - l / 2);
-    Serial.printf("%.*s%s%.*s\n\n", padsizeL, pad.c_str(), str2.c_str(), padsizeR, pad.c_str());
+    l = strlen(Str2);
+    padsizeL = strlen(pad) - l / 2;
+    padsizeR = strlen(pad) - (l - l / 2);
+    Serial.printf("%.*s%s%.*s\n\n", padsizeL, pad, Str2, padsizeR, pad);
 }
 
 void fstools::printFileToSerial(const char *name)
@@ -86,32 +89,32 @@ void fstools::printFileToSerial(const char *name)
     FSTOOLS_FS.end();
 }
 
-std::vector<String> fstools::getDirListOnlyFiles(String path)
+std::vector<const char *> fstools::getDirListOnlyFiles(const char *path)
 {
     if (!FSTOOLS_FS.begin())
     {
         Serial.printf("Unable to mount filesystem.\n");
     }
-    Dir dir = FSTOOLS_FS.openDir(path.c_str());
+    Dir dir = FSTOOLS_FS.openDir(path);
 
-    std::vector<String> filenames;
+    std::vector<const char *> filenames;
     while (dir.next())
     {
         if (dir.isFile())
-            filenames.push_back(dir.fileName());
+            filenames.push_back(dir.fileName().c_str());
     }
     FSTOOLS_FS.end();
     return filenames;
 }
 
-void fstools::listFilesToSerialRcrsv(String path)
+void fstools::listFilesToSerialRcrsv(const char *path)
 {
     Dir dir = FSTOOLS_FS.openDir(path);
-    String pad = "-------------------------------";
-    int l = path.length();
-    int padsizeL = pad.length() - l / 2;
-    int padsizeR = pad.length() - (l - l / 2);
-    Serial.printf("%.*s--<  %s  >--%.*s\n", padsizeL, pad.c_str(), path.c_str(), padsizeR, pad.c_str());
+    const char *pad = "-------------------------------";
+    int l = strlen(path);
+    int padsizeL = strlen(pad) - l / 2;
+    int padsizeR = strlen(pad) - (l - l / 2);
+    Serial.printf("%.*s--<  %s  >--%.*s\n", padsizeL, pad, path, padsizeR, pad);
     Serial.printf("%20s\t%7s\t%9s %9s%s\n", "-<   NAME", "SIZE(B)", "Modified", "Created", "   >-");
     Serial.printf("    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n");
     while (dir.next())
@@ -130,13 +133,20 @@ void fstools::listFilesToSerialRcrsv(String path)
 
     dir.rewind();
     while (dir.next())
-    {
+    {   
+        char fname[LFS_NAME_MAX + 1];
         if (dir.isDirectory())
-            listFilesToSerialRcrsv(path + dir.fileName() + "/");
+        {
+            strcpy(fname, dir.fileName().c_str());
+            
+            char newPath[strlen(path) + strlen(fname) + 3];
+            sprintf(newPath, "%s%s%c", path, fname, '/');
+            listFilesToSerialRcrsv(newPath);
+        }
     }
 }
 
-void fstools::printAllFilesInDirectoryToSerial(String path)
+void fstools::printAllFilesInDirectoryToSerial(const char *path)
 {
     if (!LittleFS.begin())
     {
@@ -147,8 +157,7 @@ void fstools::printAllFilesInDirectoryToSerial(String path)
     LittleFS.end();
 }
 
-
-void fstools::printFileTreeToSerial(String path, String dirName, String treeString)
+void fstools::printFileTreeToSerial(const char *path, const char *dirName, const char *treeString)
 {
     if (!LittleFS.begin())
     {
@@ -160,9 +169,9 @@ void fstools::printFileTreeToSerial(String path, String dirName, String treeStri
     LittleFS.end();
 }
 
-void fstools::listFilesToSerial(String path)
+void fstools::listFilesToSerial(const char *path)
 {
-    
+
     if (!LittleFS.begin())
     {
         Serial.printf("Failed to mount file system\n");
@@ -172,7 +181,7 @@ void fstools::listFilesToSerial(String path)
     LittleFS.end();
 }
 
-void fstools::printAllFilesInDirectoryToSerialRcrsv(String path)
+void fstools::printAllFilesInDirectoryToSerialRcrsv(const char *path)
 {
     Dir dir = FSTOOLS_FS.openDir(path);
     while (dir.next())
@@ -191,9 +200,32 @@ void fstools::printAllFilesInDirectoryToSerialRcrsv(String path)
     dir.rewind();
     while (dir.next())
     {
+        char fname[LFS_NAME_MAX + 1];
         if (dir.isDirectory())
-            printAllFilesInDirectoryToSerialRcrsv(path + dir.fileName() + "/");
+        {
+            strcpy(fname,  dir.fileName().c_str());
+            char newPath[strlen(path) + strlen(fname) + 2];
+            sprintf(newPath, "%s%s%c", path, fname, '/');
+            printAllFilesInDirectoryToSerialRcrsv(newPath);
+        }
     }
+}
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void fstools::printFileTreeToSerial(String path, String dirName, String treeString)
+{
+    if (!LittleFS.begin())
+    {
+        Serial.printf("Failed to mount file system\n");
+        return;
+    }
+
+    printFileTreeToSerialRcrsv(path, dirName, treeString);
+    LittleFS.end();
 }
 
 void fstools::printFileTreeToSerialRcrsv(String path, String dirName, String treeString)
@@ -263,3 +295,103 @@ void fstools::printFileTreeToSerialRcrsv(String path, String dirName, String tre
     }
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////  OLD BUT WORKING  ////////////////////////////////////////////////////
+
+void fstools::printFileTreeToSerialRcrsv(const char *path, const char *dirName, const char *treeString)
+{
+
+    // 0x2502 │  0x2500 ─   0x251C ├   0x252c ┬   0x2514 └
+    Dir dir = FSTOOLS_FS.openDir(path);
+    bool firstFile = true;
+    bool dirIsFile;
+    char newDirName[strlen(dirName) + 3];
+    sprintf(newDirName, "─%s─", dirName);
+
+    if (!dir.next())
+    {
+        Serial.printf("%s──(empty)\n", newDirName);
+        return;
+    }
+
+    Serial.printf("%s", newDirName);
+    char newTreeString[strlen(treeString) + strlen(newDirName) + 1];
+    int padsize = (strlen(newDirName) - 3 > 0) ? strlen(newDirName) - 3 : 1;
+    char pad[padsize];
+    for (int i = 0; i < padsize; i++)
+        pad[i] = ' ';
+    pad[padsize - 1] = '\0';
+    sprintf(newTreeString, "%s%s", treeString, pad);
+    // for (int i = 0; i < static_cast<int>(strlen(newDirName)) - 4; i++)
+    //     treeString += " ";
+    char fname[LFS_NAME_MAX + 1];
+    while (1)
+    {
+        strcpy(fname,  dir.fileName().c_str());
+
+        char filenameString[strlen(fname) + 3];
+        int size = dir.fileSize();
+        dirIsFile = dir.isFile();
+        bool lastFile = !dir.next();
+        if (firstFile && lastFile) {
+            // sprintf(filenameString, "──%s", fname);
+            strcat(filenameString, "──");
+            strcat(filenameString, fname);
+        }
+        else if (firstFile) {
+            // sprintf(filenameString, "┬─%s", fname);
+            strcat(filenameString, "┬─");
+            strcat(filenameString, fname);
+
+        }
+        else if (lastFile){
+            // sprintf(filenameString, "└─%s", fname);
+            strcat(filenameString, "└─");
+            strcat(filenameString, fname);
+
+        }
+        else{
+            // sprintf(filenameString, "├─%s", fname);
+            strcat(filenameString, "├─");
+            strcat(filenameString, fname);
+
+        }
+        if (!firstFile)
+            Serial.printf("%s", newTreeString);
+
+        if (dirIsFile)
+        {
+            Serial.printf("%s  (%dB)\n", filenameString, size);
+        }
+        else
+        {
+            const char *limb = "│";
+            if (firstFile && lastFile)
+            {
+                Serial.printf("─");
+                limb = " ";
+            }
+            else if (firstFile)
+                Serial.printf("┬");
+            else if (lastFile)
+            {
+                Serial.printf("└");
+                limb = " ";
+            }
+            else
+                Serial.printf("├");
+            int treeStrLength = strlen(newTreeString) + 2;
+            char finalTreeString[treeStrLength];
+            sprintf(finalTreeString, "%s%s", newTreeString, limb);
+
+            char newFullPath[strlen(path) + strlen(fname) + 2];
+            sprintf(newFullPath, "%s%s/", path, fname);
+
+            printFileTreeToSerialRcrsv(newFullPath, fname, finalTreeString);
+        }
+
+        firstFile = false;
+        if (lastFile)
+            break;
+    }
+}

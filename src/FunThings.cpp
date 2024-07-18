@@ -10,12 +10,13 @@ FunThings_::FunThings_(Compositor_ *comp)
         , aSprite8_pinky(0, 60, 16, 16, 4, 200, 4, 3, 0, 2)
         , aScardey8_1(0, 115, 16, 16, 5, 125, 4, 1, 0, 2)
         , aScardey8_2(0, 60, 16, 16, 4, 150, 4, 1, 0, 2)
-        , mBehavior(30)
+        , mbhvULDR(30)
 // clang-format on
 {
     aPacMan_1.setBitmapArray(msPacMan_spritesheetR, msPacMan_spritesheet_size);
-    aPacMan_1.mpbehavior = &mBehavior;
+    aPacMan_1.mpbehavior = &mbhvULDR;
     aPacMan_2.setBitmapArray(msPacMan_spritesheetR, msPacMan_spritesheet_size);
+    aPacMan_2.mpbehavior = &mbhvULDR;
     aSprite8_blinky.setBitmapArray(blinky_spritesheet, blinky_spritesheet_size);
     aSprite8_pinky.setBitmapArray(pinky_spritesheet, pinky_spritesheetR_size);
     aScardey8_1.setBitmapArray(scaredy_spritesheet, scaredy_spritesheet_size);

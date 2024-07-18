@@ -10,8 +10,7 @@
 #include "ParseConfig.h"
 #include "FSTools.h"
 
-#define CONFIG_FILE_PATH "/config/"
-#define MACRO_FILE_PATH "/macros/"
+
 
 namespace MacroMapType
 {
@@ -120,13 +119,13 @@ public:
     void inline printFileSystemInfoToSerial() { fstools::printFileSystemInfoToSerial(); }
     void inline printFileToSerial(const char *name) { fstools::printFileToSerial(name); }
     void inline printFileToSerial(File f) { fstools::printFileToSerial(f); }
-    void inline listFilesToSerial(String dirname = "/") { fstools::listFilesToSerial(dirname); }
-    void inline printAllFilesInDirectoryToSerial(String dirname = "/") { fstools::printAllFilesInDirectoryToSerial(dirname); }
+    void inline listFilesToSerial(String dirname = "/") { fstools::listFilesToSerial(dirname.c_str()); }
+    void inline printAllFilesInDirectoryToSerial(String dirname = "/") { fstools::printAllFilesInDirectoryToSerial(dirname.c_str()); }
     void inline printFileTreeToSerial(String path = "/", String dirName = "/", String treeString = "") { fstools::printFileTreeToSerial(path, dirName, treeString); }
 
     // file manipulation
-    std::vector<String> inline getConfigFileList() { return fstools::getDirListOnlyFiles(CONFIG_FILE_PATH); }
-    std::vector<String> inline getMacroFileList() { return fstools::getDirListOnlyFiles(MACRO_FILE_PATH); }
+    std::vector<const char *> inline getConfigFileList() { return fstools::getDirListOnlyFiles(CONFIG_FILE_PATH); }
+    std::vector<const char *> inline getMacroFileList() { return fstools::getDirListOnlyFiles(MACRO_FILE_PATH); }
     bool formatFS();
 
     Configuration mConfig;

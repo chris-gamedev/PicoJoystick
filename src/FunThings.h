@@ -27,7 +27,7 @@ public:
     AnimSprite4_ aSprite8_pinky;
     AnimSprite4_ aScardey8_1;
     AnimSprite4_ aScardey8_2;
-    UDLRRandom mBehavior;
+    UDLRRandom mbhvULDR;
 
     Animation_ *funNotUsed[6] = {&aScardey8_1, &aScardey8_2, &aPacMan_1, &aPacMan_2, &aSprite8_blinky, &aSprite8_pinky};
     Animation_ *funInUse[6] = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};

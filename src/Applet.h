@@ -5,16 +5,16 @@ namespace AppletNames
 {
     enum TAppletNames
     {
-        SHOW_BUTTON_PRESSES,
-        MENU,
-        REMAP_BUTTONS,
-        ASSIGN_TURBO,
-        CREATE_MACRO,
-        ASSIGN_MACRO,
-        SAVE_CONFIGURATION,
-        LOAD_CONFIGURATION,
-        LOAD_MACRO,
-        FORMAT_FS,
+        drawKeyPresses,
+        menu,
+        remapButtons,
+        assignTurbo,
+        createMacro,
+        assignMacro,
+        saveConfiguration,
+        loadConfiguration,
+        loadMacro,
+        formatFS,
         BLANK,
         MAX_VALUE
     };
